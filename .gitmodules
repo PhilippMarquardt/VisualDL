@@ -1,9 +1,9 @@
-[submodule "src/dependencies/segmentation_models.pytorch"]
-	path = src/dependencies/segmentation_models.pytorch
-	url = https://github.com/qubvel/segmentation_models.pytorch.git
-[submodule "src/dependencies/pytorch-image-models"]
-	path = src/dependencies/pytorch-image-models
-	url = https://github.com/rwightman/pytorch-image-models.git
 [submodule "src/dependencies/yolov5"]
 	path = src/dependencies/yolov5
-	url = https://github.com/ultralytics/yolov5.git
+	url = https://github.com/PhilippMarquardt/yolov5.git
+[submodule "src/dependencies/segmentation_models.pytorch"]
+	path = src/dependencies/segmentation_models.pytorch
+	url = https://github.com/PhilippMarquardt/segmentation_models.pytorch.git
+[submodule "src/dependencies/pytorch-image-models"]
+	path = src/dependencies/pytorch-image-models
+	url = https://github.com/PhilippMarquardt/pytorch-image-models.git
