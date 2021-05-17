@@ -1,13 +1,12 @@
 [submodule "src/dependencies/yolov5"]
 	path = src/dependencies/yolov5
 	url = https://github.com/PhilippMarquardt/yolov5.git
-[submodule "src/dependencies/pytorch-grad-cam"]
-	path = src/dependencies/pytorch-grad-cam
-	url = https://github.com/PhilippMarquardt/pytorch-grad-cam.git
-
 [submodule "src/dependencies/segmentation_models"]
 	path = src/dependencies/segmentation_models
 	url = https://github.com/PhilippMarquardt/segmentation_models.pytorch.git
 [submodule "src/dependencies/classification_models"]
 	path = src/dependencies/classification_models
 	url = https://github.com/PhilippMarquardt/pytorch-image-models.git
+[submodule "src/dependencies/grad_cam"]
+	path = src/dependencies/grad_cam
+	url = https://github.com/PhilippMarquardt/pytorch-grad-cam.git
