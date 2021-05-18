@@ -4,9 +4,3 @@
 [submodule "src/dependencies/segmentation_models"]
 	path = src/dependencies/segmentation_models
 	url = https://github.com/PhilippMarquardt/segmentation_models.pytorch.git
-[submodule "src/dependencies/classification_models"]
-	path = src/dependencies/classification_models
-	url = https://github.com/PhilippMarquardt/pytorch-image-models.git
-[submodule "src/dependencies/grad_cam"]
-	path = src/dependencies/grad_cam
-	url = https://github.com/PhilippMarquardt/pytorch-grad-cam.git
