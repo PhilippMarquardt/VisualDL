@@ -8,7 +8,6 @@ from ...utils.utils import *
 import logging
 import pprint
 from torchmetrics import * 
-import torchmetrics
 logging.getLogger().setLevel(logging.INFO)
 
 """
@@ -22,8 +21,8 @@ class ClassificationTrainer(TrainerBase):
         assert len(self.cfg['settings']['batch_size']) == len(self.cfg['model_names'])
         assert len(self.cfg['settings']['metrics']) > 0, "You must provide atleast one metric"
         self.batch_sizes = self.cfg['settings']['batch_size']
-        metrics = [eval(f"{metric['name']} ({metric['params']})") for metric in self.cfg['settings']['metrics']]
-        self.models = [ClassificationModel(name, self.cfg['settings']['nc'], self.cfg['settings']['criterions'], metrics) for name in self.cfg['model_names']]
+        self.models = [ClassificationModel(name, self.cfg['settings']['nc'], self.cfg['settings']['criterions'],
+                      [eval(f"{metric['name']} ({metric['params']})") for metric in self.cfg['settings']['metrics']]) for name in self.cfg['model_names']]
         self.train_loaders = [get_dataloader(ClassificationDataset(self.cfg['data']['train'], transform = None), batch_size, self.cfg['settings']['workers']) for batch_size in self.batch_sizes]
         self.valid_loaders = [None] * len(self.batch_sizes)
         self.test_laoders = [None] * len(self.batch_sizes)
