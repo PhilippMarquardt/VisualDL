@@ -5,8 +5,12 @@ from src.vdl import *
 from src.utils.datasets import *
 from src.utils.utils import *
 from src.models.classification_model import *
+from src.trainer.classification.classification_trainer import *
+import logging
+logging.getLogger().setLevel(logging.INFO)
+logging.getLogger().name = ""
+
 #main()
 #def main():
-
-a =ClassificationModel()
-a.train()
+t = ClassificationTrainer(r"E:\source\repos\VisualDL\src\trainer\classification\classification.yaml")
+t.train()
