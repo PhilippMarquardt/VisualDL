@@ -8,6 +8,7 @@ from ...utils.utils import *
 import logging
 import pprint
 logging.getLogger().setLevel(logging.INFO)
+
 class ClassificationTrainer(TrainerBase):
     def __init__(self, cfg_path):
         self.cfg = parse_yaml(cfg_path)
@@ -25,7 +26,8 @@ class ClassificationTrainer(TrainerBase):
             self.valid_loaders = [get_dataloader(ClassificationDataset(self.cfg['data']['test'], transform = None), batch_size, self.cfg['settings']['workers']) for batch_size in self.batch_sizes]
         
     def train(self):
-        for train_loader, valid_loader, test_loader, model in zip(self.train_loaders, self.valid_loaders, self.test_laoders, self.models):
+        for cnt, (train_loader, valid_loader, test_loader, model) in enumerate(zip(self.train_loaders, self.valid_loaders, self.test_laoders, self.models)):
+            logging.info(f"Training {pprint.pformat(model.__name__)}")
             model.train(train_loader, valid_loader, test_loader, self.cfg['settings']['epochs']) 
         
 
