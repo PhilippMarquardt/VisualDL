@@ -1,6 +1,6 @@
 [submodule "src/dependencies/yolov5"]
 	path = src/dependencies/yolov5
 	url = https://github.com/PhilippMarquardt/yolov5.git
-[submodule "src/dependencies/segmentation_models"]
-	path = src/dependencies/segmentation_models
+[submodule "src/dependencies/segmentation_models.pytorch"]
+	path = src/dependencies/segmentation_models.pytorch
 	url = https://github.com/PhilippMarquardt/segmentation_models.pytorch.git
