@@ -7,6 +7,8 @@ from ...utils.datasets import *
 from ...utils.utils import *
 import logging
 import pprint
+from torchmetrics import * 
+import torchmetrics
 logging.getLogger().setLevel(logging.INFO)
 
 """
@@ -18,8 +20,10 @@ class ClassificationTrainer(TrainerBase):
         logging.info(f"Training classification model with the following config:\n {pprint.pformat(self.cfg)}")
         assert self.cfg['type'] == "classification", "Provided yaml file must be a classification model config!"
         assert len(self.cfg['settings']['batch_size']) == len(self.cfg['model_names'])
+        assert len(self.cfg['settings']['metrics']) > 0, "You must provide atleast one metric"
         self.batch_sizes = self.cfg['settings']['batch_size']
-        self.models = [ClassificationModel(name, self.cfg['settings']['nc'], self.cfg['settings']['criterions']) for name in self.cfg['model_names']]
+        metrics = [eval(f"{metric['name']} ({metric['params']})") for metric in self.cfg['settings']['metrics']]
+        self.models = [ClassificationModel(name, self.cfg['settings']['nc'], self.cfg['settings']['criterions'], metrics) for name in self.cfg['model_names']]
         self.train_loaders = [get_dataloader(ClassificationDataset(self.cfg['data']['train'], transform = None), batch_size, self.cfg['settings']['workers']) for batch_size in self.batch_sizes]
         self.valid_loaders = [None] * len(self.batch_sizes)
         self.test_laoders = [None] * len(self.batch_sizes)
@@ -28,6 +32,7 @@ class ClassificationTrainer(TrainerBase):
         if self.cfg['data']['test'] != '':
             self.valid_loaders = [get_dataloader(ClassificationDataset(self.cfg['data']['test'], transform = None), batch_size, self.cfg['settings']['workers']) for batch_size in self.batch_sizes]
         
+
     def train(self):
         for cnt, (train_loader, valid_loader, test_loader, model) in enumerate(zip(self.train_loaders, self.valid_loaders, self.test_laoders, self.models)):
             logging.info(f"Training {pprint.pformat(self.cfg['model_names'][cnt])}")

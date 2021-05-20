@@ -3,8 +3,10 @@ from torch.utils.data.dataset import Dataset
 from tqdm import tqdm
 import torch
 import yaml
+import logging
+from torchmetrics import * 
 
-def train_all_epochs(model, train_loader, valid_loader, test_loader, epochs, criterions, criterion_scaling = None, average_outputs = False):
+def train_all_epochs(model, train_loader, valid_loader, test_loader, epochs, criterions, metrics, criterion_scaling = None, average_outputs = False):
     
     if criterion_scaling is None:
         criterion_scaling = [1] * len(criterions)
@@ -15,16 +17,17 @@ def train_all_epochs(model, train_loader, valid_loader, test_loader, epochs, cri
     
     for epoch in range(epochs):
         training_bar = tqdm(train_loader)
-        train_one_epoch(model, training_bar, criterions, criterion_scaling, average_outputs, device, epoch, optimizer, scaler)
+        train_one_epoch(model, training_bar, criterions, criterion_scaling, average_outputs, device, epoch, optimizer, scaler, metrics)
         
 
 
 
-def train_one_epoch(model, training_bar, criterions, criterion_scaling, average_outputs = False, device = None, epoch = 0, optimizer = None, scaler = None): 
+def train_one_epoch(model, training_bar, criterions, criterion_scaling, average_outputs = False, device = None, epoch = 0, optimizer = None, scaler = None, metrics = None): 
     for cnt, (x,y) in enumerate(training_bar):
         x = x.to(device)
         y = y.to(device)
         model.zero_grad()
+        acc = 0.0
         #TODO implement average_outputs
         with torch.cuda.amp.autocast():
             loss = None
@@ -34,10 +37,14 @@ def train_one_epoch(model, training_bar, criterions, criterion_scaling, average_
                     loss = cr(predictions, y) / scal
                 else:
                     loss += cr(predictions, y) / scal
+            predictions = torch.argmax(predictions, 1)
+            for metric in metrics:
+                acc = metric(predictions.detach().cpu(), y.detach().cpu())
         scaler.scale(loss).backward()
         scaler.step(optimizer)
         scaler.update()
-        training_bar.set_description("Train: Epoch:%i, Loss:%.4f" % (epoch, loss.item()))       
+        metric_str = "Train: Epoch:%i, Loss:%.4f, " + "".join([metric.__class__.__name__ + ":%.4f, " for metric in metrics ])
+        training_bar.set_description(metric_str % tuple([epoch, loss.item()]+[metric.compute() for metric in metrics]))       
                 
                 
     
@@ -72,6 +79,16 @@ def parse_yaml(yaml_file:str) -> dict:
     """
     with open(yaml_file, "r") as handle:
         return yaml.load(handle, Loader=yaml.FullLoader)
+
+def parse_metrics(metrics):
+    metric_list = []
+    for metric in metrics:
+        eval(metric['name'])
+        #for param in metric['params']:
+        print(metric['params'])
+        eval(metric['params'])
+
+
 
 
 
