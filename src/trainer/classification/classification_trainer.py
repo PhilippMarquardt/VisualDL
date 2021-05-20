@@ -9,8 +9,11 @@ import logging
 import pprint
 logging.getLogger().setLevel(logging.INFO)
 
+"""
+    The container class around mutliple models responsible for training them all with the paramers specific in the config file.
+"""
 class ClassificationTrainer(TrainerBase):
-    def __init__(self, cfg_path):
+    def __init__(self, cfg_path:dict):
         self.cfg = parse_yaml(cfg_path)
         logging.info(f"Training classification model with the following config:\n {pprint.pformat(self.cfg)}")
         assert self.cfg['type'] == "classification", "Provided yaml file must be a classification model config!"
@@ -27,7 +30,7 @@ class ClassificationTrainer(TrainerBase):
         
     def train(self):
         for cnt, (train_loader, valid_loader, test_loader, model) in enumerate(zip(self.train_loaders, self.valid_loaders, self.test_laoders, self.models)):
-            logging.info(f"Training {pprint.pformat(model.__name__)}")
+            logging.info(f"Training {pprint.pformat(self.cfg['model_names'][cnt])}")
             model.train(train_loader, valid_loader, test_loader, self.cfg['settings']['epochs']) 
         
 

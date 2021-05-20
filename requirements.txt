@@ -35,8 +35,11 @@ pycocotools>=2.0  # COCO mAP
 
 #----------------------------------
 timm
+
 pytorch-gradcam
 
 albumentations
 
 scikit-image
+
+torchmetrics
