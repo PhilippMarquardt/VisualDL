@@ -18,6 +18,8 @@ def train_all_epochs(model, train_loader, valid_loader, test_loader, epochs, cri
     for epoch in range(epochs):
         training_bar = tqdm(train_loader)
         train_one_epoch(model, training_bar, criterions, criterion_scaling, average_outputs, device, epoch, optimizer, scaler, metrics)
+        for metric in metrics:
+            metric.reset() 
         
 
 
@@ -38,13 +40,14 @@ def train_one_epoch(model, training_bar, criterions, criterion_scaling, average_
                 else:
                     loss += cr(predictions, y) / scal
             predictions = torch.argmax(predictions, 1)
-            for metric in metrics:
-                acc = metric(predictions.detach().cpu(), y.detach().cpu())
+        for metric in metrics:
+            acc = metric(predictions.detach().cpu(), y.detach().cpu())
         scaler.scale(loss).backward()
         scaler.step(optimizer)
         scaler.update()
         metric_str = "Train: Epoch:%i, Loss:%.4f, " + "".join([metric.__class__.__name__ + ":%.4f, " for metric in metrics ])
-        training_bar.set_description(metric_str % tuple([epoch, loss.item()]+[metric.compute() for metric in metrics]))       
+        training_bar.set_description(metric_str % tuple([epoch, loss.item()]+[metric.compute() for metric in metrics]))   
+           
                 
                 
     
@@ -80,13 +83,6 @@ def parse_yaml(yaml_file:str) -> dict:
     with open(yaml_file, "r") as handle:
         return yaml.load(handle, Loader=yaml.FullLoader)
 
-def parse_metrics(metrics):
-    metric_list = []
-    for metric in metrics:
-        eval(metric['name'])
-        #for param in metric['params']:
-        print(metric['params'])
-        eval(metric['params'])
 
 
 

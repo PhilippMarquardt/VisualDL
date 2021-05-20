@@ -13,6 +13,8 @@ settings:
   workers: 0
   batch_size:
     - 1
+    - 1
+    - 1
   criterions:
     - "CrossEntropyLoss"
 
@@ -20,10 +22,10 @@ settings:
   metrics:
     - name: "F1"
       params: "num_classes=2"
-    #- name: "Accuracy"
-    #  params: ""
-    #- name: "CohenKappa"
-    #  params: "num_classes=2"
+    - name: "Accuracy"
+      params: ""
+    - name: "CohenKappa"
+      params: "num_classes=2"
     
     
         
@@ -33,4 +35,6 @@ transform:
 # anchors
 model_names:
   - "resnet26"
+  - "resnet101"
+  - "resnet50"
 
