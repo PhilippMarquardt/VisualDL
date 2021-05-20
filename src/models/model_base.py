@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
 
-
-class ModelBase(ABC):
+class ModelBase(ABC):    
     @abstractmethod
     def train(self):
         pass

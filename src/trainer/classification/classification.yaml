@@ -7,12 +7,11 @@ data:
 
 settings:
   nc: 2
-  epochs: 20
+  epochs: 1
   optimizer: "Adam"
   lr: 0.0001
   workers: 0
   batch_size:
-    - 1
     - 1
     - 1
   criterions:
@@ -35,6 +34,5 @@ transform:
 # anchors
 model_names:
   - "resnet26"
-  - "resnet101"
   - "resnet50"
 

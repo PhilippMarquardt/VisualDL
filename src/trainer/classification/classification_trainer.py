@@ -37,6 +37,9 @@ class ClassificationTrainer(TrainerBase):
         for cnt, (train_loader, valid_loader, test_loader, model) in enumerate(zip(self.train_loaders, self.valid_loaders, self.test_laoders, self.models)):
             logging.info(f"Training {pprint.pformat(self.cfg['model_names'][cnt])}")
             model.train(train_loader, valid_loader, test_loader, self.cfg['settings']['epochs']) 
+
+    def get_visualization(self):
+        self.models[1].visualize(2)
         
 
 

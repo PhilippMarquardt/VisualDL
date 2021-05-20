@@ -5,10 +5,14 @@ from ..utils.utils import get_dataloader, train_all_epochs
 import albumentations as A
 from torch.nn import *
 import logging
+from pytorch_grad_cam import GradCAM, ScoreCAM, GradCAMPlusPlus, AblationCAM, XGradCAM, EigenCAM
+
+from torch.utils.tensorboard import SummaryWriter
 
 
 class ClassificationModel(ModelBase):
     def __init__(self, name, nc, criterions, metrics):
+        self.writer = SummaryWriter(r"E:\source\repos\VisualDL\tensorboard_log")
         self.model = timm.create_model(name, pretrained=True)
         self.model.fc = Linear(self.model.fc.in_features, nc)
         self.transform = None #TODO: Read transform from config
@@ -24,14 +28,16 @@ class ClassificationModel(ModelBase):
             test_loader (DataLoader, optional): The test DataLoader. Defaults to None.
             epochs (int, optional): The number of epochs. Defaults to 1.
         """
-        train_all_epochs(model = self.model, train_loader = train_loader, valid_loader=valid_loader, test_loader = test_loader, epochs=epochs, criterions=self.criterions, metrics = self.metrics)
+        train_all_epochs(model = self.model, train_loader = train_loader, valid_loader=valid_loader, test_loader = test_loader, 
+        epochs=epochs, criterions=self.criterions, metrics = self.metrics, writer=self.writer)
     def test(self):
         pass
         
     def inference(self):
         pass
         
-    def visualize(self):
+    def visualize(self, layer_name):
+        cam = GradCAM(model=self.model, target_layer=self.model.layer4[-1], use_cuda=True)
         pass
         
         

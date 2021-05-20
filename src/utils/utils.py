@@ -6,7 +6,7 @@ import yaml
 import logging
 from torchmetrics import * 
 
-def train_all_epochs(model, train_loader, valid_loader, test_loader, epochs, criterions, metrics, criterion_scaling = None, average_outputs = False):
+def train_all_epochs(model, train_loader, valid_loader, test_loader, epochs, criterions, metrics, writer, criterion_scaling = None, average_outputs = False):
     
     if criterion_scaling is None:
         criterion_scaling = [1] * len(criterions)
@@ -17,14 +17,16 @@ def train_all_epochs(model, train_loader, valid_loader, test_loader, epochs, cri
     
     for epoch in range(epochs):
         training_bar = tqdm(train_loader)
-        train_one_epoch(model, training_bar, criterions, criterion_scaling, average_outputs, device, epoch, optimizer, scaler, metrics)
+        train_one_epoch(model, training_bar, criterions, criterion_scaling, average_outputs, device, epoch, optimizer, scaler, metrics, writer)
         for metric in metrics:
             metric.reset() 
         
 
 
 
-def train_one_epoch(model, training_bar, criterions, criterion_scaling, average_outputs = False, device = None, epoch = 0, optimizer = None, scaler = None, metrics = None): 
+def train_one_epoch(model, training_bar, criterions, criterion_scaling, average_outputs = False, device = None, epoch = 0, optimizer = None, scaler = None, metrics = None, writer = None):
+    for metric in metrics:
+        metric.reset() 
     for cnt, (x,y) in enumerate(training_bar):
         x = x.to(device)
         y = y.to(device)
@@ -46,7 +48,12 @@ def train_one_epoch(model, training_bar, criterions, criterion_scaling, average_
         scaler.step(optimizer)
         scaler.update()
         metric_str = "Train: Epoch:%i, Loss:%.4f, " + "".join([metric.__class__.__name__ + ":%.4f, " for metric in metrics ])
-        training_bar.set_description(metric_str % tuple([epoch, loss.item()]+[metric.compute() for metric in metrics]))   
+        epoch_values = [metric.compute() for metric in metrics]
+        for metric, val in zip(metrics, epoch_values):
+            writer.add_scalar(f"{metric.__class__.__name__}/train", val, epoch)
+        
+
+        training_bar.set_description(metric_str % tuple([epoch, loss.item()]+epoch_values))   
            
                 
                 

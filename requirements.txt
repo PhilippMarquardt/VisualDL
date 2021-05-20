@@ -43,3 +43,7 @@ albumentations
 scikit-image
 
 torchmetrics
+
+tensorboard
+
+ttach
