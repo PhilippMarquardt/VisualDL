@@ -1,7 +1,7 @@
 import timm
 from torch.utils.data.dataloader import DataLoader
 from .model_base import ModelBase
-from ..utils.utils import get_dataloader, train_all_epochs, write_image
+from ..utils.utils import get_dataloader, write_image
 import albumentations as A
 from torch.nn import *
 import logging
@@ -9,7 +9,7 @@ import torch
 from skimage import io
 import numpy as np
 import cv2
-from ..utils.model_utils import *
+from ..utils.model_utils import visualize,  train_all_epochs
 from torch.utils.tensorboard import SummaryWriter
 
 

@@ -29,7 +29,7 @@ class ClassificationTrainer(TrainerBase):
                        eval(f"{self.cfg['settings']['monitor_metric']['name']}({self.cfg['settings']['monitor_metric']['params']})")) for name in self.cfg['model_names']]
 
         self.train_loaders = [get_dataloader(ClassificationDataset(self.cfg['data']['train'], transform = None), batch_size, self.cfg['settings']['workers']) for batch_size in self.batch_sizes]
-        self.valid_loaders = [None] * len(self.batch_sizes)
+        self.valid_loaders = [get_dataloader(ClassificationDataset(self.cfg['data']['valid'], transform = None), batch_size, self.cfg['settings']['workers']) for batch_size in self.batch_sizes]
         self.test_laoders = [None] * len(self.batch_sizes)
         if self.cfg['data']['valid'] != '':
             self.valid_loaders = [get_dataloader(ClassificationDataset(self.cfg['data']['valid'], transform = None), batch_size, self.cfg['settings']['workers']) for batch_size in self.batch_sizes]

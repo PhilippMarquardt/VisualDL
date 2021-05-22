@@ -2,7 +2,7 @@ type: "classification"
 
 data:
   train: "E:/source/repos/VisualDL/tests/classification"
-  valid: ""
+  valid: "E:/source/repos/VisualDL/tests/classification"
   test: ""
 
 settings:
