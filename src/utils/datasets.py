@@ -25,5 +25,5 @@ class ClassificationDataset(Dataset):
             img = self.transform(img)['image']
             
         return torch.tensor(img, dtype = torch.float).permute(2, 0, 1), torch.tensor(label, dtype = torch.long)
-        
+
         

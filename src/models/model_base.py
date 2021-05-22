@@ -6,10 +6,6 @@ class ModelBase(ABC):
         pass
     
     @abstractmethod
-    def inference(self):
-        pass
-     
-    @abstractmethod
     def test(self):
         pass
      
