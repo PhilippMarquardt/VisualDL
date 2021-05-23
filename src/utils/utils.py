@@ -1,10 +1,9 @@
 from torch.utils.data import DataLoader, Dataset
-from tqdm import tqdm
 import yaml
 import logging
 from skimage import io
 import cv2
-
+from itertools import chain, combinations
 
 
 
@@ -42,6 +41,13 @@ def parse_yaml(yaml_file:str) -> dict:
     with open(yaml_file, "r") as handle:
         return yaml.load(handle, Loader=yaml.FullLoader)
 
+def get_all_combinations(li:list):
+    """Returns a list(tuple) containing all combinations of the given list.
+
+    Args:
+        li (list): The input list.
+    """
+    return list(chain(*map(lambda x: combinations(li, x), range(1, len(li)+1))))
 
 
 

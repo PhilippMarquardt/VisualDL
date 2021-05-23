@@ -10,6 +10,7 @@ import pprint
 from torchmetrics import * 
 import matplotlib.pyplot as plt
 import numpy as np
+from ...utils.model_utils import test_trainer
 logging.getLogger().setLevel(logging.INFO)
 
 """
@@ -18,6 +19,7 @@ logging.getLogger().setLevel(logging.INFO)
 class ClassificationTrainer(TrainerBase):
     def __init__(self, cfg_path:dict):
         self.cfg = parse_yaml(cfg_path)
+        self.trained = False
         assert self.cfg['settings']['monitor_metric']['name'] != '', "You need to specify a metric that is monitored"
         assert self.cfg['type'] == "classification", "Provided yaml file must be a classification model config!"
         assert len(self.cfg['settings']['batch_size']) == len(self.cfg['model_names'])
@@ -34,17 +36,19 @@ class ClassificationTrainer(TrainerBase):
         if self.cfg['data']['valid'] != '':
             self.valid_loaders = [get_dataloader(ClassificationDataset(self.cfg['data']['valid'], transform = None), batch_size, self.cfg['settings']['workers']) for batch_size in self.batch_sizes]
         if self.cfg['data']['test'] != '':
-            self.test_loader = [get_dataloader(ClassificationDataset(self.cfg['data']['test'], transform = None), batch_size, self.cfg['settings']['workers']) for batch_size in self.batch_sizes]
+            self.test_loaders = [get_dataloader(ClassificationDataset(self.cfg['data']['test'], transform = None), batch_size, self.cfg['settings']['workers']) for batch_size in self.batch_sizes]
         
 
     def train(self):
-        logging.info("")
+        logging.info("Starting training training!")
         for cnt, (train_loader, valid_loader, test_loader, model) in enumerate(zip(self.train_loaders, self.valid_loaders, self.test_laoders, self.models)):
             logging.info(f"Training {pprint.pformat(self.cfg['model_names'][cnt])}")
             model.train(train_loader, valid_loader, test_loader, self.cfg['settings']['epochs']) 
-
+        self.trained = True
     
-
+    def test(self):
+        assert self.trained, "Must be trained first!"
+        return test_trainer(self.models, self.test_loaders, self.models[0].monitor_metric)
 
     def get_visualization(self):
         for cnt, (x,y) in enumerate(self.train_loaders[0]):

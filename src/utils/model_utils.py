@@ -4,7 +4,7 @@ import torch
 import cv2
 import numpy as np
 from tqdm import tqdm
-
+from .utils import get_all_combinations
 
 def visualize(model, layer, image):
         cam = GradCAM(model=model, target_layer=layer, use_cuda=torch.cuda.is_available())
@@ -29,8 +29,9 @@ def train_all_epochs(model, train_loader, valid_loader, test_loader, epochs, cri
         train_one_epoch(model, training_bar, criterions, criterion_scaling, average_outputs, device, epoch, optimizer, scaler, metrics, writer, name)
         if valid_loader:
             valid_bar = tqdm(valid_loader)
-            evaluate(model, valid_bar, criterions=criterions, criterion_scaling=criterion_scaling, writer=writer, metric=monitor_metric, device=device, scaler = scaler, 
+            evaluate(model, valid_bar, criterions=criterions, criterion_scaling=criterion_scaling, writer=writer, metric=monitor_metric, device=device,
             epoch=epoch, name = name, average_outputs=False)
+
          
         
 def train_one_epoch(model, training_bar, criterions, criterion_scaling, average_outputs = False, device = None, epoch = 0, optimizer = None, scaler = None, metrics = None, writer = None, name:str = ""):
@@ -71,7 +72,7 @@ def train_one_epoch(model, training_bar, criterions, criterion_scaling, average_
                 
                 
     
-def evaluate(model, valid_bar, criterions, criterion_scaling, writer, metric, device, scaler, epoch, name, average_outputs = False):
+def evaluate(model, valid_bar, criterions, criterion_scaling, writer, metric, device, epoch, name, average_outputs = False):
     assert writer is not None
     assert metric is not None
     metric.reset()
@@ -101,7 +102,32 @@ def evaluate(model, valid_bar, criterions, criterion_scaling, writer, metric, de
         total_loss += loss.item()
         current_loss = total_loss / float((cnt+1))
         valid_bar.set_description(metric_str % tuple([epoch, current_loss, metric_value]))   
-
-    
-    
     metric.reset() 
+
+def test_trainer(models: list, test_loaders, metric):
+    assert test_loaders
+    assert metric
+    
+    device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
+    metric.reset()
+    log_dict = {}
+    combinations = get_all_combinations(models)
+    for cnt, model_comb in enumerate(tqdm(combinations)):
+        names = ",".join([x.name for x in model_comb])
+        predictions = None     
+        for (model, test_loader) in zip(model_comb, test_loaders):
+            for (x,y) in test_loader:
+                x = x.to(device)
+                y = y.to(device)
+                with torch.cuda.amp.autocast():
+                    with torch.no_grad():
+                        if predictions is None:
+                            predictions = model(x)
+                        else:
+                            predictions += model(x)
+        prediction = torch.argmax(predictions, 1)
+        metric.update(prediction.detach().cpu(), y.detach().cpu())
+        val = metric.compute()
+        log_dict[names] = val
+    return log_dict
+                

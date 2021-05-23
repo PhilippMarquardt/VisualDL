@@ -15,3 +15,5 @@ logging.getLogger().name = ""
 t = ClassificationTrainer(r"E:\source\repos\VisualDL\src\trainer\classification\classification.yaml")
 t.train()
 t.get_visualization()
+di = t.test()
+print(di)
