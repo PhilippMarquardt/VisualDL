@@ -109,24 +109,25 @@ def test_trainer(models: list, test_loaders, metric):
     assert metric
     
     device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
-    metric.reset()
+    
     log_dict = {}
     combinations = get_all_combinations(models)
     for cnt, model_comb in enumerate(tqdm(combinations)):
-        names = ",".join([x.name for x in model_comb])
-        predictions = None     
-        for (model, test_loader) in zip(model_comb, test_loaders):
-            for (x,y) in test_loader:
-                x = x.to(device)
-                y = y.to(device)
+        metric.reset()
+        names = ",".join([x.name for x in model_comb])    
+        for (x,y) in test_loaders[0]:
+            predictions = None 
+            x = x.to(device)
+            y = y.to(device)
+            for model in model_comb:
                 with torch.cuda.amp.autocast():
                     with torch.no_grad():
                         if predictions is None:
                             predictions = model(x)
                         else:
                             predictions += model(x)
-        prediction = torch.argmax(predictions, 1)
-        metric.update(prediction.detach().cpu(), y.detach().cpu())
+            prediction = torch.argmax(predictions, 1)
+            metric.update(prediction.detach().cpu(), y.detach().cpu())
         val = metric.compute()
         log_dict[names] = val
     return log_dict

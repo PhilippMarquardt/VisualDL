@@ -9,7 +9,7 @@ import torch
 from skimage import io
 import numpy as np
 import cv2
-from ..utils.model_utils import visualize,  train_all_epochs
+from ..utils.model_utils import evaluate, visualize,  train_all_epochs
 from torch.utils.tensorboard import SummaryWriter
 
 
@@ -39,7 +39,7 @@ class ClassificationModel(ModelBase):
         train_all_epochs(model = self.model, train_loader = train_loader, valid_loader=valid_loader, test_loader = test_loader, 
         epochs=epochs, criterions=self.criterions, metrics = self.metrics, writer=self.writer, name=self.name, monitor_metric = self.monitor_metric)
 
-    def test(self):
+    def test(self, test_loader):
         pass
         
     def visualize(self, image):

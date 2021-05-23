@@ -7,7 +7,7 @@ data:
 
 settings:
   nc: 2
-  epochs: 10
+  epochs: 5
   optimizer: "Adam"
   lr: 0.0001
   workers: 0
@@ -31,7 +31,7 @@ settings:
 
   monitor_metric: 
     name: "Accuracy"
-    params: ""
+    params: "num_classes=2"
 
         
     
