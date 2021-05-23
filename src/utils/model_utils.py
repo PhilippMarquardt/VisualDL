@@ -5,6 +5,7 @@ import cv2
 import numpy as np
 from tqdm import tqdm
 
+
 def visualize(model, layer, image):
         cam = GradCAM(model=model, target_layer=layer, use_cuda=torch.cuda.is_available())
         heatmap = cv2.applyColorMap(np.uint8(255 * cam(input_tensor=image.unsqueeze(0))[0,:]), cv2.COLORMAP_JET)
@@ -83,7 +84,8 @@ def evaluate(model, valid_bar, criterions, criterion_scaling, writer, metric, de
         #TODO implement average_outputs
         with torch.cuda.amp.autocast():
             loss = None
-            predictions = model(x)
+            with torch.no_grad():
+                predictions = model(x)
             for cr, scal in zip(criterions, criterion_scaling):
                 if loss is None:
                     loss = cr(predictions, y) / scal
