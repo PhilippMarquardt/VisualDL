@@ -1,0 +1,46 @@
+type: "classification"
+
+data:
+  train: "E:/source/repos/VisualDL/tests/classification"
+  valid: "E:/source/repos/VisualDL/tests/classification"
+  test: ""
+
+settings:
+  nc: 2
+  epochs: 10
+  optimizer: "Adam"
+  lr: 0.0001
+  workers: 0
+  batch_size:
+    - 1
+    - 1
+    - 1
+  criterions:
+    - "CrossEntropyLoss"
+
+  tensorboard_log_dir: "tensorboard_logs"
+
+
+  metrics:
+    - name: "F1"
+      params: "num_classes=2"
+    - name: "Accuracy"
+      params: ""
+    - name: "CohenKappa"
+      params: "num_classes=2"
+
+  monitor_metric: 
+    name: "Accuracy"
+    params: ""
+
+        
+    
+transform:
+  bub: 3
+# anchors
+model_names:
+  - "resnet26"
+  - "resnet101"
+  - "resnet50"
+  
+
