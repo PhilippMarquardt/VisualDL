@@ -107,9 +107,7 @@ def evaluate(model, valid_bar, criterions, criterion_scaling, writer, metric, de
 def test_trainer(models: list, test_loaders, metric):
     assert test_loaders
     assert metric
-    
     device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
-    
     log_dict = {}
     combinations = get_all_combinations(models)
     for cnt, model_comb in enumerate(tqdm(combinations)):
