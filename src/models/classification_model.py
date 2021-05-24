@@ -18,7 +18,11 @@ class ClassificationModel(ModelBase):
         self.writer = SummaryWriter(r"E:\source\repos\VisualDL\tensorboard_log")
         self.name = name
         self.model = timm.create_model(name, pretrained=True)
-        self.model.fc = Linear(self.model.fc.in_features, nc)
+        removed = list(self.model.children())[:-1]
+        model= torch.nn.Sequential(*removed)
+        self.model = torch.nn.Sequential(model, torch.nn.Linear(list(self.model.children())[-1].in_features,nc))
+        
+        
         self.transform = None #TODO: Read transform from config
         self.criterions = [eval(name)() for name in criterions]
         self.metrics = metrics

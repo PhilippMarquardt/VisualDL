@@ -121,11 +121,11 @@ def test_trainer(models: list, test_loaders, metric):
                 with torch.cuda.amp.autocast():
                     with torch.no_grad():
                         if predictions is None:
-                            predictions = model(x)
+                            predictions = model(x).detach().cpu()
                         else:
-                            predictions += model(x)
+                            predictions += model(x).detach().cpu()
             prediction = torch.argmax(predictions, 1)
-            metric.update(prediction.detach().cpu(), y.detach().cpu())
+            metric.update(prediction, y.detach().cpu())
         val = metric.compute()
         log_dict[names] = val
     return log_dict

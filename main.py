@@ -14,6 +14,6 @@ logging.getLogger().name = ""
 #def main():
 t = ClassificationTrainer(r"E:\source\repos\VisualDL\src\trainer\classification\classification.yaml")
 t.train()
-t.get_visualization()
+#t.get_visualization()
 di = t.test()
 print(di)

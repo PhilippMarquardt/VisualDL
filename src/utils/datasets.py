@@ -3,7 +3,7 @@ import os
 import itertools
 from skimage import io
 import torch
-
+import albumentations as A
 
 class ClassificationDataset(Dataset):
     def __init__(self, root_folder, transform):
@@ -21,8 +21,11 @@ class ClassificationDataset(Dataset):
         img_path, label = self.image_class_tuple[idx]
         img = io.imread(img_path)
         img = img/255.
-        if self.transform:
-            img = self.transform(img)['image']
+        transform = A.Compose([
+            A.Resize(width=256, height=256)
+        ])
+        if transform:
+            img = transform(image = img)['image']
             
         return torch.tensor(img, dtype = torch.float).permute(2, 0, 1), torch.tensor(label, dtype = torch.long)
 

@@ -1,20 +1,20 @@
 type: "classification"
 
 data:
-  train: "E:/source/repos/VisualDL/tests/classification"
-  valid: "E:/source/repos/VisualDL/tests/classification"
-  test: "E:/source/repos/VisualDL/tests/classification"
+  train: "E:/downloads/archive/train"
+  valid: "E:/downloads/archive/test"
+  test: "E:/downloads/archive/test"
 
 settings:
   nc: 2
-  epochs: 5
+  epochs: 6
   optimizer: "Adam"
   lr: 0.0001
   workers: 0
   batch_size:
-    - 1
-    - 1
-    - 1
+    - 32
+    - 32
+    - 32
   criterions:
     - "CrossEntropyLoss"
 
@@ -39,8 +39,8 @@ transform:
   bub: 3
 # anchors
 model_names:
-  - "resnet26"
-  - "resnet101"
+  - "efficientnet_b0"
   - "resnet50"
+  - "efficientnet_b3"
   
 
