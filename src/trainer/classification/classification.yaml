@@ -5,9 +5,15 @@ data:
   valid: "E:/downloads/archive/test"
   test: "E:/downloads/archive/test"
 
+# anchors
+model_names:
+  - "efficientnet_b0"
+  - "resnet50"
+  - "efficientnet_b3"
+
 settings:
   nc: 2
-  epochs: 6
+  epochs: 3
   optimizer: "Adam"
   lr: 0.0001
   workers: 0
@@ -33,14 +39,17 @@ settings:
     name: "Accuracy"
     params: "num_classes=2"
 
-        
-    
-transform:
-  bub: 3
-# anchors
-model_names:
-  - "efficientnet_b0"
-  - "resnet50"
-  - "efficientnet_b3"
+transforms:
+  width: 256
+  height: 256
+  h_flip: 0.5
+  v_flip: 0.5
+  brightness: 0.2
+  contrast: 0.2
+  rgb_shift : 0.2
+  random_shadow: 0.2
+  blur: 0.2
+
+
   
 

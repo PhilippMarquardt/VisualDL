@@ -13,6 +13,8 @@ import numpy as np
 from ...utils.model_utils import test_trainer
 logging.getLogger().setLevel(logging.INFO)
 
+
+
 """
     The container class around mutliple models responsible for training them all with the paramers specific in the config file.
 """
@@ -29,14 +31,14 @@ class ClassificationTrainer(TrainerBase):
         self.models = [ClassificationModel(name, self.cfg['settings']['nc'], self.cfg['settings']['criterions'],
                       [eval(f"{metric['name']} ({metric['params']})") for metric in self.cfg['settings']['metrics']],
                        eval(f"{self.cfg['settings']['monitor_metric']['name']}({self.cfg['settings']['monitor_metric']['params']})")) for name in self.cfg['model_names']]
-
-        self.train_loaders = [get_dataloader(ClassificationDataset(self.cfg['data']['train'], transform = None), batch_size, self.cfg['settings']['workers']) for batch_size in self.batch_sizes]
+        transforms = get_transform_from_config(cfg=self.cfg)
+        self.train_loaders = [get_dataloader(ClassificationDataset(self.cfg['data']['train'], transform = transforms), batch_size, self.cfg['settings']['workers']) for batch_size in self.batch_sizes]
         self.valid_loaders = [None] * len(self.batch_sizes)
         self.test_laoders = [None] * len(self.batch_sizes)
         if self.cfg['data']['valid'] != '':
-            self.valid_loaders = [get_dataloader(ClassificationDataset(self.cfg['data']['valid'], transform = None), batch_size, self.cfg['settings']['workers']) for batch_size in self.batch_sizes]
+            self.valid_loaders = [get_dataloader(ClassificationDataset(self.cfg['data']['valid'], transform = transforms), batch_size, self.cfg['settings']['workers']) for batch_size in self.batch_sizes]
         if self.cfg['data']['test'] != '':
-            self.test_loaders = [get_dataloader(ClassificationDataset(self.cfg['data']['test'], transform = None), batch_size, self.cfg['settings']['workers']) for batch_size in self.batch_sizes]
+            self.test_loaders = [get_dataloader(ClassificationDataset(self.cfg['data']['test'], transform = transforms), batch_size, self.cfg['settings']['workers']) for batch_size in self.batch_sizes]
         
 
     def train(self):

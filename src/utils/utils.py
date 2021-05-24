@@ -4,7 +4,7 @@ import logging
 from skimage import io
 import cv2
 from itertools import chain, combinations
-
+import albumentations as A
 
 
 
@@ -50,6 +50,25 @@ def get_all_combinations(li:list):
     return list(chain(*map(lambda x: combinations(li, x), range(1, len(li)+1))))
 
 
+def get_transform_from_config(cfg:dict):
+    """Parses the config into Albumentation transforms.
+
+    Args:
+        cfg (dict): The config.
+    """
+    cfg_trans = cfg['transforms']
+    return A.Compose([
+            A.Resize(cfg_trans['height'], cfg_trans['width']),
+            A.HorizontalFlip(p=cfg_trans['h_flip']),
+            A.VerticalFlip(p=cfg_trans['v_flip']),
+            A.RandomBrightness(p=cfg_trans['brightness']),
+            A.RandomContrast(p=cfg_trans['contrast']),
+            A.RGBShift(p=cfg_trans['rgb_shift']),
+            A.RandomShadow(p=cfg_trans['random_shadow']),
+            A.GaussianBlur(p=cfg_trans['blur'])
+
+            
+        ])
 
 
 

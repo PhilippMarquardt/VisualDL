@@ -20,13 +20,14 @@ class ClassificationDataset(Dataset):
     def __getitem__(self, idx):
         img_path, label = self.image_class_tuple[idx]
         img = io.imread(img_path)
-        img = img/255.
+        
         transform = A.Compose([
             A.Resize(width=256, height=256)
         ])
+        transform = self.transform
         if transform:
             img = transform(image = img)['image']
-            
+        img = img/255.
         return torch.tensor(img, dtype = torch.float).permute(2, 0, 1), torch.tensor(label, dtype = torch.long)
 
         
