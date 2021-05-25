@@ -26,13 +26,16 @@ class ClassificationTrainer(TrainerBase):
         assert self.cfg['type'] == "classification", "Provided yaml file must be a classification model config!"
         assert len(self.cfg['settings']['batch_size']) == len(self.cfg['model_names'])
         assert len(self.cfg['settings']['metrics']) > 0, "You must provide atleast one metric"
+        assert all([self.cfg['settings']['gradient_accumulation'] % batch == 0 for batch in self.cfg['settings']['batch_size']])
+
         logging.info(f"Training classification model with the following config:\n {pprint.pformat(self.cfg)}")
         self.batch_sizes = self.cfg['settings']['batch_size']
        
         self.models = [ClassificationModel(name, self.cfg['settings']['nc'], self.cfg['settings']['criterions'],
                       [eval(f"{metric['name']} ({metric['params']})") for metric in self.cfg['settings']['metrics']],
                        eval(f"{self.cfg['settings']['monitor_metric']['name']}({self.cfg['settings']['monitor_metric']['params']})"),
-                       self.cfg['settings']['optimizer'], self.cfg['settings']['lr']) for name in self.cfg['model_names']]
+                       self.cfg['settings']['optimizer'], self.cfg['settings']['lr'],
+                       self.cfg['settings']['gradient_accumulation']) for name in self.cfg['model_names']]
 
         
         transforms = get_transform_from_config(cfg=self.cfg)

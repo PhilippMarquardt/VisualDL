@@ -21,6 +21,9 @@ settings:
     - 32
     - 32
     - 32
+
+  gradient_accumulation: 64
+  
   criterions:
     - "CrossEntropyLoss"
   lr: 0.0001

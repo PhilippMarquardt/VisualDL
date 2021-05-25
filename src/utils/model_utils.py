@@ -15,7 +15,7 @@ def visualize(model, layer, image):
         return cam
 
 
-def train_all_epochs(model, train_loader, valid_loader, test_loader, epochs, criterions, metrics, writer, optimizer, criterion_scaling = None, average_outputs = False, name:str = "", monitor_metric = None):
+def train_all_epochs(model, train_loader, valid_loader, test_loader, epochs, criterions, metrics, writer, optimizer, accumulate_batch, criterion_scaling = None, average_outputs = False, name:str = "", monitor_metric = None):
     
     if criterion_scaling is None:
         criterion_scaling = [1] * len(criterions)
@@ -23,10 +23,10 @@ def train_all_epochs(model, train_loader, valid_loader, test_loader, epochs, cri
     scaler = torch.cuda.amp.GradScaler(enabled = False if device == 'cpu' else True)
     optimizer = torch.optim.Adam(model.parameters(),lr=0.0001)
     model = model.to(device)
-    
+    accumulate_every = accumulate_batch // train_loader.batch_size
     for epoch in range(epochs):
         training_bar = tqdm(train_loader)
-        train_one_epoch(model, training_bar, criterions, criterion_scaling, average_outputs, device, epoch, optimizer, scaler, metrics, writer, name)
+        train_one_epoch(model, training_bar, criterions, criterion_scaling, average_outputs, device, epoch, optimizer, scaler, metrics, writer, name, accumulate_every)
         if valid_loader:
             valid_bar = tqdm(valid_loader)
             evaluate(model, valid_bar, criterions=criterions, criterion_scaling=criterion_scaling, writer=writer, metric=monitor_metric, device=device,
@@ -34,14 +34,15 @@ def train_all_epochs(model, train_loader, valid_loader, test_loader, epochs, cri
 
          
         
-def train_one_epoch(model, training_bar, criterions, criterion_scaling, average_outputs = False, device = None, epoch = 0, optimizer = None, scaler = None, metrics = None, writer = None, name:str = ""):
+def train_one_epoch(model, training_bar, criterions, criterion_scaling, average_outputs = False, device = None, epoch = 0, optimizer = None, scaler = None, metrics = None, writer = None, name:str = "", accumulate_every = 1):
     for metric in metrics:
         metric.reset() 
+    
     total_loss = 0.0    
     for cnt, (x,y) in enumerate(training_bar):
         x = x.to(device)
         y = y.to(device)
-        model.zero_grad()
+        
         #TODO implement average_outputs
         with torch.cuda.amp.autocast():
             loss = None
@@ -55,8 +56,11 @@ def train_one_epoch(model, training_bar, criterions, criterion_scaling, average_
         for metric in metrics:
             metric.update(predictions.detach().cpu(), y.detach().cpu())
         scaler.scale(loss).backward()
-        scaler.step(optimizer)
-        scaler.update()
+        #gradient accumulation
+        if cnt > 0 and cnt % accumulate_every == 0:
+            scaler.step(optimizer)
+            scaler.update()
+            model.zero_grad()
         metric_str = "Train: Epoch:%i, Loss:%.4f, " + "".join([metric.__class__.__name__ + ":%.4f, " for metric in metrics ])
         epoch_values = [metric.compute() for metric in metrics]
         for metric, val in zip(metrics, epoch_values):
