@@ -15,7 +15,7 @@ def visualize(model, layer, image):
         return cam
 
 
-def train_all_epochs(model, train_loader, valid_loader, test_loader, epochs, criterions, metrics, writer, criterion_scaling = None, average_outputs = False, name:str = "", monitor_metric = None):
+def train_all_epochs(model, train_loader, valid_loader, test_loader, epochs, criterions, metrics, writer, optimizer, criterion_scaling = None, average_outputs = False, name:str = "", monitor_metric = None):
     
     if criterion_scaling is None:
         criterion_scaling = [1] * len(criterions)

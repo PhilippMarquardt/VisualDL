@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from ...utils.model_utils import test_trainer
 logging.getLogger().setLevel(logging.INFO)
-
+from torch.optim import *
 
 
 """
@@ -28,9 +28,13 @@ class ClassificationTrainer(TrainerBase):
         assert len(self.cfg['settings']['metrics']) > 0, "You must provide atleast one metric"
         logging.info(f"Training classification model with the following config:\n {pprint.pformat(self.cfg)}")
         self.batch_sizes = self.cfg['settings']['batch_size']
+       
         self.models = [ClassificationModel(name, self.cfg['settings']['nc'], self.cfg['settings']['criterions'],
                       [eval(f"{metric['name']} ({metric['params']})") for metric in self.cfg['settings']['metrics']],
-                       eval(f"{self.cfg['settings']['monitor_metric']['name']}({self.cfg['settings']['monitor_metric']['params']})")) for name in self.cfg['model_names']]
+                       eval(f"{self.cfg['settings']['monitor_metric']['name']}({self.cfg['settings']['monitor_metric']['params']})"),
+                       self.cfg['settings']['optimizer'], self.cfg['settings']['lr']) for name in self.cfg['model_names']]
+
+        
         transforms = get_transform_from_config(cfg=self.cfg)
         self.train_loaders = [get_dataloader(ClassificationDataset(self.cfg['data']['train'], transform = transforms), batch_size, self.cfg['settings']['workers']) for batch_size in self.batch_sizes]
         self.valid_loaders = [None] * len(self.batch_sizes)

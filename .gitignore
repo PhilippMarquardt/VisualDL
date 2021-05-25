@@ -21,6 +21,7 @@ sdist/
 var/
 wheels/
 pip-wheel-metadata/
+tensorboard_log
 share/python-wheels/
 *.egg-info/
 .installed.cfg

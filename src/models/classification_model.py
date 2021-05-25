@@ -11,15 +11,15 @@ import numpy as np
 import cv2
 from ..utils.model_utils import evaluate, visualize,  train_all_epochs
 from torch.utils.tensorboard import SummaryWriter
-
+from torch.optim import *
 
 class ClassificationModel(ModelBase):
-    def __init__(self, name, nc, criterions, metrics, montitor_metric):
+    def __init__(self, name, nc, criterions, metrics, montitor_metric, optimizer, lr):
         self.writer = SummaryWriter(r"E:\source\repos\VisualDL\tensorboard_log")
         self.name = name
         self.model = timm.create_model(name, pretrained=True, num_classes = nc)
-       
-        
+        #print(f"{optimizer}({self.model.parameters()}, lr={lr}))
+        self.optimizer = eval(f"{optimizer}(self.model.parameters(), lr={lr})")
         self.transform = None #TODO: Read transform from config
         self.criterions = [eval(name)() for name in criterions]
         self.metrics = metrics
@@ -38,7 +38,7 @@ class ClassificationModel(ModelBase):
             epochs (int, optional): The number of epochs. Defaults to 1.
         """
         train_all_epochs(model = self.model, train_loader = train_loader, valid_loader=valid_loader, test_loader = test_loader, 
-        epochs=epochs, criterions=self.criterions, metrics = self.metrics, writer=self.writer, name=self.name, monitor_metric = self.monitor_metric)
+        epochs=epochs, criterions=self.criterions, metrics = self.metrics, writer=self.writer, name=self.name, monitor_metric = self.monitor_metric, optimizer=self.optimizer)
 
     def test(self, test_loader):
         pass
