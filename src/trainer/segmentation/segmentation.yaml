@@ -1,26 +1,34 @@
-type: "classification"
+type: "segmentation"
 
 data:
-  train: "E:/source/repos/VisualDL/tests/classification"
-  valid: "E:/source/repos/VisualDL/tests/classification"
-  test: ""
+  train: "E:/downloads/archive/train"
+  valid: "E:/downloads/archive/test"
+  test: "E:/downloads/archive/test"
+
+# anchors
+models:
+  - backbone: "efficientnet_b0"
+    decoder: "UNet"
+  - backbone: "resnet50"
+    decoder: "Unet"
+  - backbone: "efficientnet_b3"
+    decoder: "Unet"
 
 settings:
   nc: 2
-  epochs: 10
-  optimizer: "Adam"
+  epochs: 3
+  optimizer: "AdamW"
   lr: 0.0001
   workers: 0
   batch_size:
-    - 1
-    - 1
-    - 1
-  criterions:
+    - 32
+    - 32
+    - 32
+  gradient_accumulation: 64
+  criterions: #criterions defined in segmentation_models_pytorch.utils.losses can be used
     - "CrossEntropyLoss"
-
+  lr: 0.0001
   tensorboard_log_dir: "tensorboard_logs"
-
-
   metrics:
     - name: "F1"
       params: "num_classes=2"
@@ -28,19 +36,21 @@ settings:
       params: ""
     - name: "CohenKappa"
       params: "num_classes=2"
-
   monitor_metric: 
     name: "Accuracy"
-    params: ""
+    params: "num_classes=2"
 
-        
-    
-transform:
-  bub: 3
-# anchors
-model_names:
-  - "resnet26"
-  - "resnet101"
-  - "resnet50"
+transforms:
+  width: 256
+  height: 256
+  h_flip: 0.5
+  v_flip: 0.5
+  brightness: 0.2
+  contrast: 0.2
+  rgb_shift : 0.2
+  random_shadow: 0.2
+  blur: 0.2
+
+
   
 

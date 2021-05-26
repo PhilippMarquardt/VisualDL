@@ -80,7 +80,7 @@ def evaluate(model, valid_bar, criterions, criterion_scaling, writer, metric, de
     assert writer is not None
     assert metric is not None
     metric.reset()
-
+    model.eval()
     total_loss = 0.0    
     for cnt, (x,y) in enumerate(valid_bar):
         x = x.to(device)
@@ -107,10 +107,12 @@ def evaluate(model, valid_bar, criterions, criterion_scaling, writer, metric, de
         current_loss = total_loss / float((cnt+1))
         valid_bar.set_description(metric_str % tuple([epoch, current_loss, metric_value]))   
     metric.reset() 
+    model.train()
 
 def test_trainer(models: list, test_loaders, metric):
     assert test_loaders
     assert metric
+    
     device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
     log_dict = {}
     combinations = get_all_combinations(models)
@@ -122,6 +124,7 @@ def test_trainer(models: list, test_loaders, metric):
             x = x.to(device)
             y = y.to(device)
             for model in model_comb:
+                model.model.eval()
                 with torch.cuda.amp.autocast():
                     with torch.no_grad():
                         if predictions is None:

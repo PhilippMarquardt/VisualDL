@@ -14,11 +14,10 @@ from torch.utils.tensorboard import SummaryWriter
 from torch.optim import *
 
 class ClassificationModel(ModelBase):
-    def __init__(self, name, nc, criterions, metrics, montitor_metric, optimizer, lr, accumulate_batch):
-        self.writer = SummaryWriter(r"E:\source\repos\VisualDL\tensorboard_log")
+    def __init__(self, name, nc, criterions, metrics, montitor_metric, optimizer, lr, accumulate_batch, tensorboard_dir):
+        self.writer = SummaryWriter(tensorboard_dir)
         self.name = name
         self.model = timm.create_model(name, pretrained=True, num_classes = nc)
-        #print(f"{optimizer}({self.model.parameters()}, lr={lr}))
         self.optimizer = eval(f"{optimizer}(self.model.parameters(), lr={lr})")
         self.transform = None #TODO: Read transform from config
         self.criterions = [eval(name)() for name in criterions]

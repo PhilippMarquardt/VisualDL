@@ -50,6 +50,9 @@ def get_all_combinations(li:list):
     return list(chain(*map(lambda x: combinations(li, x), range(1, len(li)+1))))
 
 
+def parse_classification_config(config_path):
+    pass
+
 def get_transform_from_config(cfg:dict):
     """Parses the config into Albumentation transforms.
 
