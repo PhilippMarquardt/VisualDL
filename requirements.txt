@@ -47,3 +47,5 @@ torchmetrics
 tensorboard
 
 ttach
+
+git+https://github.com/PhilippMarquardt/segmentation_models.pytorch.git
