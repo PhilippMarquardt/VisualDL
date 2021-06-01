@@ -21,7 +21,6 @@ def train_all_epochs(model, train_loader, valid_loader, test_loader, epochs, cri
         criterion_scaling = [1] * len(criterions)
     device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
     scaler = torch.cuda.amp.GradScaler(enabled = False if device == 'cpu' else True)
-    optimizer = torch.optim.Adam(model.parameters(),lr=0.0001)
     model = model.to(device)
     accumulate_every = accumulate_batch // train_loader.batch_size
     for epoch in range(epochs):
@@ -42,7 +41,6 @@ def train_one_epoch(model, training_bar, criterions, criterion_scaling, average_
     for cnt, (x,y) in enumerate(training_bar):
         x = x.to(device)
         y = y.to(device)
-        
         #TODO implement average_outputs
         with torch.cuda.amp.autocast():
             loss = None

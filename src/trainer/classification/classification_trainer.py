@@ -28,7 +28,7 @@ class ClassificationTrainer(TrainerBase):
         assert len(self.cfg['settings']['metrics']) > 0, "You must provide atleast one metric"
         assert all([self.cfg['settings']['gradient_accumulation'] % batch == 0 for batch in self.cfg['settings']['batch_size']])
         logging.info(f"Training classification model with the following config:\n {pprint.pformat(self.cfg)}")
-
+        
 
         self.batch_sizes = self.cfg['settings']['batch_size']
         self.models = [ClassificationModel(name, self.cfg['settings']['nc'], self.cfg['settings']['criterions'],

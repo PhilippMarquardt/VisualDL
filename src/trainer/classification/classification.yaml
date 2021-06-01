@@ -7,14 +7,13 @@ data:
 
 # anchors
 model_names:
-  - "efficientnet_b0"
   - "resnet50"
-  - "efficientnet_b3"
-
+  - "resnest50d"
+  - "resnet26"
 settings:
   nc: 2
-  epochs: 1
-  optimizer: "AdamW"
+  epochs: 3
+  optimizer: "Adam"
   lr: 0.0001
   workers: 0
   batch_size:
@@ -24,7 +23,6 @@ settings:
   gradient_accumulation: 64
   criterions:
     - "CrossEntropyLoss"
-  lr: 0.0001
   tensorboard_log_dir: "tensorboard_logs"
   metrics:
     - name: "F1"
