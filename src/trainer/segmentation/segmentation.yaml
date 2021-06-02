@@ -7,35 +7,31 @@ data:
 
 # anchors
 models:
-  - backbone: "timm-efficientnet-b0"
+  - backbone: "timm-skresnext50_32x4d"
     decoder: "Unet"
   - backbone: "resnet50"
     decoder: "Unet"
-  - backbone: "resnet50"
+  - backbone: "timm-skresnext50_32x4d"
     decoder: "DeepLabV3Plus"
 
 settings:
   nc: 2
   in_channels: 3
-  epochs: 3
+  epochs: 15
   optimizer: "AdamW"
   lr: 0.0001
   workers: 0
   batch_size:
-    - 32
-    - 32
-    - 32
-  gradient_accumulation: 64
+    - 4
+    - 4
+    - 4
+  gradient_accumulation: 32
   criterions: #criterions defined in segmentation_models_pytorch.utils.losses can be used
     - "CrossEntropyLoss"
   lr: 0.0001
   tensorboard_log_dir: "tensorboard_logs"
   metrics:
-    - name: "F1"
-      params: "num_classes=2"
     - name: "Accuracy"
-      params: ""
-    - name: "CohenKappa"
       params: "num_classes=2"
   monitor_metric: 
     name: "Accuracy"

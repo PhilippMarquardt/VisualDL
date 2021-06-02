@@ -1,4 +1,5 @@
 from src.models.model_base import ModelBase
+from src.utils.model_utils import *
 import segmentation_models_pytorch as smp
 from torch.utils.data.dataloader import DataLoader
 from torch.nn import *
@@ -31,7 +32,8 @@ class SegmentationModel(ModelBase):
             test_loader (DataLoader, optional): The test DataLoader. Defaults to None.
             epochs (int, optional): The number of epochs. Defaults to 1.
         """
-        pass
+        train_all_epochs(model = self.model, train_loader = train_loader, valid_loader=valid_loader, test_loader = test_loader, 
+        epochs=epochs, criterions=self.criterions, metrics = self.metrics, writer=self.writer, name=f"{self.encoder_name}, {self.decoder_name}", monitor_metric = self.monitor_metric, optimizer=self.optimizer, accumulate_batch=self.accumulate_batch)
 
     def test(self, test_loader):
         pass
