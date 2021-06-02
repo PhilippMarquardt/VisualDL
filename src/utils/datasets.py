@@ -4,7 +4,7 @@ import itertools
 from skimage import io
 import torch
 import albumentations as A
-
+import numpy as np
 class ClassificationDataset(Dataset):
     def __init__(self, root_folder, transform):
         super().__init__()
@@ -19,7 +19,7 @@ class ClassificationDataset(Dataset):
         
     def __getitem__(self, idx):
         img_path, label = self.image_class_tuple[idx]
-        img = io.imread(img_path)
+        img = io.imread(img_path).astype(np.float32)
         transform = self.transform
         if transform:
             img = transform(image = img)['image']
@@ -40,8 +40,8 @@ class SegmentationDataset(Dataset):
         return len(self.train_images)
 
     def __getitem__(self, idx):
-        img = io.imread(self.train_images[idx])
-        mask = io.imread(self.train_masks[idx], as_gray = True)
+        img = io.imread(self.train_images[idx]).astype(np.float32)
+        mask = io.imread(self.train_masks[idx], as_gray = True).astype(np.float32)
         img = img/255.
         if self.transform:
             transformed = self.transform(image = img, mask = mask)
