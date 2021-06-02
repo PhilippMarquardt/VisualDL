@@ -43,10 +43,10 @@ class SegmentationDataset(Dataset):
         img = io.imread(self.train_images[idx])
         mask = io.imread(self.train_masks[idx], as_gray = True)
         img = img/255.
-        #if self.transform:
-        #    transformed = self.transform(image = img, mask = mask)
-        #    img = transformed["image"]
-        #    mask = transformed["mask"]
+        if self.transform:
+            transformed = self.transform(image = img, mask = mask)
+            img = transformed["image"]
+            mask = transformed["mask"]
         return torch.tensor(img, dtype = torch.float).permute(2, 0, 1), torch.tensor(mask, dtype = torch.long)
 
 
