@@ -1,21 +1,22 @@
 type: "segmentation"
 
 data:
-  train: "E:/downloads/archive/train"
-  valid: "E:/downloads/archive/test"
-  test: "E:/downloads/archive/test"
+  train: "E:/source/repos/VisualDL/tests/segmentation/train"
+  valid: "E:/source/repos/VisualDL/tests/segmentation/train"
+  test: "E:/source/repos/VisualDL/tests/segmentation/train"
 
 # anchors
 models:
-  - backbone: "efficientnet_b0"
-    decoder: "UNet"
+  - backbone: "timm-efficientnet-b0"
+    decoder: "Unet"
   - backbone: "resnet50"
     decoder: "Unet"
-  - backbone: "efficientnet_b3"
-    decoder: "Unet"
+  - backbone: "resnet50"
+    decoder: "DeepLabV3Plus"
 
 settings:
   nc: 2
+  in_channels: 3
   epochs: 3
   optimizer: "AdamW"
   lr: 0.0001

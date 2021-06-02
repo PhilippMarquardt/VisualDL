@@ -6,11 +6,11 @@ from torch.optim import *
 from torch.utils.tensorboard import SummaryWriter
 
 class SegmentationModel(ModelBase):
-    def __init__(self, encoder_name, decoder_name,nc, in_channels, criterions, metrics, montitor_metric, optimizer, lr, accumulate_batch, tensorboard_dir):
+    def __init__(self, encoder_name, decoder_name, nc, in_channels, criterions, metrics, montitor_metric, optimizer, lr, accumulate_batch, tensorboard_dir):
         self.encoder_name = encoder_name
         self.decoder_name = decoder_name
+        print(f'smp.{decoder_name}(encoder_name="{encoder_name}", encoder_weights="imagenet", in_channels={in_channels}, classes = {nc})')
         self.model = eval(f'smp.{decoder_name}(encoder_name="{encoder_name}", encoder_weights="imagenet", in_channels={in_channels}, classes = {nc})')
-
         self.writer = SummaryWriter(tensorboard_dir)
         self.optimizer = eval(f"{optimizer}(self.model.parameters(), lr={lr})")
         self.transform = None #TODO: Read transform from config

@@ -6,6 +6,7 @@ from src.utils.datasets import *
 from src.utils.utils import *
 from src.models.classification_model import *
 from src.trainer.classification.classification_trainer import *
+from src.trainer.segmentation.segmentation_trainer import *
 import logging
 
 
@@ -22,4 +23,6 @@ logging.getLogger().name = ""
 #t.get_visualization()
 #di = t.test()
 #print(di)
-t = SegmentationModel("resnet34", "Unet", 3, 3, None, None, None, None, None, None, None)
+#t = SegmentationModel("resnet34", "Unet", 3, 3, None, None, None, None, None, None, None)
+t = SegmentationTrainer(r"E:\source\repos\VisualDL\src\trainer\segmentation\segmentation.yaml")
+t.train()
