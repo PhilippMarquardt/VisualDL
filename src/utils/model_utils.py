@@ -5,7 +5,7 @@ import cv2
 import numpy as np
 from tqdm import tqdm
 from .utils import get_all_combinations
-
+import logging
 def visualize(model, layer, image):
         cam = GradCAM(model=model, target_layer=layer, use_cuda=torch.cuda.is_available())
         heatmap = cv2.applyColorMap(np.uint8(255 * cam(input_tensor=image.unsqueeze(0))[0,:]), cv2.COLORMAP_JET)
@@ -46,10 +46,13 @@ def train_one_epoch(model, training_bar, criterions, criterion_scaling, average_
             loss = None
             predictions = model(x)
             for cr, scal in zip(criterions, criterion_scaling):
+                cr = torch.nn.CrossEntropyLoss(reduction="none")
                 if loss is None:
                     loss = cr(predictions, y) / scal
                 else:
                     loss += cr(predictions, y) / scal
+            #TODO: add weight map here
+            loss = loss.mean()
             predictions = torch.argmax(predictions, 1)
         for metric in metrics:
             metric.update(predictions.detach().cpu(), y.detach().cpu())

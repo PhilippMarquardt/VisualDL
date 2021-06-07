@@ -13,7 +13,7 @@ models:
     decoder: "Unet"
   - backbone: "timm-skresnext50_32x4d"
     decoder: "DeepLabV3Plus"
-
+    
 settings:
   nc: 2
   in_channels: 3
