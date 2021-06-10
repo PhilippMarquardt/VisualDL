@@ -26,3 +26,4 @@ logging.getLogger().name = ""
 #t = SegmentationModel("resnet34", "Unet", 3, 3, None, None, None, None, None, None, None)
 t = SegmentationTrainer(r"E:\source\repos\VisualDL\src\trainer\segmentation\segmentation.yaml")
 t.train()
+print(t.test())

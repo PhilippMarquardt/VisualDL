@@ -19,6 +19,7 @@ class SegmentationModel(ModelBase):
         self.metrics = metrics
         self.monitor_metric = montitor_metric
         self.accumulate_batch = accumulate_batch
+        self.name = f"{encoder_name} - {decoder_name}"
 
     def __call__(self, x):
         return self.model(x)

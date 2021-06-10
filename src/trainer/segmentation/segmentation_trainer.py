@@ -57,7 +57,7 @@ class SegmentationTrainer(TrainerBase):
     def train(self):
         logging.info("Starting training training!")
         for cnt, (train_loader, valid_loader, test_loader, model) in enumerate(zip(self.train_loaders, self.valid_loaders, self.test_laoders, self.models)):
-            #logging.info(f"Training {pprint.pformat(self.cfg['models'][cnt]["backbone"])}")
+            logging.info(f"Training {model.name}")
             model.train(train_loader, valid_loader, test_loader, self.cfg['settings']['epochs']) 
         self.trained = True
     

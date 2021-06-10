@@ -13,11 +13,11 @@ models:
     decoder: "Unet"
   - backbone: "timm-skresnext50_32x4d"
     decoder: "DeepLabV3Plus"
-    
+
 settings:
   nc: 2
   in_channels: 3
-  epochs: 15
+  epochs: 1
   optimizer: "AdamW"
   lr: 0.0001
   workers: 0
