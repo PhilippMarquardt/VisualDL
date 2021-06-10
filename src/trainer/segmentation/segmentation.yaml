@@ -9,8 +9,8 @@ data:
 models:
   - backbone: "timm-skresnext50_32x4d"
     decoder: "Unet"
-  - backbone: "resnet50"
-    decoder: "Unet"
+  - backbone: "timm-skresnext50_32x4d"
+    decoder: "Unet++"
   - backbone: "timm-skresnext50_32x4d"
     decoder: "DeepLabV3Plus"
 
