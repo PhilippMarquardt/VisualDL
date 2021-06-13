@@ -1,52 +1,50 @@
 type: "segmentation"
 
 data:
-  train: "E:/source/repos/VisualDL/tests/segmentation/train"
-  valid: "E:/source/repos/VisualDL/tests/segmentation/train"
-  test: "E:/source/repos/VisualDL/tests/segmentation/train"
+  train: "C:/Users/phili/Downloads/Telegram Desktop/Cells/Cells/train"
+  valid: "C:/Users/phili/Downloads/Telegram Desktop/Cells/Cells/valid"
+  test: "C:/Users/phili/Downloads/Telegram Desktop/Cells/Cells/train"
 
 # anchors
 models:
-  - backbone: "timm-skresnext50_32x4d"
+  - backbone: "efficientnet-b0"
     decoder: "Unet"
-  - backbone: "timm-skresnext50_32x4d"
-    decoder: "Unet++"
-  - backbone: "timm-skresnext50_32x4d"
-    decoder: "DeepLabV3Plus"
+  - backbone: "timm-resnest50d"
+    decoder: "Unet"
+  - backbone: "resnext50_32x4d"
+    decoder: "Unet"
 
 settings:
   nc: 2
   in_channels: 3
-  epochs: 1
-  optimizer: "AdamW"
-  lr: 0.0001
+  epochs: 150
+  optimizer: "Adam"
+  lr: 0.00001
   workers: 0
   batch_size:
-    - 4
-    - 4
-    - 4
-  gradient_accumulation: 32
+    - 8
+    - 8
+    - 8
+  gradient_accumulation: 8
   criterions: #criterions defined in segmentation_models_pytorch.utils.losses can be used
     - "CrossEntropyLoss"
+    - "DiceLoss"
   lr: 0.0001
   tensorboard_log_dir: "tensorboard_logs"
   metrics:
     - name: "Accuracy"
       params: "num_classes=2"
-  monitor_metric: 
-    name: "Accuracy"
-    params: "num_classes=2"
 
 transforms:
   width: 256
   height: 256
   h_flip: 0.5
   v_flip: 0.5
-  brightness: 0.2
-  contrast: 0.2
-  rgb_shift : 0.2
-  random_shadow: 0.2
-  blur: 0.2
+  brightness: 0.0
+  contrast: 0.0
+  rgb_shift : 0.0
+  random_shadow: 0.0
+  blur: 0.0
 
 
   

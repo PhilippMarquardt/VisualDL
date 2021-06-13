@@ -22,7 +22,6 @@ class ClassificationTrainer(TrainerBase):
     def __init__(self, cfg_path:dict):
         self.cfg = parse_yaml(cfg_path)
         self.trained = False
-        assert self.cfg['settings']['monitor_metric']['name'] != '', "You need to specify a metric that is monitored"
         assert self.cfg['type'] == "classification", "Provided yaml file must be a classification model config!"
         assert len(self.cfg['settings']['batch_size']) == len(self.cfg['model_names'])
         assert len(self.cfg['settings']['metrics']) > 0, "You must provide atleast one metric"
@@ -33,7 +32,6 @@ class ClassificationTrainer(TrainerBase):
         self.batch_sizes = self.cfg['settings']['batch_size']
         self.models = [ClassificationModel(name, self.cfg['settings']['nc'], self.cfg['settings']['criterions'],
                       [eval(f"{metric['name']} ({metric['params']})") for metric in self.cfg['settings']['metrics']],
-                       eval(f"{self.cfg['settings']['monitor_metric']['name']}({self.cfg['settings']['monitor_metric']['params']})"),
                        self.cfg['settings']['optimizer'], self.cfg['settings']['lr'],
                        self.cfg['settings']['gradient_accumulation'],
                        self.cfg['settings']['tensorboard_log_dir']) for name in self.cfg['model_names']]
@@ -58,7 +56,7 @@ class ClassificationTrainer(TrainerBase):
     
     def test(self):
         assert self.trained, "Must be trained first!"
-        return test_trainer(self.models, self.test_loaders, self.models[0].monitor_metric)
+        return test_trainer(self.models, self.test_loaders, self.models[0].metrics[0])
 
     def get_visualization(self):
         for cnt, (x,y) in enumerate(self.train_loaders[0]):

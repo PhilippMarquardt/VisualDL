@@ -15,7 +15,7 @@ def visualize(model, layer, image):
         return cam
 
 
-def train_all_epochs(model, train_loader, valid_loader, test_loader, epochs, criterions, metrics, writer, optimizer, accumulate_batch, criterion_scaling = None, average_outputs = False, name:str = "", monitor_metric = None):
+def train_all_epochs(model, train_loader, valid_loader, test_loader, epochs, criterions, metrics, writer, optimizer, accumulate_batch, criterion_scaling = None, average_outputs = False, name:str = ""):
     
     if criterion_scaling is None:
         criterion_scaling = [1] * len(criterions)
@@ -23,20 +23,32 @@ def train_all_epochs(model, train_loader, valid_loader, test_loader, epochs, cri
     scaler = torch.cuda.amp.GradScaler(enabled = False if device == 'cpu' else True)
     model = model.to(device)
     accumulate_every = accumulate_batch // train_loader.batch_size
+    best_metric = float("inf")
+    cnt = 0
     for epoch in range(epochs):
         training_bar = tqdm(train_loader)
         train_one_epoch(model, training_bar, criterions, criterion_scaling, average_outputs, device, epoch, optimizer, scaler, metrics, writer, name, accumulate_every)
         if valid_loader:
             valid_bar = tqdm(valid_loader)
-            evaluate(model, valid_bar, criterions=criterions, criterion_scaling=criterion_scaling, writer=writer, metric=monitor_metric, device=device,
+            tmp = evaluate(model, valid_bar, criterions=criterions, criterion_scaling=criterion_scaling, writer=writer, metrics=metrics, device=device,
             epoch=epoch, name = name, average_outputs=False)
+            if best_metric > tmp:
+                best_metric = tmp
+                torch.save(model.state_dict(), name + ".pt")
+                cnt = 0
+            else:
+                cnt +=1
+            if cnt >= 7:
+                model.load_state_dict(torch.load(name + ".pt"))
+                return
+                
 
          
         
 def train_one_epoch(model, training_bar, criterions, criterion_scaling, average_outputs = False, device = None, epoch = 0, optimizer = None, scaler = None, metrics = None, writer = None, name:str = "", accumulate_every = 1):
     for metric in metrics:
         metric.reset() 
-    
+    total_metric_values = [0.0] * len(metrics)
     total_loss = 0.0    
     for cnt, (x,y) in enumerate(training_bar):
         x = x.to(device)
@@ -46,30 +58,34 @@ def train_one_epoch(model, training_bar, criterions, criterion_scaling, average_
             loss = None
             predictions = model(x)
             for cr, scal in zip(criterions, criterion_scaling):
-                cr = torch.nn.CrossEntropyLoss(reduction="none")
+                #cr = torch.nn.CrossEntropyLoss(reduction="none")
                 if loss is None:
-                    loss = cr(predictions, y) / scal
+                    loss = cr(predictions, y) 
                 else:
-                    loss += cr(predictions, y) / scal
+                    loss += cr(predictions, y) 
             #TODO: add weight map here
-            loss = loss.mean()
+            #loss = loss.mean()
             predictions = torch.argmax(predictions, 1)
         for metric in metrics:
             metric.update(predictions.detach().cpu(), y.detach().cpu())
         scaler.scale(loss).backward()
         #gradient accumulation
-        if cnt > 0 and cnt % accumulate_every == 0:
+        if (cnt > 0 and cnt % accumulate_every == 0) or cnt == len(training_bar) - 1:
             scaler.step(optimizer)
             scaler.update()
             model.zero_grad()
+
         metric_str = "Train: Epoch:%i, Loss:%.4f, " + "".join([metric.__class__.__name__ + ":%.4f, " for metric in metrics ])
-        epoch_values = [metric.compute() for metric in metrics]
+        total_metric_values = [sum(x) for x in zip(total_metric_values,[metric.compute().item() for metric in metrics])]
+        epoch_values = [i / (cnt+1) for i in total_metric_values]
+
+
         for metric, val in zip(metrics, epoch_values):
             writer.add_scalar(f"train/train-{name}-{metric.__class__.__name__}", val, epoch)
         
         total_loss += loss.item()
         current_loss = total_loss / float((cnt+1))
-        training_bar.set_description(metric_str % tuple([epoch, current_loss]+epoch_values))   
+        training_bar.set_description(metric_str % tuple([epoch+1, current_loss]+epoch_values))   
 
     
     for metric in metrics:
@@ -77,12 +93,14 @@ def train_one_epoch(model, training_bar, criterions, criterion_scaling, average_
                 
                 
     
-def evaluate(model, valid_bar, criterions, criterion_scaling, writer, metric, device, epoch, name, average_outputs = False):
+def evaluate(model, valid_bar, criterions, criterion_scaling, writer, metrics, device, epoch, name, average_outputs = False):
     assert writer is not None
-    assert metric is not None
-    metric.reset()
+    assert metrics is not None
+    for metric in metrics:
+        metric.reset()
     model.eval()
     total_loss = 0.0    
+    total_metric_values = [0.0] * len(metrics)
     for cnt, (x,y) in enumerate(valid_bar):
         x = x.to(device)
         y = y.to(device)
@@ -98,17 +116,25 @@ def evaluate(model, valid_bar, criterions, criterion_scaling, writer, metric, de
                 else:
                     loss += cr(predictions, y) / scal
             predictions = torch.argmax(predictions, 1)
-        metric.update(predictions.detach().cpu(), y.detach().cpu())
+        for metric in metrics:
+            metric.update(predictions.detach().cpu(), y.detach().cpu())
         
-        metric_str = f"Valid: Epoch:%i, Loss:%.4f, {metric.__class__.__name__}:%.4f"
-        metric_value = metric.compute()
-        writer.add_scalar(f"valid/valid-{name}-{metric.__class__.__name__}", metric_value, epoch)
+        metric_str = "Valid: Epoch:%i, Loss:%.4f, " + "".join([metric.__class__.__name__ + ":%.4f, " for metric in metrics ])
+        total_metric_values = [sum(x) for x in zip(total_metric_values,[metric.compute().item() for metric in metrics])]
+        epoch_values = [i / (cnt+1) for i in total_metric_values]
+
+        for metric, val in zip(metrics, epoch_values):
+            writer.add_scalar(f"valid/valid-{name}-{metric.__class__.__name__}", val, epoch)
         
         total_loss += loss.item()
         current_loss = total_loss / float((cnt+1))
-        valid_bar.set_description(metric_str % tuple([epoch, current_loss, metric_value]))   
-    metric.reset() 
+        
+        valid_bar.set_description(metric_str % tuple([epoch+1, current_loss]+epoch_values))     
+        
+    for metric in metrics:
+        metric.reset()
     model.train()
+    return total_loss/len(valid_bar)
 
 def test_trainer(models: list, test_loaders, metric):
     assert test_loaders
