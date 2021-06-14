@@ -17,7 +17,7 @@ models:
 settings:
   nc: 2
   in_channels: 3
-  epochs: 150
+  epochs: 1
   optimizer: "Adam"
   lr: 0.00001
   workers: 0

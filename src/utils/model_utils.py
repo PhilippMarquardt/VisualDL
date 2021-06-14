@@ -48,7 +48,6 @@ def train_all_epochs(model, train_loader, valid_loader, test_loader, epochs, cri
 def train_one_epoch(model, training_bar, criterions, criterion_scaling, average_outputs = False, device = None, epoch = 0, optimizer = None, scaler = None, metrics = None, writer = None, name:str = "", accumulate_every = 1):
     for metric in metrics:
         metric.reset() 
-    total_metric_values = [0.0] * len(metrics)
     total_loss = 0.0    
     for cnt, (x,y) in enumerate(training_bar):
         x = x.to(device)
@@ -76,8 +75,7 @@ def train_one_epoch(model, training_bar, criterions, criterion_scaling, average_
             model.zero_grad()
 
         metric_str = "Train: Epoch:%i, Loss:%.4f, " + "".join([metric.__class__.__name__ + ":%.4f, " for metric in metrics ])
-        total_metric_values = [sum(x) for x in zip(total_metric_values,[metric.compute().item() for metric in metrics])]
-        epoch_values = [i / (cnt+1) for i in total_metric_values]
+        epoch_values = [metric.compute().item() for metric in metrics]
 
 
         for metric, val in zip(metrics, epoch_values):
@@ -100,7 +98,6 @@ def evaluate(model, valid_bar, criterions, criterion_scaling, writer, metrics, d
         metric.reset()
     model.eval()
     total_loss = 0.0    
-    total_metric_values = [0.0] * len(metrics)
     for cnt, (x,y) in enumerate(valid_bar):
         x = x.to(device)
         y = y.to(device)
@@ -120,8 +117,7 @@ def evaluate(model, valid_bar, criterions, criterion_scaling, writer, metrics, d
             metric.update(predictions.detach().cpu(), y.detach().cpu())
         
         metric_str = "Valid: Epoch:%i, Loss:%.4f, " + "".join([metric.__class__.__name__ + ":%.4f, " for metric in metrics ])
-        total_metric_values = [sum(x) for x in zip(total_metric_values,[metric.compute().item() for metric in metrics])]
-        epoch_values = [i / (cnt+1) for i in total_metric_values]
+        epoch_values = [metric.compute().item() for metric in metrics]
 
         for metric, val in zip(metrics, epoch_values):
             writer.add_scalar(f"valid/valid-{name}-{metric.__class__.__name__}", val, epoch)
@@ -136,15 +132,15 @@ def evaluate(model, valid_bar, criterions, criterion_scaling, writer, metrics, d
     model.train()
     return total_loss/len(valid_bar)
 
-def test_trainer(models: list, test_loaders, metric):
+def test_trainer(models: list, test_loaders, metrics):
     assert test_loaders
-    assert metric
-    
+    assert metrics
     device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
     log_dict = {}
-    combinations = get_all_combinations(models)
+    combinations = get_all_combinations(models) #get all permutations of the model list
     for cnt, model_comb in enumerate(tqdm(combinations)):
-        metric.reset()
+        for metric in metrics:
+            metric.reset()
         names = ",".join([x.name for x in model_comb])    
         for (x,y) in test_loaders[0]:
             predictions = None 
@@ -159,8 +155,8 @@ def test_trainer(models: list, test_loaders, metric):
                         else:
                             predictions += model(x).detach().cpu()
             prediction = torch.argmax(predictions, 1)
-            metric.update(prediction, y.detach().cpu())
-        val = metric.compute()
-        log_dict[names] = val
+            for metric in metrics:
+                metric.update(prediction.detach().cpu(), y.detach().cpu())
+        log_dict[names] = [metric.compute().item() for metric in metrics]
     return log_dict
                 

@@ -61,7 +61,7 @@ class SegmentationTrainer(TrainerBase):
     
     def test(self):
         assert self.trained, "Must be trained first!"
-        return test_trainer(self.models, self.test_loaders, self.models[0].metrics[0])
+        return test_trainer(self.models, self.test_loaders, self.models[0].metrics)
 
     def get_visualization(self):
         for cnt, (x,y) in enumerate(self.train_loaders[0]):
