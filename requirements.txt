@@ -48,5 +48,4 @@ tensorboard
 
 ttach
 
-git+https://github.com/PhilippMarquardt/segmentation_models.pytorch.git
-git+https://github.com/PhilippMarquardt/yolov5.git
+git+https://github.com/JulienMaille/segmentation_models.pytorch.git
