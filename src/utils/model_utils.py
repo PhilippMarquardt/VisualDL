@@ -4,7 +4,8 @@ import torch
 import cv2
 import numpy as np
 from tqdm import tqdm
-from .utils import get_all_combinations
+from .utils import get_all_combinations, get_weight_map
+from torchmetrics import ConfusionMatrix
 import logging
 def visualize(model, layer, image):
         cam = GradCAM(model=model, target_layer=layer, use_cuda=torch.cuda.is_available())
@@ -16,7 +17,7 @@ def visualize(model, layer, image):
 
 
 def train_all_epochs(model, train_loader, valid_loader, test_loader, epochs, criterions, metrics, writer, optimizer, accumulate_batch, criterion_scaling = None, average_outputs = False, name:str = ""):
-    
+    #criterions = [torch.nn.CrossEntropyLoss(reduction="none")]
     if criterion_scaling is None:
         criterion_scaling = [1] * len(criterions)
     device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
@@ -38,7 +39,8 @@ def train_all_epochs(model, train_loader, valid_loader, test_loader, epochs, cri
                 cnt = 0
             else:
                 cnt +=1
-            if cnt >= 7:
+            if cnt >= 75:
+                torch.save(model.state_dict(), name + "last.pt")
                 model.load_state_dict(torch.load(name + ".pt"))
                 return
                 
@@ -63,7 +65,13 @@ def train_one_epoch(model, training_bar, criterions, criterion_scaling, average_
                 else:
                     loss += cr(predictions, y) 
             #TODO: add weight map here
-            #loss = loss.mean()
+
+            
+            #weight_maps = get_weight_map(y.detach().cpu().numpy() * 255.).to(device)
+            #loss *= weight_maps
+
+
+            loss = loss.mean()
             predictions = torch.argmax(predictions, 1)
         for metric in metrics:
             metric.update(predictions.detach().cpu(), y.detach().cpu())
@@ -112,10 +120,10 @@ def evaluate(model, valid_bar, criterions, criterion_scaling, writer, metrics, d
                     loss = cr(predictions, y) / scal
                 else:
                     loss += cr(predictions, y) / scal
+            loss = loss.mean()
             predictions = torch.argmax(predictions, 1)
         for metric in metrics:
             metric.update(predictions.detach().cpu(), y.detach().cpu())
-        
         metric_str = "Valid: Epoch:%i, Loss:%.4f, " + "".join([metric.__class__.__name__ + ":%.4f, " for metric in metrics ])
         epoch_values = [metric.compute().item() for metric in metrics]
 
@@ -154,9 +162,9 @@ def test_trainer(models: list, test_loaders, metrics):
                             predictions = model(x).detach().cpu()
                         else:
                             predictions += model(x).detach().cpu()
-            prediction = torch.argmax(predictions, 1)
+            predictions = torch.argmax(predictions, 1)
             for metric in metrics:
-                metric.update(prediction.detach().cpu(), y.detach().cpu())
+                metric.update(predictions.detach().cpu(), y.detach().cpu())
         log_dict[names] = [metric.compute().item() for metric in metrics]
     return log_dict
                 

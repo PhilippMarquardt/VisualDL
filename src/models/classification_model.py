@@ -19,7 +19,7 @@ class ClassificationModel(ModelBase):
         self.name = name
         self.model = timm.create_model(name, pretrained=True, num_classes = nc)
         self.optimizer = eval(f"{optimizer}(self.model.parameters(), lr={lr})")
-        self.criterions = [eval(name)() for name in criterions]
+        self.criterions = [eval(f"{name}(reduction='none')") for name in criterions]
         self.metrics = metrics
         self.accumulate_batch = accumulate_batch
 

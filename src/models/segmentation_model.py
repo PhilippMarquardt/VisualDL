@@ -2,9 +2,10 @@ from src.models.model_base import ModelBase
 from src.utils.model_utils import *
 import segmentation_models_pytorch as smp
 from torch.utils.data.dataloader import DataLoader
-from pytorch_toolbelt.losses import *
+from ..utils.losses import *
 from torch.nn import *
 from torch.optim import *
+from uformer_pytorch import Uformer
 from torch.utils.tensorboard import SummaryWriter
 
 class SegmentationModel(ModelBase):
@@ -12,11 +13,13 @@ class SegmentationModel(ModelBase):
         self.encoder_name = encoder_name
         self.decoder_name = decoder_name
         print(f'smp.{decoder_name}(encoder_name="{encoder_name}", encoder_weights="imagenet", in_channels={in_channels}, classes = {nc})')
+
         self.model = eval(f'smp.{decoder_name}(encoder_name="{encoder_name}", encoder_weights="imagenet", in_channels={in_channels}, classes = {nc})')
+
         self.writer = SummaryWriter(tensorboard_dir)
         self.optimizer = eval(f"{optimizer}(self.model.parameters(), lr={lr})")
         self.bb = smp.losses.DiceLoss(mode="multiclass")
-        self.criterions = [eval(name)() if name not in ["DiceLoss"] else eval(f"{name}(mode='multiclass')") for name in criterions]
+        self.criterions = [eval(f"{name}(reduction='none')") if name not in ["DiceLoss"] else eval(f"{name}(mode='multiclass')") for name in criterions]
         self.metrics = metrics
         self.accumulate_batch = accumulate_batch
         self.name = f"{encoder_name} - {decoder_name}"

@@ -1,43 +1,40 @@
 type: "segmentation"
 
 data:
-  train: "C:/Users/phili/Downloads/Telegram Desktop/Cells/Cells/train"
-  valid: "C:/Users/phili/Downloads/Telegram Desktop/Cells/Cells/valid"
-  test: "C:/Users/phili/Downloads/Telegram Desktop/Cells/Cells/train"
+  train: "C:/Users/phili/Downloads/Telegram Desktop/Cells/train"
+  valid: "C:/Users/phili/Downloads/Telegram Desktop/Cells/valid"
+  test: "C:/Users/phili/Downloads/Telegram Desktop/Cells/valid"
 
 # anchors
 models:
-  - backbone: "efficientnet-b0"
-    decoder: "Unet"
-  - backbone: "timm-resnest50d"
-    decoder: "Unet"
-  - backbone: "resnext50_32x4d"
-    decoder: "Unet"
+
+
+  - backbone: "efficientnet-b7"
+    decoder: "UnetPlusPlus"
 
 settings:
   nc: 2
   in_channels: 3
-  epochs: 1
-  optimizer: "Adam"
-  lr: 0.00001
+  epochs: 5000
+  optimizer: "AdamW"
+  lr: 0.0001
   workers: 0
   batch_size:
     - 8
-    - 8
-    - 8
+
   gradient_accumulation: 8
   criterions: #criterions defined in segmentation_models_pytorch.utils.losses can be used
     - "CrossEntropyLoss"
-    - "DiceLoss"
-  lr: 0.0001
   tensorboard_log_dir: "tensorboard_logs"
   metrics:
     - name: "Accuracy"
       params: "num_classes=2"
+    - name: "IoU"
+      params: "num_classes=2"
 
 transforms:
-  width: 256
-  height: 256
+  width: 128
+  height: 128
   h_flip: 0.5
   v_flip: 0.5
   brightness: 0.0

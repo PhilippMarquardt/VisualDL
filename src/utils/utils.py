@@ -5,8 +5,8 @@ from skimage import io
 import cv2
 from itertools import chain, combinations
 import albumentations as A
-
-
+import numpy as np
+import torch
 
 
 def write_image(path, src):
@@ -49,7 +49,23 @@ def get_all_combinations(li:list):
     """
     return list(chain(*map(lambda x: combinations(li, x), range(1, len(li)+1))))
 
+def get_weight_map(imgs):
+    """Gets a weight map for mask
 
+    Args:
+        img (np.array): mask np array (B,C,W,H)
+    """
+    weight_maps = []
+    for img in imgs:
+        img = cv2.cvtColor(img.astype('float32'), cv2.COLOR_GRAY2BGR)
+        kernel = np.ones((3, 3), 'uint8')
+        dilate_img = cv2.dilate(img, kernel, iterations=1)
+        img1_bg = dilate_img - img
+        img1 = img1_bg[:,:,0]
+        clipper = np.clip(img1, 1, 5)
+        weight_maps.append(clipper) # weight edges by factor (e.g. 6)
+    weight_maps = torch.tensor(weight_maps)
+    return weight_maps
 def parse_classification_config(config_path):
     pass
 

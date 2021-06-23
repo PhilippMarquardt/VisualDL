@@ -1,40 +1,36 @@
 type: "classification"
 
 data:
-  train: "E:/downloads/archive/train"
-  valid: "E:/downloads/archive/test"
-  test: "E:/downloads/archive/test"
+  train: "C:/Users/phili/Downloads/Telegram Desktop/dataset"
+  valid: "C:/Users/phili/Downloads/Telegram Desktop/dataset_valid"
+  test: "C:/Users/phili/Downloads/Telegram Desktop/dataset_valid"
 
 # anchors
 model_names:
-  - "resnet50"
-  - "resnest50d"
-  - "resnet26"
+  - "hrnet_w32"
 settings:
-  nc: 2
+  nc: 5
   epochs: 100
   optimizer: "Adam"
   lr: 0.0001
   workers: 0
   batch_size:
-    - 32
-    - 32
-    - 32
-  gradient_accumulation: 64
+    - 2
+  gradient_accumulation: 2
   criterions:
     - "CrossEntropyLoss"
   tensorboard_log_dir: "tensorboard_logs"
   metrics:
     - name: "F1"
-      params: "num_classes=2"
+      params: "num_classes=5"
     - name: "Accuracy"
       params: ""
     - name: "CohenKappa"
-      params: "num_classes=2"
+      params: "num_classes=5"
 
 transforms:
-  width: 256
-  height: 256
+  width: 1024
+  height: 1024
   h_flip: 0.5
   v_flip: 0.5
   brightness: 0.0

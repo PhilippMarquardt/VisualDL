@@ -13,7 +13,6 @@ class ClassificationDataset(Dataset):
         self.num_classes = len(os.listdir(root_folder))
         self.classes = os.listdir(root_folder)
         self.image_class_tuple = list(itertools.chain.from_iterable([[(os.path.join(path, file), self.classes.index(os.path.split(path)[-1])) for file in files] for path, directories, files in os.walk(root_folder)]))
-        
     def __len__(self):
         return len(self.image_class_tuple)
         
@@ -48,6 +47,26 @@ class SegmentationDataset(Dataset):
             img = transformed["image"]
             mask = transformed["mask"]
         return torch.tensor(img, dtype = torch.float).permute(2, 0, 1), torch.tensor(mask, dtype = torch.long)
+
+
+class ImageOnlyDataset(Dataset):
+    """
+    Dataset without any labels, just plain images for inference.
+
+    Args:
+        Dataset (): 
+    """
+    def __init__(self, folder):
+        self.folder = folder
+        self.images = [os.path.join(folder, x) for x in os.listdir(folder)]
+
+    def __len__(self):
+        return len(self.images)
+
+    def __getitem__(self, idx):
+        img = io.imread(self.images[idx]).astype(np.float32)
+        img = img/255.
+        return torch.tensor(img, dtype=torch.float)
 
 
         
