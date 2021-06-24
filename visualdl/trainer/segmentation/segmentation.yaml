@@ -7,10 +7,13 @@ data:
 
 # anchors
 models:
+  - backbone: "regnety_004"
+    decoder: "ResUnetPlusPlus"
 
+  - backbone: "regnety_004"
+    decoder: "EfficientUnetPlusPlus"
 
-  - backbone: "efficientnet-b7"
-    decoder: "UnetPlusPlus"
+  
 
 settings:
   nc: 2
@@ -20,9 +23,10 @@ settings:
   lr: 0.0001
   workers: 0
   batch_size:
-    - 8
+    - 4
+    - 4
 
-  gradient_accumulation: 8
+  gradient_accumulation: 4
   criterions: #criterions defined in segmentation_models_pytorch.utils.losses can be used
     - "CrossEntropyLoss"
   tensorboard_log_dir: "tensorboard_logs"
