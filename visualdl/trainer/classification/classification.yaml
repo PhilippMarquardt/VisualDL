@@ -7,16 +7,22 @@ data:
 
 # anchors
 model_names:
-  - "hrnet_w32"
+  - "regnety_004"
+  - "efficientnet_b0"
+  - "resnext50_32x4d"
+
+
 settings:
   nc: 5
   epochs: 100
-  optimizer: "Adam"
+  optimizer: "AdamW"
   lr: 0.0001
   workers: 0
   batch_size:
-    - 2
-  gradient_accumulation: 2
+    - 16
+    - 16
+    - 8
+  gradient_accumulation: 16
   criterions:
     - "CrossEntropyLoss"
   tensorboard_log_dir: "tensorboard_logs"
@@ -28,9 +34,12 @@ settings:
     - name: "CohenKappa"
       params: "num_classes=5"
 
+  monitor_metric_name: "Accuracy"
+  monitor_metric_params: "num_classes=5"
+
 transforms:
-  width: 1024
-  height: 1024
+  width: 512
+  height: 512
   h_flip: 0.5
   v_flip: 0.5
   brightness: 0.0

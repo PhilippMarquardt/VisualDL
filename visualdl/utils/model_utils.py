@@ -16,7 +16,7 @@ def visualize(model, layer, image):
         return cam
 
 
-def train_all_epochs(model, train_loader, valid_loader, test_loader, epochs, criterions, metrics, writer, optimizer, accumulate_batch, criterion_scaling = None, average_outputs = False, name:str = ""):
+def train_all_epochs(model, train_loader, valid_loader, test_loader, epochs, criterions, metrics, monitor_metric, writer, optimizer, accumulate_batch, criterion_scaling = None, average_outputs = False, name:str = ""):
     #criterions = [torch.nn.CrossEntropyLoss(reduction="none")]
     if criterion_scaling is None:
         criterion_scaling = [1] * len(criterions)
@@ -24,22 +24,22 @@ def train_all_epochs(model, train_loader, valid_loader, test_loader, epochs, cri
     scaler = torch.cuda.amp.GradScaler(enabled = False if device == 'cpu' else True)
     model = model.to(device)
     accumulate_every = accumulate_batch // train_loader.batch_size
-    best_metric = float("inf")
+    best_metric = float("-inf")
     cnt = 0
     for epoch in range(epochs):
         training_bar = tqdm(train_loader)
-        train_one_epoch(model, training_bar, criterions, criterion_scaling, average_outputs, device, epoch, optimizer, scaler, metrics, writer, name, accumulate_every)
+        train_one_epoch(model, training_bar, criterions, criterion_scaling, average_outputs, device, epoch, optimizer, scaler, metrics, writer, name, accumulate_every, best_metric)
         if valid_loader:
             valid_bar = tqdm(valid_loader)
-            tmp = evaluate(model, valid_bar, criterions=criterions, criterion_scaling=criterion_scaling, writer=writer, metrics=metrics, device=device,
+            tmp = evaluate(model, valid_bar, criterions=criterions, criterion_scaling=criterion_scaling, writer=writer, metrics=metrics, monitor_metric=monitor_metric, device=device,
             epoch=epoch, name = name, average_outputs=False)
-            if best_metric > tmp:
+            if best_metric < tmp:
                 best_metric = tmp
                 torch.save(model.state_dict(), name + ".pt")
                 cnt = 0
             else:
                 cnt +=1
-            if cnt >= 75:
+            if cnt >= 10:
                 torch.save(model.state_dict(), name + "last.pt")
                 model.load_state_dict(torch.load(name + ".pt"))
                 return
@@ -47,7 +47,7 @@ def train_all_epochs(model, train_loader, valid_loader, test_loader, epochs, cri
 
          
         
-def train_one_epoch(model, training_bar, criterions, criterion_scaling, average_outputs = False, device = None, epoch = 0, optimizer = None, scaler = None, metrics = None, writer = None, name:str = "", accumulate_every = 1):
+def train_one_epoch(model, training_bar, criterions, criterion_scaling, average_outputs = False, device = None, epoch = 0, optimizer = None, scaler = None, metrics = None, writer = None, name:str = "", accumulate_every = 1, best_metric = 0.0):
     for metric in metrics:
         metric.reset() 
     total_loss = 0.0    
@@ -82,7 +82,7 @@ def train_one_epoch(model, training_bar, criterions, criterion_scaling, average_
             scaler.update()
             model.zero_grad()
 
-        metric_str = "Train: Epoch:%i, Loss:%.4f, " + "".join([metric.__class__.__name__ + ":%.4f, " for metric in metrics ])
+        metric_str = "Train: Epoch:%i, Loss:%.4f, Best:%.4f " + "".join([metric.__class__.__name__ + ":%.4f, " for metric in metrics ])
         epoch_values = [metric.compute().item() for metric in metrics]
 
 
@@ -91,7 +91,7 @@ def train_one_epoch(model, training_bar, criterions, criterion_scaling, average_
         
         total_loss += loss.item()
         current_loss = total_loss / float((cnt+1))
-        training_bar.set_description(metric_str % tuple([epoch+1, current_loss]+epoch_values))   
+        training_bar.set_description(metric_str % tuple([epoch+1, current_loss, best_metric]+epoch_values))   
 
     
     for metric in metrics:
@@ -99,9 +99,11 @@ def train_one_epoch(model, training_bar, criterions, criterion_scaling, average_
                 
                 
     
-def evaluate(model, valid_bar, criterions, criterion_scaling, writer, metrics, device, epoch, name, average_outputs = False):
+def evaluate(model, valid_bar, criterions, criterion_scaling, writer, metrics, monitor_metric, device, epoch, name, average_outputs = False):
     assert writer is not None
     assert metrics is not None
+    assert monitor_metric is not None
+    monitor_metric.reset()
     for metric in metrics:
         metric.reset()
     model.eval()
@@ -122,6 +124,7 @@ def evaluate(model, valid_bar, criterions, criterion_scaling, writer, metrics, d
                     loss += cr(predictions, y) / scal
             loss = loss.mean()
             predictions = torch.argmax(predictions, 1)
+        monitor_metric.update(predictions.detach().cpu(), y.detach().cpu())
         for metric in metrics:
             metric.update(predictions.detach().cpu(), y.detach().cpu())
         metric_str = "Valid: Epoch:%i, Loss:%.4f, " + "".join([metric.__class__.__name__ + ":%.4f, " for metric in metrics ])
@@ -138,7 +141,7 @@ def evaluate(model, valid_bar, criterions, criterion_scaling, writer, metrics, d
     for metric in metrics:
         metric.reset()
     model.train()
-    return total_loss/len(valid_bar)
+    return monitor_metric.compute()
 
 def test_trainer(models: list, test_loaders, metrics):
     assert test_loaders

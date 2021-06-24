@@ -38,6 +38,8 @@ def parse_yaml(yaml_file:str) -> dict:
     Returns:
         dict: The parsed yaml file
     """
+    if type(yaml_file) is dict:
+        return yaml_file
     with open(yaml_file, "r") as handle:
         return yaml.load(handle, Loader=yaml.FullLoader)
 

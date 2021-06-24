@@ -31,7 +31,8 @@ settings:
       params: "num_classes=2"
     - name: "IoU"
       params: "num_classes=2"
-
+  monitor_metric_name: "Accuracy"
+  monitor_metric_params: "num_classes=5"
 transforms:
   width: 128
   height: 128

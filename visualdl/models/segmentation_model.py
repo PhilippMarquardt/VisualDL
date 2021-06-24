@@ -1,5 +1,5 @@
-from src.models.model_base import ModelBase
-from src.utils.model_utils import *
+from .model_base import ModelBase
+from ..utils.model_utils import evaluate, visualize,  train_all_epochs
 import segmentation_models_pytorch as smp
 from torch.utils.data.dataloader import DataLoader
 from ..utils.losses import *
@@ -9,7 +9,7 @@ from uformer_pytorch import Uformer
 from torch.utils.tensorboard import SummaryWriter
 
 class SegmentationModel(ModelBase):
-    def __init__(self, encoder_name, decoder_name, nc, in_channels, criterions, metrics, optimizer, lr, accumulate_batch, tensorboard_dir):
+    def __init__(self, encoder_name, decoder_name, nc, in_channels, criterions, metrics, monitor_metric, optimizer, lr, accumulate_batch, tensorboard_dir):
         self.encoder_name = encoder_name
         self.decoder_name = decoder_name
         print(f'smp.{decoder_name}(encoder_name="{encoder_name}", encoder_weights="imagenet", in_channels={in_channels}, classes = {nc})')
@@ -21,6 +21,7 @@ class SegmentationModel(ModelBase):
         self.bb = smp.losses.DiceLoss(mode="multiclass")
         self.criterions = [eval(f"{name}(reduction='none')") if name not in ["DiceLoss"] else eval(f"{name}(mode='multiclass')") for name in criterions]
         self.metrics = metrics
+        self.monitor_metric = monitor_metric
         self.accumulate_batch = accumulate_batch
         self.name = f"{encoder_name} - {decoder_name}"
 
@@ -37,7 +38,7 @@ class SegmentationModel(ModelBase):
             epochs (int, optional): The number of epochs. Defaults to 1.
         """
         train_all_epochs(model = self.model, train_loader = train_loader, valid_loader=valid_loader, test_loader = test_loader, 
-        epochs=epochs, criterions=self.criterions, metrics = self.metrics, writer=self.writer, name=f"{self.encoder_name}, {self.decoder_name}", optimizer=self.optimizer, accumulate_batch=self.accumulate_batch)
+        epochs=epochs, criterions=self.criterions, metrics = self.metrics, monitor_metric = self.monitor_metric, writer=self.writer, name=f"{self.encoder_name}, {self.decoder_name}", optimizer=self.optimizer, accumulate_batch=self.accumulate_batch)
 
     def test(self, test_loader):
         pass

@@ -5,6 +5,8 @@ from skimage import io
 import torch
 import albumentations as A
 import numpy as np
+
+
 class ClassificationDataset(Dataset):
     def __init__(self, root_folder, transform):
         super().__init__()
@@ -12,6 +14,8 @@ class ClassificationDataset(Dataset):
         self.transform = transform
         self.num_classes = len(os.listdir(root_folder))
         self.classes = os.listdir(root_folder)
+        tmp = [1 - y for y in [x/sum([len(os.listdir(os.path.join(root_folder, folder))) for folder in os.listdir(root_folder)]) for x in [len(os.listdir(os.path.join(root_folder, folder))) for folder in os.listdir(root_folder)]]]
+        self.class_weights = [z + (1 - max(tmp)) for z in tmp]
         self.image_class_tuple = list(itertools.chain.from_iterable([[(os.path.join(path, file), self.classes.index(os.path.split(path)[-1])) for file in files] for path, directories, files in os.walk(root_folder)]))
     def __len__(self):
         return len(self.image_class_tuple)

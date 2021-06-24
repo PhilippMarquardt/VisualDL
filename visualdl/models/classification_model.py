@@ -14,7 +14,7 @@ from torch.utils.tensorboard import SummaryWriter
 from torch.optim import *
 
 class ClassificationModel(ModelBase):
-    def __init__(self, name, nc, criterions, metrics, optimizer, lr, accumulate_batch, tensorboard_dir):
+    def __init__(self, name, nc, criterions, metrics, monitor_metric, optimizer, lr, accumulate_batch, tensorboard_dir):
         self.writer = SummaryWriter(tensorboard_dir)
         self.name = name
         self.model = timm.create_model(name, pretrained=True, num_classes = nc)
@@ -22,6 +22,7 @@ class ClassificationModel(ModelBase):
         self.criterions = [eval(f"{name}(reduction='none')") for name in criterions]
         self.metrics = metrics
         self.accumulate_batch = accumulate_batch
+        self.monitor_metric = monitor_metric
 
     def __call__(self, x):
         return self.model(x)
@@ -35,8 +36,12 @@ class ClassificationModel(ModelBase):
             test_loader (DataLoader, optional): The test DataLoader. Defaults to None.
             epochs (int, optional): The number of epochs. Defaults to 1.
         """
+        #if hasattr(train_loader.dataset, 'class_weights'):
+        #    for crit in self.criterions:
+        #        if crit.weight is None:
+        #            crit.weight = torch.tensor(train_loader.dataset.class_weights).to('cuda:0' if torch.cuda.is_available() else 'cpu')
         train_all_epochs(model = self.model, train_loader = train_loader, valid_loader=valid_loader, test_loader = test_loader, 
-        epochs=epochs, criterions=self.criterions, metrics = self.metrics, writer=self.writer, name=self.name, optimizer=self.optimizer, accumulate_batch=self.accumulate_batch)
+        epochs=epochs, criterions=self.criterions, metrics = self.metrics, monitor_metric = self.monitor_metric, writer=self.writer, name=self.name, optimizer=self.optimizer, accumulate_batch=self.accumulate_batch)
 
     def test(self, test_loader):
         pass

@@ -32,6 +32,7 @@ class ClassificationTrainer(TrainerBase):
         self.batch_sizes = self.cfg['settings']['batch_size']
         self.models = [ClassificationModel(name, self.cfg['settings']['nc'], self.cfg['settings']['criterions'],
                       [eval(f"{metric['name']} ({metric['params']})") for metric in self.cfg['settings']['metrics']],
+                        eval(f"{self.cfg['settings']['monitor_metric_name']} ({self.cfg['settings']['monitor_metric_params']})"),
                        self.cfg['settings']['optimizer'], self.cfg['settings']['lr'],
                        self.cfg['settings']['gradient_accumulation'],
                        self.cfg['settings']['tensorboard_log_dir']) for name in self.cfg['model_names']]
