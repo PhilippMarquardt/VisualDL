@@ -6,22 +6,13 @@ from ..utils.losses import *
 from torch.nn import *
 from torch.optim import *
 from uformer_pytorch import Uformer
-from torch.utils.tensorboard import SummaryWriter
+
 
 class SegmentationModel(ModelBase):
-    def __init__(self, encoder_name, decoder_name, nc, in_channels, criterions, metrics, monitor_metric, optimizer, lr, accumulate_batch, tensorboard_dir):
+    def __init__(self, encoder_name, decoder_name, nc, in_channels, criterions, metrics, monitor_metric, optimizer, lr, accumulate_batch, tensorboard_dir, class_weights):
+        super().__init__(nc, criterions, metrics, monitor_metric, optimizer, lr, accumulate_batch, tensorboard_dir, class_weights, model = eval(f'smp.{decoder_name}(encoder_name="{encoder_name}", encoder_weights="imagenet", in_channels={in_channels}, classes = {nc})'))
         self.encoder_name = encoder_name
         self.decoder_name = decoder_name
-
-        self.model = eval(f'smp.{decoder_name}(encoder_name="{encoder_name}", encoder_weights="imagenet", in_channels={in_channels}, classes = {nc})')
-
-        self.writer = SummaryWriter(tensorboard_dir)
-        self.optimizer = eval(f"{optimizer}(self.model.parameters(), lr={lr})")
-        self.bb = smp.losses.DiceLoss(mode="multiclass")
-        self.criterions = [eval(f"{name}(reduction='none')") if name not in ["DiceLoss"] else eval(f"{name}(mode='multiclass')") for name in criterions]
-        self.metrics = metrics
-        self.monitor_metric = monitor_metric
-        self.accumulate_batch = accumulate_batch
         self.name = f"{encoder_name} - {decoder_name}"
 
     def __call__(self, x):

@@ -23,23 +23,10 @@ class ClassificationTrainer(TrainerBase):
         super().__init__(cfg_path)
         assert self.cfg['type'] == "classification", "Provided yaml file must be a classification model config!"
         assert len(self.cfg['settings']['batch_size']) == len(self.cfg['model_names'])    
-        logging.info(f"Training classification model with the following config:\n {pprint.pformat(self.cfg)}")
-        
-
-        
+        logging.info(f"Training classification model with the following config:\n {pprint.pformat(self.cfg)}")    
         self.models = [ClassificationModel(name, self.nc, self.critetions, self.metrics, self.monitor_metric,
-                                            self.optimizer, self.lr, self.gradient_accumulation,self.tensorboard_dir) for name in self.cfg['model_names']]
+                                            self.optimizer, self.lr, self.gradient_accumulation,self.tensorboard_dir, self.class_weights) for name in self.cfg['model_names']]
                                             
-        transforms = get_transform_from_config(cfg=self.cfg)
-        self.train_loaders = [get_dataloader(ClassificationDataset(self.train_path, transform = transforms), batch_size, self.workers) for batch_size in self.batch_sizes]
-        self.valid_loaders = [None] * len(self.batch_sizes)
-        self.test_laoders = [None] * len(self.batch_sizes)
-        if self.valid_path != '':
-            self.valid_loaders = [get_dataloader(ClassificationDataset(self.valid_path, transform = transforms), batch_size, self.workers) for batch_size in self.batch_sizes]
-        if self.test_path != '':
-            self.test_loaders = [get_dataloader(ClassificationDataset(self.test_path, transform = transforms), batch_size, self.workers) for batch_size in self.batch_sizes]
-        
-
     def train(self):
         logging.info("Starting training training!")
         for cnt, (train_loader, valid_loader, test_loader, model) in enumerate(zip(self.train_loaders, self.valid_loaders, self.test_laoders, self.models)):

@@ -37,17 +37,11 @@ class SegmentationTrainer(TrainerBase):
                         self.optimizer, 
                         self.lr,
                         self.gradient_accumulation,
-                        self.tensorboard_dir)  for models in self.cfg['models']]
+                        self.tensorboard_dir,
+                        self.class_weights)  for models in self.cfg['models']]
 
         
-        transforms = get_transform_from_config(cfg=self.cfg)
-        self.train_loaders = [get_dataloader(SegmentationDataset(self.cfg['data']['train'], transform = transforms), batch_size, self.cfg['settings']['workers']) for batch_size in self.batch_sizes]
-        self.valid_loaders = [None] * len(self.batch_sizes)
-        self.test_laoders = [None] * len(self.batch_sizes)
-        if self.cfg['data']['valid'] != '':
-            self.valid_loaders = [get_dataloader(SegmentationDataset(self.cfg['data']['valid'], transform = transforms), batch_size, self.cfg['settings']['workers']) for batch_size in self.batch_sizes]
-        if self.cfg['data']['test'] != '':
-            self.test_loaders = [get_dataloader(SegmentationDataset(self.cfg['data']['test'], transform = transforms), batch_size, self.cfg['settings']['workers']) for batch_size in self.batch_sizes]
+        
         
 
     def train(self):

@@ -3,6 +3,7 @@ from ..utils.utils import parse_yaml, get_transform_from_config, get_dataloader
 from ..utils.datasets import SegmentationDataset, ClassificationDataset
 from torch.nn import *
 from torchmetrics import * 
+import torch
 
 class TrainerBase(ABC):
     def __init__(self, cfg):
@@ -26,22 +27,22 @@ class TrainerBase(ABC):
         self.valid_path = self.cfg['data']['valid']
         self.test_path = self.cfg['data']['test']
         self.epochs = self.cfg['settings']['epochs']
-
+        self.calculate_class_weights = self.cfg['settings']['class_weights']
         transforms = get_transform_from_config(cfg=self.cfg)
         #initialize loaders
         if self.type == "segmentation": 
             dataset = SegmentationDataset
         elif self.type == "classification":
             dataset = ClassificationDataset
-        self.train_loaders = [get_dataloader(dataset(self.train_path, transform = transforms), batch_size, self.workers) for batch_size in self.batch_sizes]
+        self.train_loaders = [get_dataloader(dataset(self.train_path, transform = transforms, class_weights=self.calculate_class_weights), batch_size, self.workers) for batch_size in self.batch_sizes]
         self.valid_loaders = [None] * len(self.batch_sizes)
         self.test_laoders = [None] * len(self.batch_sizes)
         if self.valid_path != '':
             self.valid_loaders = [get_dataloader(dataset(self.valid_path, transform = transforms), batch_size, self.workers) for batch_size in self.batch_sizes]
         if self.test_path != '':
             self.test_loaders = [get_dataloader(dataset(self.test_path, transform = transforms), batch_size, self.workers) for batch_size in self.batch_sizes]
+        self.class_weights = torch.FloatTensor(self.train_loaders[0].dataset.class_weights).to('cuda:0' if torch.cuda.is_available() else 'cpu') if self.calculate_class_weights else None
 
-            
     @abstractmethod
     def train(self):
         pass

@@ -1,9 +1,12 @@
 type: "segmentation"
 
 data:
-  train: "C:/Users/phili/Downloads/Telegram Desktop/Cells/train"
-  valid: "C:/Users/phili/Downloads/Telegram Desktop/Cells/valid"
-  test: "C:/Users/phili/Downloads/Telegram Desktop/Cells/valid"
+  #train: "C:/Users/phili/Downloads/Telegram Desktop/Cells/train"
+  #valid: "C:/Users/phili/Downloads/Telegram Desktop/Cells/valid"
+  #test: "C:/Users/phili/Downloads/Telegram Desktop/Cells/valid"
+  train: "E:/source/repos/HSAData/Evican/train"
+  valid: "E:/source/repos/HSAData/Evican/valid"
+  test: "E:/source/repos/HSAData/Evican/valid"
 
   weights: 
     - "imagenet"
@@ -14,17 +17,9 @@ data:
 
 # anchors
 models:
+  #- backbone: "timm-regnety_064"
+  #  decoder: "EfficientUnetPlusPlus"
 
-  - backbone: "timm-regnety_064"
-    decoder: "ResUnetPlusPlus"
-    
-  - backbone: "timm-regnety_064"
-    decoder: "EfficientUnetPlusPlus"
-
-  
-
-  - backbone: "timm-regnety_064"
-    decoder: "ResUnet"
 
   - backbone: "timm-regnety_064"
     decoder: "UnetPlusPlus"
@@ -40,9 +35,7 @@ settings:
   workers: 0
   batch_size:
     - 8
-    - 8
-    - 8
-    - 8
+   # - 4
 
   gradient_accumulation: 8
   criterions: #criterions defined in segmentation_models_pytorch.utils.losses can be used
@@ -55,10 +48,10 @@ settings:
       params: "num_classes=2"
   monitor_metric_name: "IoU"
   monitor_metric_params: "num_classes=2"
-
+  class_weights: True
 transforms:
-  width: 128
-  height: 128
+  width: 256
+  height: 256
   h_flip: 0.5
   v_flip: 0.5
   brightness: 0.0
