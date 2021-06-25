@@ -20,27 +20,24 @@ from torch.optim import *
 """
 class SegmentationTrainer(TrainerBase):
     def __init__(self, cfg_path:dict):
-        self.cfg = parse_yaml(cfg_path)
-        self.trained = False
+        super().__init__(cfg_path)
         assert self.cfg['type'] == "segmentation", "Provided yaml file must be a segmentation model config!"
         assert len(self.cfg['settings']['batch_size']) == len(self.cfg['models'])
-        assert len(self.cfg['settings']['metrics']) > 0, "You must provide atleast one metric"
-        assert all([self.cfg['settings']['gradient_accumulation'] % batch == 0 for batch in self.cfg['settings']['batch_size']])
-        logging.info(f"Training classification model with the following config:\n {pprint.pformat(self.cfg)}")
+        logging.info(f"Training segmentation model with the following config:\n {pprint.pformat(self.cfg)}")
         
 
-        self.batch_sizes = self.cfg['settings']['batch_size']
-        print([(models["backbone"], models["decoder"]) for models in self.cfg['models']])
+
         self.models = [SegmentationModel(models['backbone'],
                         models['decoder'], 
-                        self.cfg['settings']['nc'], 
+                        self.nc, 
                         self.cfg['settings']['in_channels'],
-                        self.cfg['settings']['criterions'],
-                        [eval(f"{metric['name']} ({metric['params']})") for metric in self.cfg['settings']['metrics']],
-                        eval(f"{self.cfg['settings']['monitor_metric_name']} ({self.cfg['settings']['monitor_metric_params']})"),
-                        self.cfg['settings']['optimizer'], self.cfg['settings']['lr'],
-                        self.cfg['settings']['gradient_accumulation'],
-                        self.cfg['settings']['tensorboard_log_dir'])  for models in self.cfg['models']]
+                        self.critetions,
+                        self.metrics,
+                        self.monitor_metric,
+                        self.optimizer, 
+                        self.lr,
+                        self.gradient_accumulation,
+                        self.tensorboard_dir)  for models in self.cfg['models']]
 
         
         transforms = get_transform_from_config(cfg=self.cfg)

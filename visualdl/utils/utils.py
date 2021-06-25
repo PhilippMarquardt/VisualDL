@@ -43,6 +43,7 @@ def parse_yaml(yaml_file:str) -> dict:
     with open(yaml_file, "r") as handle:
         return yaml.load(handle, Loader=yaml.FullLoader)
 
+
 def get_all_combinations(li:list):
     """Returns a list(tuple) containing all combinations of the given list.
 

@@ -39,7 +39,7 @@ def train_all_epochs(model, train_loader, valid_loader, test_loader, epochs, cri
                 cnt = 0
             else:
                 cnt +=1
-            if cnt >= 10:
+            if cnt >= 75:
                 torch.save(model.state_dict(), name + "last.pt")
                 model.load_state_dict(torch.load(name + ".pt"))
                 return

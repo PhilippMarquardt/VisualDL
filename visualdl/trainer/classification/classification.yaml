@@ -5,6 +5,12 @@ data:
   valid: "C:/Users/phili/Downloads/Telegram Desktop/dataset_valid"
   test: "C:/Users/phili/Downloads/Telegram Desktop/dataset_valid"
 
+  weights: 
+    - "imagenet"
+    - "imagenet"
+    - "imagenet"
+
+  save_folder: "" 
 # anchors
 model_names:
   - "regnety_004"
