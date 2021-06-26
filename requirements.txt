@@ -4,7 +4,6 @@
 
 
 #----------------------------------
-
 timm
 
 pytorch-gradcam
@@ -13,13 +12,13 @@ albumentations
 
 scikit-image
 
+grad-cam
+
 torchmetrics
 
 tensorboard
 
 ttach
 
-grad-cam
 
-git+https://github.com/JulienMaille/segmentation_models.pytorch.git
-git+https://github.com/CoinCheung/pytorch-loss.git
+git+https://github.com/PhilippMarquardt/segmentation_models.pytorch.git
