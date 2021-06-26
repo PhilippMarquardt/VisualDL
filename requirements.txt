@@ -4,7 +4,7 @@
 
 
 #----------------------------------
-torch==1.9.0+cu102 torchvision==0.10.0+cu102 torchaudio===0.9.0 -f https://download.pytorch.org/whl/torch_stable.html
+
 timm
 
 pytorch-gradcam
@@ -18,6 +18,8 @@ torchmetrics
 tensorboard
 
 ttach
+
+grad-cam
 
 git+https://github.com/JulienMaille/segmentation_models.pytorch.git
 git+https://github.com/CoinCheung/pytorch-loss.git
