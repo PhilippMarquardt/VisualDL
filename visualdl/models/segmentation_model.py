@@ -9,8 +9,8 @@ from uformer_pytorch import Uformer
 
 
 class SegmentationModel(ModelBase):
-    def __init__(self, encoder_name, decoder_name, nc, in_channels, criterions, metrics, monitor_metric, optimizer, lr, accumulate_batch, tensorboard_dir, class_weights):
-        super().__init__(nc, criterions, metrics, monitor_metric, optimizer, lr, accumulate_batch, tensorboard_dir, class_weights, model = eval(f'smp.{decoder_name}(encoder_name="{encoder_name}", encoder_weights="imagenet", in_channels={in_channels}, classes = {nc})'))
+    def __init__(self, encoder_name, decoder_name, nc, in_channels, criterions, metrics, monitor_metric, optimizer, lr, accumulate_batch, tensorboard_dir, class_weights, calculate_weight_map):
+        super().__init__(nc, criterions, metrics, monitor_metric, optimizer, lr, accumulate_batch, tensorboard_dir, class_weights, model = eval(f'smp.{decoder_name}(encoder_name="{encoder_name}", encoder_weights="imagenet", in_channels={in_channels}, classes = {nc})'), calculate_weight_map = calculate_weight_map)
         self.encoder_name = encoder_name
         self.decoder_name = decoder_name
         self.name = f"{encoder_name} - {decoder_name}"
@@ -28,7 +28,7 @@ class SegmentationModel(ModelBase):
             epochs (int, optional): The number of epochs. Defaults to 1.
         """
         train_all_epochs(model = self.model, train_loader = train_loader, valid_loader=valid_loader, test_loader = test_loader, 
-        epochs=epochs, criterions=self.criterions, metrics = self.metrics, monitor_metric = self.monitor_metric, writer=self.writer, name=f"{self.encoder_name}, {self.decoder_name}", optimizer=self.optimizer, accumulate_batch=self.accumulate_batch)
+        epochs=epochs, criterions=self.loss, metrics = self.metrics, monitor_metric = self.monitor_metric, writer=self.writer, name=f"{self.encoder_name}, {self.decoder_name}", optimizer=self.optimizer, accumulate_batch=self.accumulate_batch,weight_map = self.calculate_weight_map)
 
     def test(self, test_loader):
         pass

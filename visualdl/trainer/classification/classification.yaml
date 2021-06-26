@@ -44,7 +44,8 @@ settings:
   monitor_metric_name: "Accuracy"
   monitor_metric_params: "num_classes=5"
   class_weights: False
-
+  weight_map: False
+  calculate_weight_map: True
   
 transforms:
   width: 512

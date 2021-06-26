@@ -58,8 +58,8 @@ class SegmentationDataset(Dataset):
             for val in vals.values():
                 final.append(1 - (val / len(self.train_masks)))
             self.class_weights = final
+            
             print(f"Calculated class weights:{self.class_weights}")
-
         assert len(self.train_images) == len(self.train_masks)
 
     def __len__(self):

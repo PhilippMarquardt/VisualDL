@@ -1,125 +1,153 @@
-from typing import Optional, List
-
 import torch
+
+from torch.nn import functional as F
+from typing import Optional
+import torch
+import torch.nn as nn
 import torch.nn.functional as F
-from torch.nn.modules.loss import _Loss
-from ._functional import soft_dice_score, to_tensor
-from .constants import BINARY_MODE, MULTICLASS_MODE, MULTILABEL_MODE
-
-__all__ = ["DiceLoss"]
+from torch.nn.modules.loss import CrossEntropyLoss
 
 
-class DiceLoss(_Loss):
 
-    def __init__(
-        self,
-        mode: str,
-        classes: Optional[List[int]] = None,
-        log_loss: bool = False,
-        from_logits: bool = True,
-        smooth: float = 0.0,
-        ignore_index: Optional[int] = None,
-        eps: float = 1e-7,
-    ):
-        """Implementation of Dice loss for image segmentation task.
-        It supports binary, multiclass and multilabel cases
+class MultiLoss():
+    def __init__(self, losses):
+        self.losses = losses
+        self.included = [CrossEntropyLoss]
 
-        Args:
-            mode: Loss mode 'binary', 'multiclass' or 'multilabel'
-            classes:  List of classes that contribute in loss computation. By default, all channels are included.
-            log_loss: If True, loss computed as `- log(dice_coeff)`, otherwise `1 - dice_coeff`
-            from_logits: If True, assumes input is raw logits
-            smooth: Smoothness constant for dice coefficient (a)
-            ignore_index: Label that indicates ignored pixels (does not contribute to loss)
-            eps: A small epsilon for numerical stability to avoid zero division error 
-                (denominator will be always greater or equal to eps)
+    def get_loss(self, loss, inp, target, weight_map):
+        if any([type(loss) == x for x in self.included]):
+            return (loss(inp, target) * weight_map).mean() if weight_map is not None else loss(inp, target).mean()
+        return loss(inp, target).mean()
 
-        Shape
-             - **y_pred** - torch.Tensor of shape (N, C, H, W)
-             - **y_true** - torch.Tensor of shape (N, H, W) or (N, C, H, W)
+    def __call__(self, inp, target, weight_map = None):
+        final_loss = None
+        for loss in self.losses:
+            if final_loss is None:
+                final_loss = self.get_loss(loss, inp, target, weight_map)
+            else:
+                final_loss += self.get_loss(loss, inp, target, weight_map)
+        return final_loss
 
-        Reference
-            https://github.com/BloodAxe/pytorch-toolbelt
-        """
-        assert mode in {BINARY_MODE, MULTILABEL_MODE, MULTICLASS_MODE}
+
+
+def one_hot(labels: torch.Tensor,
+            num_classes: int,
+            device: Optional[torch.device] = None,
+            dtype: Optional[torch.dtype] = None,
+            eps: Optional[float] = 1e-6) -> torch.Tensor:
+    r"""Converts an integer label 2D tensor to a one-hot 3D tensor.
+
+    Args:
+        labels (torch.Tensor) : tensor with labels of shape :math:`(N, H, W)`,
+                                where N is batch siz. Each value is an integer
+                                representing correct classification.
+        num_classes (int): number of classes in labels.
+        device (Optional[torch.device]): the desired device of returned tensor.
+         Default: if None, uses the current device for the default tensor type
+         (see torch.set_default_tensor_type()). device will be the CPU for CPU
+         tensor types and the current CUDA device for CUDA tensor types.
+        dtype (Optional[torch.dtype]): the desired data type of returned
+         tensor. Default: if None, infers data type from values.
+
+    Returns:
+        torch.Tensor: the labels in one hot tensor.
+
+    Examples::
+        >>> labels = torch.LongTensor([[[0, 1], [2, 0]]])
+        >>> tgm.losses.one_hot(labels, num_classes=3)
+        tensor([[[[1., 0.],
+                  [0., 1.]],
+                 [[0., 1.],
+                  [0., 0.]],
+                 [[0., 0.],
+                  [1., 0.]]]]
+    """
+    if not torch.is_tensor(labels):
+        raise TypeError("inp labels type is not a torch.Tensor. Got {}"
+                        .format(type(labels)))
+    if not len(labels.shape) == 3:
+        raise ValueError("Invalid depth shape, we expect BxHxW. Got: {}"
+                         .format(labels.shape))
+    if not labels.dtype == torch.int64:
+        raise ValueError(
+            "labels must be of the same dtype torch.int64. Got: {}" .format(
+                labels.dtype))
+    if num_classes < 1:
+        raise ValueError("The number of classes must be bigger than one."
+                         " Got: {}".format(num_classes))
+    batch_size, height, width = labels.shape
+    one_hot = torch.zeros(batch_size, num_classes, height, width,
+                          device=device, dtype=dtype)
+    return one_hot.scatter_(1, labels.unsqueeze(1), 1.0) + eps
+
+
+class DiceLoss(nn.Module):
+    r"""Criterion that computes Sørensen-Dice Coefficient loss.
+
+    According to [1], we compute the Sørensen-Dice Coefficient as follows:
+
+    .. math::
+
+        \text{Dice}(x, class) = \frac{2 |X| \cap |Y|}{|X| + |Y|}
+
+    where:
+       - :math:`X` expects to be the scores of each class.
+       - :math:`Y` expects to be the one-hot tensor with the class labels.
+
+    the loss, is finally computed as:
+
+    .. math::
+
+        \text{loss}(x, class) = 1 - \text{Dice}(x, class)
+
+    [1] https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient
+
+    Shape:
+        - inp: :math:`(N, C, H, W)` where C = number of classes.
+        - Target: :math:`(N, H, W)` where each value is
+          :math:`0 ≤ targets[i] ≤ C−1`.
+
+    Examples:
+        >>> N = 5  # num_classes
+        >>> loss = tgm.losses.DiceLoss()
+        >>> inp = torch.randn(1, N, 3, 5, requires_grad=True)
+        >>> target = torch.empty(1, 3, 5, dtype=torch.long).random_(N)
+        >>> output = loss(inp, target)
+        >>> output.backward()
+    """
+
+    def __init__(self, reduction = "none") -> None:
         super(DiceLoss, self).__init__()
-        self.mode = mode
-        if classes is not None:
-            assert mode != BINARY_MODE, "Masking classes is not supported with mode=binary"
-            classes = to_tensor(classes, dtype=torch.long)
+        self.eps: float = 1e-6
 
-        self.classes = classes
-        self.from_logits = from_logits
-        self.smooth = smooth
-        self.eps = eps
-        self.log_loss = log_loss
-        self.ignore_index = ignore_index
+    def forward(
+            self,
+            inp: torch.Tensor,
+            target: torch.Tensor) -> torch.Tensor:
+        if not torch.is_tensor(inp):
+            raise TypeError("inp type is not a torch.Tensor. Got {}"
+                            .format(type(inp)))
+        if not len(inp.shape) == 4:
+            raise ValueError("Invalid inp shape, we expect BxNxHxW. Got: {}"
+                             .format(inp.shape))
+        if not inp.shape[-2:] == target.shape[-2:]:
+            raise ValueError("inp and target shapes must be the same. Got: {}"
+                             .format(inp.shape, inp.shape))
+        if not inp.device == target.device:
+            raise ValueError(
+                "inp and target must be in the same device. Got: {}" .format(
+                    inp.device, target.device))
+        # compute softmax over the classes axis
+        inp_soft = F.softmax(inp, dim=1)
 
-    def forward(self, y_pred: torch.Tensor, y_true: torch.Tensor) -> torch.Tensor:
+        # create the labels one hot tensor
+        target_one_hot = one_hot(target, num_classes=inp.shape[1],
+                                 device=inp.device, dtype=inp.dtype)
 
-        assert y_true.size(0) == y_pred.size(0)
+        # compute the actual dice score
+        dims = (1,2,3)
+        intersection = torch.sum(inp_soft * target_one_hot, dims)
+        cardinality = torch.sum(inp_soft + target_one_hot, dims)
 
-        if self.from_logits:
-            # Apply activations to get [0..1] class probabilities
-            # Using Log-Exp as this gives more numerically stable result and does not cause vanishing gradient on
-            # extreme values 0 and 1
-            if self.mode == MULTICLASS_MODE:
-                y_pred = y_pred.log_softmax(dim=1).exp()
-            else:
-                y_pred = F.logsigmoid(y_pred).exp()
-
-        bs = y_true.size(0)
-        num_classes = y_pred.size(1)
-        dims = (0, 2)
-
-        if self.mode == BINARY_MODE:
-            y_true = y_true.view(bs, 1, -1)
-            y_pred = y_pred.view(bs, 1, -1)
-
-            if self.ignore_index is not None:
-                mask = y_true != self.ignore_index
-                y_pred = y_pred * mask
-                y_true = y_true * mask
-
-        if self.mode == MULTICLASS_MODE:
-            y_true = y_true.view(bs, -1)
-            y_pred = y_pred.view(bs, num_classes, -1)
-
-            if self.ignore_index is not None:
-                mask = y_true != self.ignore_index
-                y_pred = y_pred * mask.unsqueeze(1)
-
-                y_true = F.one_hot((y_true * mask).to(torch.long), num_classes)  # N,H*W -> N,H*W, C
-                y_true = y_true.permute(0, 2, 1) * mask.unsqueeze(1)  # H, C, H*W
-            else:
-                y_true = F.one_hot(y_true, num_classes)  # N,H*W -> N,H*W, C
-                y_true = y_true.permute(0, 2, 1)  # H, C, H*W
-
-        if self.mode == MULTILABEL_MODE:
-            y_true = y_true.view(bs, num_classes, -1)
-            y_pred = y_pred.view(bs, num_classes, -1)
-
-            if self.ignore_index is not None:
-                mask = y_true != self.ignore_index
-                y_pred = y_pred * mask
-                y_true = y_true * mask
-
-        scores = soft_dice_score(y_pred, y_true.type_as(y_pred), smooth=self.smooth, eps=self.eps, dims=dims)
-
-        if self.log_loss:
-            loss = -torch.log(scores.clamp_min(self.eps))
-        else:
-            loss = 1.0 - scores
-
-        # Dice loss is undefined for non-empty classes
-        # So we zero contribution of channel that does not have true pixels
-        # NOTE: A better workaround would be to use loss term `mean(y_pred)`
-        # for this case, however it will be a modified jaccard loss
-
-        mask = y_true.sum(dims) > 0
-        loss *= mask.to(loss.dtype)
-
-        if self.classes is not None:
-            loss = loss[self.classes]
-
-        return loss
+        dice_score = 2. * intersection / (cardinality + self.eps)
+        return torch.mean(1. - dice_score)

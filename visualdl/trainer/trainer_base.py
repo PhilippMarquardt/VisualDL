@@ -16,6 +16,7 @@ class TrainerBase(ABC):
         self.batch_sizes = self.cfg['settings']['batch_size']
         self.nc = self.cfg['settings']['nc']
         self.critetions = self.cfg['settings']['criterions']
+        self.calculate_weight_map = self.cfg['settings']['calculate_weight_map']
         self.metrics = [eval(f"{metric['name']} ({metric['params']})") for metric in self.cfg['settings']['metrics']]
         self.monitor_metric = eval(f"{self.cfg['settings']['monitor_metric_name']} ({self.cfg['settings']['monitor_metric_params']})")
         self.optimizer = self.cfg['settings']['optimizer']

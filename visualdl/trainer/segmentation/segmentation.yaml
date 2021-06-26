@@ -1,12 +1,12 @@
 type: "segmentation"
 
 data:
-  #train: "C:/Users/phili/Downloads/Telegram Desktop/Cells/train"
-  #valid: "C:/Users/phili/Downloads/Telegram Desktop/Cells/valid"
-  #test: "C:/Users/phili/Downloads/Telegram Desktop/Cells/valid"
-  train: "E:/source/repos/HSAData/Evican/train"
-  valid: "E:/source/repos/HSAData/Evican/valid"
-  test: "E:/source/repos/HSAData/Evican/valid"
+  train: "C:/Users/phili/Downloads/Telegram Desktop/Cells/train"
+  valid: "C:/Users/phili/Downloads/Telegram Desktop/Cells/valid"
+  test: "C:/Users/phili/Downloads/Telegram Desktop/Cells/valid"
+  #train: "E:/source/repos/HSAData/Evican/train"
+  #valid: "E:/source/repos/HSAData/Evican/valid"
+  #test: "E:/source/repos/HSAData/Evican/valid"
 
   weights: 
     - "imagenet"
@@ -17,10 +17,8 @@ data:
 
 # anchors
 models:
-  #- backbone: "timm-regnety_064"
-  #  decoder: "EfficientUnetPlusPlus"
-
-
+  - backbone: "timm-regnety_064"
+    decoder: "EfficientUnetPlusPlus"
   - backbone: "timm-regnety_064"
     decoder: "UnetPlusPlus"
 
@@ -35,11 +33,13 @@ settings:
   workers: 0
   batch_size:
     - 8
+    - 16
    # - 4
 
-  gradient_accumulation: 8
+  gradient_accumulation: 16
   criterions: #criterions defined in segmentation_models_pytorch.utils.losses can be used
     - "CrossEntropyLoss"
+    - "DiceLoss"
   tensorboard_log_dir: "tensorboard_logs"
   metrics:
     - name: "Accuracy"
@@ -48,10 +48,12 @@ settings:
       params: "num_classes=2"
   monitor_metric_name: "IoU"
   monitor_metric_params: "num_classes=2"
-  class_weights: True
+  class_weights: False
+  calculate_weight_map: True
+
 transforms:
-  width: 256
-  height: 256
+  width: 128
+  height: 128
   h_flip: 0.5
   v_flip: 0.5
   brightness: 0.0

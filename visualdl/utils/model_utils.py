@@ -16,10 +16,8 @@ def visualize(model, layer, image):
         return cam
 
 
-def train_all_epochs(model, train_loader, valid_loader, test_loader, epochs, criterions, metrics, monitor_metric, writer, optimizer, accumulate_batch, criterion_scaling = None, average_outputs = False, name:str = ""):
+def train_all_epochs(model, train_loader, valid_loader, test_loader, epochs, criterions, metrics, monitor_metric, writer, optimizer, accumulate_batch, criterion_scaling = None, average_outputs = False, name:str = "", weight_map = False):
     #criterions = [torch.nn.CrossEntropyLoss(reduction="none")]
-    if criterion_scaling is None:
-        criterion_scaling = [1] * len(criterions)
     device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
     scaler = torch.cuda.amp.GradScaler(enabled = False if device == 'cpu' else True)
     model = model.to(device)
@@ -28,7 +26,7 @@ def train_all_epochs(model, train_loader, valid_loader, test_loader, epochs, cri
     cnt = 0
     for epoch in range(epochs):
         training_bar = tqdm(train_loader)
-        train_one_epoch(model, training_bar, criterions, criterion_scaling, average_outputs, device, epoch, optimizer, scaler, metrics, writer, name, accumulate_every, best_metric)
+        train_one_epoch(model, training_bar, criterions, criterion_scaling, average_outputs, device, epoch, optimizer, scaler, metrics, writer, name, accumulate_every, best_metric, weight_map)
         if valid_loader:
             valid_bar = tqdm(valid_loader)
             tmp = evaluate(model, valid_bar, criterions=criterions, criterion_scaling=criterion_scaling, writer=writer, metrics=metrics, monitor_metric=monitor_metric, device=device,
@@ -47,7 +45,7 @@ def train_all_epochs(model, train_loader, valid_loader, test_loader, epochs, cri
 
          
         
-def train_one_epoch(model, training_bar, criterions, criterion_scaling, average_outputs = False, device = None, epoch = 0, optimizer = None, scaler = None, metrics = None, writer = None, name:str = "", accumulate_every = 1, best_metric = 0.0):
+def train_one_epoch(model, training_bar, criterions, criterion_scaling, average_outputs = False, device = None, epoch = 0, optimizer = None, scaler = None, metrics = None, writer = None, name:str = "", accumulate_every = 1, best_metric = 0.0, weight_map = False):
     for metric in metrics:
         metric.reset() 
     total_loss = 0.0    
@@ -58,20 +56,21 @@ def train_one_epoch(model, training_bar, criterions, criterion_scaling, average_
         with torch.cuda.amp.autocast():
             loss = None
             predictions = model(x)
-            for cr, scal in zip(criterions, criterion_scaling):
+            #for cr, scal in zip(criterions, criterion_scaling):
                 #cr = torch.nn.CrossEntropyLoss(reduction="none")
-                if loss is None:
-                    loss = cr(predictions, y) 
-                else:
-                    loss += cr(predictions, y) 
+            #    if loss is None:
+            #        loss = cr(predictions, y) 
+            #    else:
+            #        tmp = cr(predictions, y) 
+            #        loss += tmp
             #TODO: add weight map here
-
-            
+            weight_maps = get_weight_map(y.detach().cpu().numpy() * 255.).to(device) if weight_map else None
+            loss = criterions(predictions, y, weight_maps)
             #weight_maps = get_weight_map(y.detach().cpu().numpy() * 255.).to(device)
             #loss *= weight_maps
 
 
-            loss = loss.mean()
+            #loss = loss.mean()
             predictions = torch.argmax(predictions, 1)
         for metric in metrics:
             metric.update(predictions.detach().cpu(), y.detach().cpu())
@@ -114,15 +113,9 @@ def evaluate(model, valid_bar, criterions, criterion_scaling, writer, metrics, m
         model.zero_grad()
         #TODO implement average_outputs
         with torch.cuda.amp.autocast():
-            loss = None
             with torch.no_grad():
                 predictions = model(x)
-            for cr, scal in zip(criterions, criterion_scaling):
-                if loss is None:
-                    loss = cr(predictions, y) / scal
-                else:
-                    loss += cr(predictions, y) / scal
-            loss = loss.mean()
+            loss = criterions(predictions, y)
             predictions = torch.argmax(predictions, 1)
         monitor_metric.update(predictions.detach().cpu(), y.detach().cpu())
         for metric in metrics:

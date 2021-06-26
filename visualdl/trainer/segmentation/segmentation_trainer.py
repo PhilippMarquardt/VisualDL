@@ -38,7 +38,8 @@ class SegmentationTrainer(TrainerBase):
                         self.lr,
                         self.gradient_accumulation,
                         self.tensorboard_dir,
-                        self.class_weights)  for models in self.cfg['models']]
+                        self.class_weights,
+                        self.calculate_weight_map)  for models in self.cfg['models']]
 
         
         
