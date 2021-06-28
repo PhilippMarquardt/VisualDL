@@ -1,3 +1,4 @@
+from visualdl.utils.utils import timm_universal_encoders
 from .model_base import ModelBase
 from ..utils.model_utils import evaluate, visualize,  train_all_epochs
 import segmentation_models_pytorch as smp
@@ -6,11 +7,18 @@ from ..utils.losses import *
 from torch.nn import *
 from torch.optim import *
 from uformer_pytorch import Uformer
-
+from ..utils.utils import timm_universal_encoders
 
 class SegmentationModel(ModelBase):
     def __init__(self, encoder_name, decoder_name, nc, in_channels, criterions, metrics, monitor_metric, optimizer, lr, accumulate_batch, tensorboard_dir, class_weights, calculate_weight_map):
-        super().__init__(nc, criterions, metrics, monitor_metric, optimizer, lr, accumulate_batch, tensorboard_dir, class_weights, model = eval(f'smp.{decoder_name}(encoder_name="{encoder_name}", encoder_weights="imagenet", in_channels={in_channels}, classes = {nc})'), calculate_weight_map = calculate_weight_map)
+        #if encoder_name not in timm_universal_encoders(pretrained=True) and "timm-u" in encoder_name:
+        #    model = eval(f'smp.{decoder_name}(encoder_name="{encoder_name}", encoder_weights="None", in_channels={in_channels}, classes = {nc})')
+        #else:
+        model = eval(f'smp.{decoder_name}(encoder_name="{encoder_name}", encoder_weights="imagenet", in_channels={in_channels}, classes = {nc})')
+        
+  
+            
+        super().__init__(nc, criterions, metrics, monitor_metric, optimizer, lr, accumulate_batch, tensorboard_dir, class_weights, model = model, calculate_weight_map = calculate_weight_map)
         self.encoder_name = encoder_name
         self.decoder_name = decoder_name
         self.name = f"{encoder_name} - {decoder_name}"

@@ -9,7 +9,7 @@ data:
   #test: "E:/source/repos/HSAData/Evican/valid"
 
   weights: 
-    - "imagenet"
+    - "None"
     - "imagenet"
     - "imagenet"
 
@@ -17,10 +17,14 @@ data:
 
 # anchors
 models:
-  - backbone: "timm-regnety_064"
+  - backbone: "timm-u-resnest50d"
     decoder: "EfficientUnetPlusPlus"
-  - backbone: "timm-regnety_064"
+
+  - backbone: "timm-u-resnest50d"
     decoder: "UnetPlusPlus"
+
+
+
 
 
 
@@ -33,10 +37,11 @@ settings:
   workers: 0
   batch_size:
     - 8
-    - 16
+    - 8
+
    # - 4
 
-  gradient_accumulation: 16
+  gradient_accumulation: 8
   criterions: #criterions defined in segmentation_models_pytorch.utils.losses can be used
     - "CrossEntropyLoss"
     - "DiceLoss"

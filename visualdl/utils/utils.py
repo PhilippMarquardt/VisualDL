@@ -7,7 +7,7 @@ from itertools import chain, combinations
 import albumentations as A
 import numpy as np
 import torch
-
+from timm import list_models
 
 def write_image(path, src):
     cv2.imwrite(path, src*255)
@@ -43,6 +43,9 @@ def parse_yaml(yaml_file:str) -> dict:
     with open(yaml_file, "r") as handle:
         return yaml.load(handle, Loader=yaml.FullLoader)
 
+def timm_universal_encoders(**kwargs):
+    timm_universal_prefix = 'timm-u-'
+    return [f'{timm_universal_prefix}{i}' for i in list_models(**kwargs)]
 
 def get_all_combinations(li:list):
     """Returns a list(tuple) containing all combinations of the given list.
