@@ -2,12 +2,14 @@ from abc import ABC, abstractmethod
 from torch.optim import *
 from torch.nn import *
 from ..utils.losses import DiceLoss, MultiLoss
+import torch
 from torch.utils.tensorboard import SummaryWriter
 
 class ModelBase(ABC):    
     def __init__(self, nc, criterions, metrics, monitor_metric, optimizer, lr, accumulate_batch, tensorboard_dir, class_weights, model, calculate_weight_map):
         self.nc = nc
         self.model = model
+        #self.model.load_state_dict(torch.load(r"E:\source\repos\VisualDL\timm-u-resnest50d, UnetPlusPlus.pt"))
         self.criterions = criterions
         self.metrics = metrics
         self.lr = lr

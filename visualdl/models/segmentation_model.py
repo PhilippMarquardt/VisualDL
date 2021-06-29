@@ -6,7 +6,6 @@ from torch.utils.data.dataloader import DataLoader
 from ..utils.losses import *
 from torch.nn import *
 from torch.optim import *
-from uformer_pytorch import Uformer
 from ..utils.utils import timm_universal_encoders
 
 class SegmentationModel(ModelBase):

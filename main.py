@@ -4,10 +4,11 @@ import logging
 from visualdl.vdl import main
 
 
-logging.getLogger().setLevel(logging.INFO)
-logging.getLogger().name = ""
+if __name__ == "__main__":
+    logging.getLogger().setLevel(logging.INFO)
+    logging.getLogger().name = ""
 
-#r"E:\source\repos\VisualDL\visualdl\trainer\classification\classification.yaml"
-#r"E:\source\repos\VisualDL\visualdl\trainer\segmentation\segmentation.yaml"
-#main(r"E:\source\repos\VisualDL\visualdl\trainer\classification\classification.yaml")
-main(r"E:\source\repos\VisualDL\visualdl\trainer\segmentation\segmentation.yaml")
+    #r"E:\source\repos\VisualDL\visualdl\trainer\classification\classification.yaml"
+    #r"E:\source\repos\VisualDL\visualdl\trainer\segmentation\segmentation.yaml"
+    #main(r"E:\source\repos\VisualDL\visualdl\trainer\classification\classification.yaml")
+    main(r"E:\source\repos\VisualDL\visualdl\trainer\segmentation\segmentation.yaml")
