@@ -116,7 +116,7 @@ class DiceLoss(nn.Module):
         >>> output.backward()
     """
 
-    def __init__(self, reduction = "none") -> None:
+    def __init__(self, **kwargs) -> None:
         super(DiceLoss, self).__init__()
         self.eps: float = 1e-6
 

@@ -45,18 +45,22 @@ settings:
   monitor_metric_params: "num_classes=5"
   class_weights: False
   weight_map: False
-  calculate_weight_map: True
+  calculate_weight_map: False
   
 transforms:
-  width: 512
-  height: 512
-  h_flip: 0.5
-  v_flip: 0.5
-  brightness: 0.0
-  contrast: 0.0
-  rgb_shift : 0.0
-  random_shadow: 0.0
-  blur: 0.0
+  Resize: width = 512, height = 512
+  HorizontalFlip: p=0
+  VerticalFlip: p=0
+  RandomBrightnessContrast: p=0
+  RGBShift: p=0.0
+  RandomShadow : p=0.0
+  GaussianBlur: p=0.0
+  Transpose: p=0
+  RandomRotate90: p=0
+  Perspective: p=0.0
+  Affine: p=0.0
+  ToGray: p=0.0
+  RandomScale: p=0.0
 
 
   

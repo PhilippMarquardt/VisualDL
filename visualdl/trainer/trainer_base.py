@@ -16,7 +16,6 @@ class TrainerBase(ABC):
         self.batch_sizes = self.cfg['settings']['batch_size']
         self.nc = self.cfg['settings']['nc']
         self.critetions = self.cfg['settings']['criterions']
-        
         self.metrics = [eval(f"{metric['name']} ({metric['params']})") for metric in self.cfg['settings']['metrics']]
         self.monitor_metric = eval(f"{self.cfg['settings']['monitor_metric_name']} ({self.cfg['settings']['monitor_metric_params']})")
         self.optimizer = self.cfg['settings']['optimizer']
@@ -29,7 +28,7 @@ class TrainerBase(ABC):
         self.test_path = self.cfg['data']['test']
         self.epochs = self.cfg['settings']['epochs']
         self.calculate_class_weights = self.cfg['settings']['class_weights']
-        transforms = get_transform_from_config(cfg=self.cfg)
+        transforms, valid_trans = get_transform_from_config(cfg=self.cfg)
         #initialize loaders
         if self.type == "segmentation": 
             dataset = SegmentationDataset
@@ -40,9 +39,9 @@ class TrainerBase(ABC):
         self.valid_loaders = [None] * len(self.batch_sizes)
         self.test_laoders = [None] * len(self.batch_sizes)
         if self.valid_path != '':
-            self.valid_loaders = [get_dataloader(dataset(self.valid_path, transform = None), batch_size, self.workers) for batch_size in self.batch_sizes]
+            self.valid_loaders = [get_dataloader(dataset(self.valid_path, transform = valid_trans), batch_size, self.workers) for batch_size in self.batch_sizes]
         if self.test_path != '':
-            self.test_loaders = [get_dataloader(dataset(self.test_path, transform = None), batch_size, self.workers) for batch_size in self.batch_sizes]
+            self.test_loaders = [get_dataloader(dataset(self.test_path, transform = valid_trans), batch_size, self.workers) for batch_size in self.batch_sizes]
         self.class_weights = torch.FloatTensor(self.train_loaders[0].dataset.class_weights).to('cuda:0' if torch.cuda.is_available() else 'cpu') if self.calculate_class_weights else None
 
     @abstractmethod

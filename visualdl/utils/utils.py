@@ -68,7 +68,7 @@ def get_weight_map(imgs):
         dilate_img = cv2.dilate(img, kernel, iterations=1)
         img1_bg = dilate_img - img
         img1 = img1_bg[:,:,0]
-        clipper = np.clip(img1, 1, 6)
+        clipper = np.clip(img1, 1, 3)
         weight_maps.append(clipper) # weight edges by factor (e.g. 6)
     weight_maps = torch.tensor(weight_maps)
     return weight_maps
@@ -82,9 +82,14 @@ def get_transform_from_config(cfg:dict):
         cfg (dict): The config.
     """
     transforms = []
+    valid_trans = []
     for key, val in cfg['transforms'].items():
+        if key == "Resize":
+            valid_trans.append(eval(f"A.{key}({val})"))
         transforms.append(eval(f"A.{key}({val})"))
-    return A.Compose(transforms)
+    if len(valid_trans) == 0:
+        valid_trans = None
+    return A.Compose(transforms), A.Compose(valid_trans)
                  
         
 

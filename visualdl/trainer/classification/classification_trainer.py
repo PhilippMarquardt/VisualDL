@@ -25,7 +25,7 @@ class ClassificationTrainer(TrainerBase):
         assert len(self.cfg['settings']['batch_size']) == len(self.cfg['model_names'])    
         logging.info(f"Training classification model with the following config:\n {pprint.pformat(self.cfg)}")    
         self.models = [ClassificationModel(name, self.nc, self.critetions, self.metrics, self.monitor_metric,
-                                            self.optimizer, self.lr, self.gradient_accumulation,self.tensorboard_dir, self.class_weights, self.calculate_weight_map) for name in self.cfg['model_names']]
+                                            self.optimizer, self.lr, self.gradient_accumulation,self.tensorboard_dir, self.class_weights) for name in self.cfg['model_names']]
                                             
     def train(self):
         logging.info("Starting training training!")

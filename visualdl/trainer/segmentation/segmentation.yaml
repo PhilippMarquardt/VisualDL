@@ -1,9 +1,9 @@
 type: "segmentation"
 
 data:
-  train: "C:/Users/phili/Downloads/Telegram Desktop/CellsFinal/Cells/right side/cells/train"
-  valid: "C:/Users/phili/Downloads/Telegram Desktop/CellsFinal/Cells/right side/cells/valid"
-  test: "C:/Users/phili/Downloads/Telegram Desktop/CellsFinal/Cells/right side/cells/valid"
+  train: "C:/Users/phili/Downloads/Telegram Desktop/CellsFinal/Cells/merged/train"
+  valid: "C:/Users/phili/Downloads/Telegram Desktop/CellsFinal/Cells/merged/valid"
+  test: "C:/Users/phili/Downloads/Telegram Desktop/CellsFinal/Cells/merged/valid"
   #train: "E:/source/repos/HSAData/Evican/train"
   #valid: "E:/source/repos/HSAData/Evican/valid"
   #test: "E:/source/repos/HSAData/Evican/valid"
@@ -20,18 +20,15 @@ models:
   - backbone: "timm-u-resnest50d"
     decoder: "UnetPlusPlus"
 
-  - backbone: "timm-u-resnest50d"
-    decoder: "EfficientUnetPlusPlus"
 
 settings:
   nc: 2
   in_channels: 3
   epochs: 5000
   optimizer: "AdamW"
-  lr: 0.00001
+  lr: 0.0001
   workers: 0
   batch_size:
-    - 8
     - 8
 
   gradient_accumulation: 8
@@ -54,14 +51,14 @@ transforms:
   HorizontalFlip: p=0.25
   VerticalFlip: p=0.25
   RandomBrightnessContrast: p=0.15
-  RGBShift: p=0.1
-  RandomShadow : p=0.1
+  RGBShift: p=0.0
+  RandomShadow : p=0.0
   GaussianBlur: p=0.0
-  Transpose: p=0.1
-  RandomRotate90: p=0.5
+  Transpose: p=0.15
+  RandomRotate90: p=0.15
   Perspective: p=0.0
   Affine: p=0.0
-  ToGray: p=0.15
+  ToGray: p=0.0
   RandomScale: p=0.0
 
 
