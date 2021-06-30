@@ -2,18 +2,30 @@ from setuptools import setup, find_packages
 import pkg_resources
 import pathlib
 
-with pathlib.Path('requirements.txt').open() as requirements_txt:
-    install_requires = [
-        str(requirement)
-        for requirement
-        in pkg_resources.parse_requirements(requirements_txt)
-    ]
 
 setup(
   name = 'visualdl',
   packages = find_packages(),
   version = '0.0.2',
-  install_requires=install_requires,
+  install_requires=[
+    'timm'
+,
+'pytorch-gradcam'
+,
+'albumentations'
+,
+'scikit-image'
+,
+'grad-cam'
+,
+'torchmetrics'
+,
+'tensorboard'
+,
+'ttach'
+
+  ],
+  dependency_links = ['git+https://github.com/PhilippMarquardt/segmentation_models.pytorch.git'],
   license='MIT',
   description = 'VisualDL - pytorch',
   author = 'Philipp Marquardt',

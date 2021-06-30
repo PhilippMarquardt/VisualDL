@@ -10,6 +10,8 @@ pytorch-gradcam
 
 albumentations
 
+git+https://github.com/PhilippMarquardt/segmentation_models.pytorch.git
+
 scikit-image
 
 grad-cam
@@ -21,4 +23,3 @@ tensorboard
 ttach
 
 
-git+https://github.com/PhilippMarquardt/segmentation_models.pytorch.git
