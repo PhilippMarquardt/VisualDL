@@ -22,4 +22,5 @@ tensorboard
 
 ttach
 
+tqdm
 

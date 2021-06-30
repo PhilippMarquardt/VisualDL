@@ -8,6 +8,8 @@ setup(
   packages = find_packages(),
   version = '0.0.2',
   install_requires=[
+'segmentation_models_pytorch @ git+https://github.com/PhilippMarquardt/segmentation_models.pytorch.git@master'
+    ,
     'timm'
 ,
 'pytorch-gradcam'
@@ -23,9 +25,10 @@ setup(
 'tensorboard'
 ,
 'ttach'
+,
+'tqdm'
 
   ],
-  dependency_links = ['git+https://github.com/PhilippMarquardt/segmentation_models.pytorch.git'],
   license='MIT',
   description = 'VisualDL - pytorch',
   author = 'Philipp Marquardt',
