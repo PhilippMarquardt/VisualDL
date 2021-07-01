@@ -127,10 +127,10 @@ def evaluate(model, valid_bar, criterions, criterion_scaling, writer, metrics, m
 
         for metric, val in zip(metrics, epoch_values):
             writer.add_scalar(f"valid/valid-{name}-{metric.__class__.__name__}", val, epoch)
-        writer.add_scalar(f"valid/valid-loss", current_loss.item(), epoch)
+        
         total_loss += loss.item()
         current_loss = total_loss / float((cnt+1))
-        
+        writer.add_scalar(f"valid/valid-loss", current_loss.item(), 0)
         valid_bar.set_description(metric_str % tuple([epoch+1, current_loss]+epoch_values))     
         
     for metric in metrics:
