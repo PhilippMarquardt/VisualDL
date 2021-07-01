@@ -130,7 +130,7 @@ def evaluate(model, valid_bar, criterions, criterion_scaling, writer, metrics, m
         
         total_loss += loss.item()
         current_loss = total_loss / float((cnt+1))
-        writer.add_scalar(f"valid/valid-loss", current_loss, 0)
+        writer.add_scalar(f"valid/valid-loss", current_loss, epoch)
         valid_bar.set_description(metric_str % tuple([epoch+1, current_loss]+epoch_values))     
         
     for metric in metrics:
