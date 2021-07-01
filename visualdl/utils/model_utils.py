@@ -88,8 +88,10 @@ def train_one_epoch(model, training_bar, criterions, criterion_scaling, average_
         for metric, val in zip(metrics, epoch_values):
             writer.add_scalar(f"train/train-{name}-{metric.__class__.__name__}", val, epoch)
         
+        
         total_loss += loss.item()
         current_loss = total_loss / float((cnt+1))
+        writer.add_scalar(f"train/train-loss", current_loss.item(), epoch)
         training_bar.set_description(metric_str % tuple([epoch+1, current_loss, best_metric]+epoch_values))   
 
     
@@ -125,7 +127,7 @@ def evaluate(model, valid_bar, criterions, criterion_scaling, writer, metrics, m
 
         for metric, val in zip(metrics, epoch_values):
             writer.add_scalar(f"valid/valid-{name}-{metric.__class__.__name__}", val, epoch)
-        
+        writer.add_scalar(f"valid/valid-loss", current_loss.item(), epoch)
         total_loss += loss.item()
         current_loss = total_loss / float((cnt+1))
         

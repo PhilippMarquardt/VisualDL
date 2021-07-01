@@ -18,13 +18,13 @@ data:
 # anchors
 models:
   - backbone: "timm-u-resnest50d"
-    decoder: "UnetPlusPlus"
+    decoder: "EfficientUnetPlusPlus"
 
 
 settings:
   nc: 2
   in_channels: 3
-  epochs: 5000
+  epochs: 1
   optimizer: "AdamW"
   lr: 0.0001
   workers: 0
@@ -35,7 +35,7 @@ settings:
   criterions: #criterions defined in segmentation_models_pytorch.utils.losses can be used
     - "CrossEntropyLoss"
     - "DiceLoss"
-  tensorboard_log_dir: "tensorboard_logs"
+  tensorboard_log_dir: "tensorboard_log"
   metrics:
     - name: "Accuracy"
       params: "num_classes=2"
