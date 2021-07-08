@@ -44,6 +44,7 @@ settings:
   class_weights: False
   weight_map: False
   calculate_weight_map: False
+  early_stopping: 10
   
 transforms:
   Resize: width = 512, height = 512

@@ -19,7 +19,7 @@ def visualize(model, layer, image):
         return cam
 
 
-def train_all_epochs(model, train_loader, valid_loader, test_loader, epochs, criterions, metrics, monitor_metric, writer, optimizer, accumulate_batch, criterion_scaling = None, average_outputs = False, name:str = "", weight_map = False, save_folder = ""):
+def train_all_epochs(model, train_loader, valid_loader, test_loader, epochs, criterions, metrics, monitor_metric, writer, optimizer, accumulate_batch, criterion_scaling = None, average_outputs = False, name:str = "", weight_map = False, save_folder = "", early_stopping = 10):
     #criterions = [torch.nn.CrossEntropyLoss(reduction="none")]
     device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
     scaler = torch.cuda.amp.GradScaler(enabled = False if device == 'cpu' else True)
@@ -40,7 +40,7 @@ def train_all_epochs(model, train_loader, valid_loader, test_loader, epochs, cri
                 cnt = 0
             else:
                 cnt +=1
-            if cnt >= 75:
+            if cnt >= early_stopping:
                 torch.save(model.state_dict(), os.path.join(save_folder, name + "last.pt"))
                 model.load_state_dict(torch.load(os.path.join(save_folder, name + ".pt")))
                 return
@@ -68,6 +68,9 @@ def train_one_epoch(model, training_bar, criterions, criterion_scaling, average_
             #        loss += tmp
             #TODO: add weight map here
             weight_maps = get_weight_map(y.detach().cpu().numpy() * 255.).to(device) if weight_map else None
+            #for cnt, map in enumerate(weight_maps):
+            #    map[map == 1] = 0
+            #    cv2.imwrite(f"{cnt}.png", map.detach().cpu().numpy()  * 255.)
             loss = criterions(predictions, y, weight_maps)
             #weight_maps = get_weight_map(y.detach().cpu().numpy() * 255.).to(device)
             #loss *= weight_maps

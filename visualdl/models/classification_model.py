@@ -15,8 +15,8 @@ from torch.utils.tensorboard import SummaryWriter
 from torch.optim import *
 
 class ClassificationModel(ModelBase):
-    def __init__(self, name, nc, criterions, metrics, monitor_metric, optimizer, lr, accumulate_batch, tensorboard_dir, class_weights, weight, save_folder):
-        super().__init__(nc, criterions, metrics, monitor_metric, optimizer, lr, accumulate_batch, tensorboard_dir, class_weights, model = timm.create_model(name, pretrained=True, num_classes = nc), calculate_weight_map=False, weight=weight, save_folder=save_folder)
+    def __init__(self, name, nc, criterions, metrics, monitor_metric, optimizer, lr, accumulate_batch, tensorboard_dir, class_weights, weight, save_folder, early_stopping):
+        super().__init__(nc, criterions, metrics, monitor_metric, optimizer, lr, accumulate_batch, tensorboard_dir, class_weights, model = timm.create_model(name, pretrained=True, num_classes = nc), calculate_weight_map=False, weight=weight, save_folder=save_folder,early_stopping=early_stopping)
         self.name = name
 
     def __call__(self, x):
@@ -37,7 +37,8 @@ class ClassificationModel(ModelBase):
                     crit.weight = torch.tensor(train_loader.dataset.class_weights).to('cuda:0' if torch.cuda.is_available() else 'cpu')
         train_all_epochs(model = self.model, train_loader = train_loader, valid_loader=valid_loader, test_loader = test_loader, 
         epochs=epochs, criterions=self.loss, metrics = self.metrics, monitor_metric = self.monitor_metric, writer=self.writer, name=self.name, optimizer=self.optimizer, accumulate_batch=self.accumulate_batch,weight_map=self.calculate_weight_map,
-        save_folder=self.save_folder)
+        save_folder=self.save_folder,
+        early_stopping=self.early_stopping)
 
     def test(self, test_loader):
         pass
