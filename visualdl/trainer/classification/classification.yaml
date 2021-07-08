@@ -6,11 +6,9 @@ data:
   test: "C:/Users/phili/Downloads/Telegram Desktop/dataset_valid"
 
   weights: 
-    - "imagenet"
-    - "imagenet"
-    - "imagenet"
+    - None
 
-  save_folder: "" 
+  save_folder: "E:/source/repos/VisualDL" 
   
 # anchors
 model_names:

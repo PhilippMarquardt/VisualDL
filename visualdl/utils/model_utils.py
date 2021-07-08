@@ -7,6 +7,9 @@ from tqdm import tqdm
 from .utils import get_all_combinations, get_weight_map
 from torchmetrics import ConfusionMatrix
 import logging
+import os
+
+
 def visualize(model, layer, image):
         cam = GradCAM(model=model, target_layer=layer, use_cuda=torch.cuda.is_available())
         heatmap = cv2.applyColorMap(np.uint8(255 * cam(input_tensor=image.unsqueeze(0))[0,:]), cv2.COLORMAP_JET)
@@ -16,13 +19,13 @@ def visualize(model, layer, image):
         return cam
 
 
-def train_all_epochs(model, train_loader, valid_loader, test_loader, epochs, criterions, metrics, monitor_metric, writer, optimizer, accumulate_batch, criterion_scaling = None, average_outputs = False, name:str = "", weight_map = False):
+def train_all_epochs(model, train_loader, valid_loader, test_loader, epochs, criterions, metrics, monitor_metric, writer, optimizer, accumulate_batch, criterion_scaling = None, average_outputs = False, name:str = "", weight_map = False, save_folder = ""):
     #criterions = [torch.nn.CrossEntropyLoss(reduction="none")]
     device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
     scaler = torch.cuda.amp.GradScaler(enabled = False if device == 'cpu' else True)
     model = model.to(device)
     accumulate_every = accumulate_batch // train_loader.batch_size
-    best_metric = float("-inf")
+    best_metric = float("inf")
     cnt = 0
     for epoch in range(epochs):
         training_bar = tqdm(train_loader)
@@ -31,15 +34,15 @@ def train_all_epochs(model, train_loader, valid_loader, test_loader, epochs, cri
             valid_bar = tqdm(valid_loader)
             tmp = evaluate(model, valid_bar, criterions=criterions, criterion_scaling=criterion_scaling, writer=writer, metrics=metrics, monitor_metric=monitor_metric, device=device,
             epoch=epoch, name = name, average_outputs=False)
-            if best_metric < tmp:
+            if best_metric > tmp:
                 best_metric = tmp
-                torch.save(model.state_dict(), name + ".pt")
+                torch.save(model.state_dict(), os.path.join(save_folder, name + ".pt"))
                 cnt = 0
             else:
                 cnt +=1
             if cnt >= 75:
-                torch.save(model.state_dict(), name + "last.pt")
-                model.load_state_dict(torch.load(name + ".pt"))
+                torch.save(model.state_dict(), os.path.join(save_folder, name + "last.pt"))
+                model.load_state_dict(torch.load(os.path.join(save_folder, name + ".pt")))
                 return
                 
 
@@ -136,6 +139,8 @@ def evaluate(model, valid_bar, criterions, criterion_scaling, writer, metrics, m
     for metric in metrics:
         metric.reset()
     model.train()
+
+    return total_loss / len(valid_bar)
     return monitor_metric.compute()
 
 def test_trainer(models: list, test_loaders, metrics):

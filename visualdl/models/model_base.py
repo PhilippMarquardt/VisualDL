@@ -6,10 +6,11 @@ import torch
 from torch.utils.tensorboard import SummaryWriter
 
 class ModelBase(ABC):    
-    def __init__(self, nc, criterions, metrics, monitor_metric, optimizer, lr, accumulate_batch, tensorboard_dir, class_weights, model, calculate_weight_map):
+    def __init__(self, nc, criterions, metrics, monitor_metric, optimizer, lr, accumulate_batch, tensorboard_dir, class_weights, model, calculate_weight_map, weight, save_folder):
         self.nc = nc
         self.model = model
-        #self.model.load_state_dict(torch.load(r"E:\source\repos\VisualDL\timm-u-resnest50d, UnetPlusPlus.pt"))
+        if weight is not "None" and weight.endswith(".pt"):
+            self.model.load_state_dict(torch.load(weight))
         self.criterions = criterions
         self.metrics = metrics
         self.lr = lr
@@ -23,11 +24,12 @@ class ModelBase(ABC):
         if class_weights is not None:
             for crit in self.criterions:
                 crit.weight = class_weights
-
+        self.save_folder = save_folder
         self.loss = MultiLoss(self.criterions)
 
         
-        
+    
+       
     @abstractmethod
     def train(self):
         pass

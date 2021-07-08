@@ -27,6 +27,8 @@ class TrainerBase(ABC):
         self.valid_path = self.cfg['data']['valid']
         self.test_path = self.cfg['data']['test']
         self.epochs = self.cfg['settings']['epochs']
+        self.weights = self.cfg['data']['weights']
+        self.save_folder = self.cfg['data']['save_folder']
         self.calculate_class_weights = self.cfg['settings']['class_weights']
         transforms, valid_trans = get_transform_from_config(cfg=self.cfg)
         #initialize loaders

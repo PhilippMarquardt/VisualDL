@@ -1,30 +1,29 @@
 type: "segmentation"
 
 data:
-  train: "C:/Users/phili/Downloads/Telegram Desktop/CellsFinal/Cells/merged/train"
-  valid: "C:/Users/phili/Downloads/Telegram Desktop/CellsFinal/Cells/merged/valid"
-  test: "C:/Users/phili/Downloads/Telegram Desktop/CellsFinal/Cells/merged/valid"
-  #train: "E:/source/repos/HSAData/Evican/train"
-  #valid: "E:/source/repos/HSAData/Evican/valid"
-  #test: "E:/source/repos/HSAData/Evican/valid"
+  #train: "C:/Users/phili/Downloads/Telegram Desktop/CellsFinal/Cells/right side/cells/train"
+  #valid: "C:/Users/phili/Downloads/Telegram Desktop/CellsFinal/Cells/right side/cells/valid"
+  #test: "C:/Users/phili/Downloads/Telegram Desktop/CellsFinal/Cells/right side/cells/valid"
+  train: "C:/Users/phili/Downloads/Telegram Desktop/hubt/dataset/Cells/train"
+  valid: "C:/Users/phili/Downloads/Telegram Desktop/hubt/dataset/Cells/valid"
+  test: "C:/Users/phili/Downloads/Telegram Desktop/hubt/dataset/Cells/valid"
+  
 
   weights: 
-    - "None"
-    - "imagenet"
-    - "imagenet"
+    - "E:/source/repos/VisualDL/PLA2/timm-u-resnest50d, UnetPlusPlus.pt"
 
-  save_folder: "" 
+  save_folder: "E:/source/repos/VisualDL" 
 
 # anchors
 models:
   - backbone: "timm-u-resnest50d"
-    decoder: "EfficientUnetPlusPlus"
+    decoder: "UnetPlusPlus"
 
 
 settings:
   nc: 2
   in_channels: 3
-  epochs: 1
+  epochs: 5000
   optimizer: "AdamW"
   lr: 0.0001
   workers: 0
@@ -34,7 +33,6 @@ settings:
   gradient_accumulation: 8
   criterions: #criterions defined in segmentation_models_pytorch.utils.losses can be used
     - "CrossEntropyLoss"
-    - "DiceLoss"
   tensorboard_log_dir: "tensorboard_log"
   metrics:
     - name: "Accuracy"
@@ -47,7 +45,7 @@ settings:
   calculate_weight_map: True
 
 transforms:
-  Resize: width = 128, height = 128
+  Resize: width = 256, height = 256
   HorizontalFlip: p=0.25
   VerticalFlip: p=0.25
   RandomBrightnessContrast: p=0.15
