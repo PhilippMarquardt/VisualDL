@@ -74,6 +74,9 @@ def train_one_epoch(model, training_bar, criterions, criterion_scaling, average_
             loss = criterions(predictions, y, weight_maps)
             #weight_maps = get_weight_map(y.detach().cpu().numpy() * 255.).to(device)
             #loss *= weight_maps
+            #for cnt, yy in enumerate(y):
+            #    cv2.imwrite(f"{cnt}.png", yy.detach().cpu().numpy() * 255)
+
 
 
             #loss = loss.mean()
@@ -144,7 +147,7 @@ def evaluate(model, valid_bar, criterions, criterion_scaling, writer, metrics, m
     model.train()
 
     return total_loss / len(valid_bar)
-    return monitor_metric.compute()
+    #return monitor_metric.compute()
 
 def test_trainer(models: list, test_loaders, metrics):
     assert test_loaders

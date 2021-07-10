@@ -23,6 +23,7 @@ class SegmentationTrainer(TrainerBase):
         super().__init__(cfg_path)
         assert self.cfg['type'] == "segmentation", "Provided yaml file must be a segmentation model config!"
         assert len(self.cfg['settings']['batch_size']) == len(self.cfg['models'])
+        assert len(self.weights) == len(self.cfg['models'])
         logging.info(f"Training segmentation model with the following config:\n {pprint.pformat(self.cfg)}")
         
 

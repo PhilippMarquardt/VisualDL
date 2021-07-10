@@ -3,14 +3,18 @@ from torch.optim import *
 from torch.nn import *
 from ..utils.losses import DiceLoss, MultiLoss
 import torch
+import logging
 from torch.utils.tensorboard import SummaryWriter
 
 class ModelBase(ABC):    
     def __init__(self, nc, criterions, metrics, monitor_metric, optimizer, lr, accumulate_batch, tensorboard_dir, class_weights, model, calculate_weight_map, weight, save_folder, early_stopping):
         self.nc = nc
         self.model = model
-        if weight is not "None" and weight.endswith(".pt"):
-            self.model.load_state_dict(torch.load(weight))
+        if weight != "None" and weight.endswith(".pt"):
+            try:
+                self.model.load_state_dict(torch.load(weight), strict = False)
+            except:
+                logging.warning(f"Could not load weights from {weight}")
         self.criterions = criterions
         self.metrics = metrics
         self.lr = lr
