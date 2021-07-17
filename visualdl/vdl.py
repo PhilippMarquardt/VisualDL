@@ -12,3 +12,5 @@ def main(cfg_path):
         t = SegmentationTrainer(cfg_path=cfg_path)
     t.train()
     print(t.test())
+
+

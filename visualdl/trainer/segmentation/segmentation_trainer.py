@@ -43,7 +43,8 @@ class SegmentationTrainer(TrainerBase):
                         self.calculate_weight_map,
                         weight,
                         self.save_folder,
-                        self.early_stopping)  for models, weight in zip(self.cfg['models'], self.weights)]
+                        self.early_stopping,
+                        self.cfg['settings']['scales'])  for models, weight in zip(self.cfg['models'], self.weights)]
 
         
         

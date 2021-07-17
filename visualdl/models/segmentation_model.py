@@ -7,26 +7,40 @@ from ..utils.losses import *
 from torch.nn import *
 from torch.optim import *
 from ..utils.utils import timm_universal_encoders
+from .multiscale import MultiScaleSegmentation, HieraricalMultiScale
 from uformer_pytorch import Uformer
+from .custom import U2NET
+from .TransInUnet import TransInUnet
+
 
 class SegmentationModel(ModelBase):
-    def __init__(self, encoder_name, decoder_name, nc, in_channels, criterions, metrics, monitor_metric, optimizer, lr, accumulate_batch, tensorboard_dir, class_weights, calculate_weight_map, weight, save_folder, early_stopping):
+    def __init__(self, encoder_name, decoder_name, nc, in_channels, criterions, metrics, monitor_metric, optimizer, lr, accumulate_batch, tensorboard_dir, class_weights, calculate_weight_map, weight, save_folder, early_stopping, multi_scale = None):
         #if encoder_name not in timm_universal_encoders(pretrained=True) and "timm-u" in encoder_name:
         #    model = eval(f'smp.{decoder_name}(encoder_name="{encoder_name}", encoder_weights="None", in_channels={in_channels}, classes = {nc})')
         #else:
-        try:
-            model = eval(f'smp.{decoder_name}(encoder_name="{encoder_name}", encoder_weights="imagenet", in_channels={in_channels}, classes = {nc})')
-        except:
-            model = Uformer(
-                    dim = 64,           # initial dimensions after input projection, which increases by 2x each stage
-                    stages = 4,         # number of stages
-                    num_blocks = 2,     # number of transformer blocks per stage
-                    window_size = 8,   # set window size (along one side) for which to do the attention within
-                    dim_head = 64,
-                    heads = 6,
-                    ff_mult = 2,
-                    output_channels=nc
-                )
+        #try:
+        
+        if decoder_name == "U2NET":
+            model = U2NET(in_channels, nc)
+        elif decoder_name == "TransInUnet":
+            model =TransInUnet(128, nc)
+        else:
+            #model = eval(f'smp.{decoder_name}(encoder_name="{encoder_name}", encoder_weights="imagenet", in_channels={in_channels}, classes = {nc}, image_size = 128)')
+            model = eval(f'smp.create_model(arch="{decoder_name}", encoder_name="{encoder_name}", encoder_weights="imagenet", in_channels={in_channels}, classes = {nc}, image_size = {128})')
+        #if multi_scale is not None and multi_scale is not 'None' and len(multi_scale) > 0:
+        #    model = MultiScaleSegmentation(model, multi_scale)
+        
+        # except:
+        #     model = Uformer(
+        #             dim = 64,           # initial dimensions after input projection, which increases by 2x each stage
+        #             stages = 4,         # number of stages
+        #             num_blocks = 2,     # number of transformer blocks per stage
+        #             window_size = 8,   # set window size (along one side) for which to do the attention within
+        #             dim_head = 64,
+        #             heads = 2,
+        #             ff_mult = 2,
+        #             output_channels=nc
+        #         )
     
             
         super().__init__(nc, criterions, metrics, monitor_metric, optimizer, lr, accumulate_batch, tensorboard_dir, class_weights, model = model, calculate_weight_map = calculate_weight_map, weight = weight, save_folder=save_folder, early_stopping=early_stopping)

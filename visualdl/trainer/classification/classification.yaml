@@ -12,8 +12,6 @@ data:
   
 # anchors
 model_names:
-  - "regnety_004"
-  - "efficientnet_b0"
   - "resnext50_32x4d"
 
 
@@ -24,10 +22,8 @@ settings:
   lr: 0.0001
   workers: 0
   batch_size:
-    - 16
-    - 16
     - 8
-  gradient_accumulation: 16
+  gradient_accumulation: 8
   criterions:
     - "CrossEntropyLoss"
   tensorboard_log_dir: "tensorboard_logs"
@@ -42,20 +38,19 @@ settings:
   monitor_metric_name: "Accuracy"
   monitor_metric_params: "num_classes=5"
   class_weights: False
-  weight_map: False
   calculate_weight_map: False
-  early_stopping: 10
+  early_stopping: 50
   
 transforms:
   Resize: width = 512, height = 512
-  HorizontalFlip: p=0
-  VerticalFlip: p=0
+  HorizontalFlip: p=0.25
+  VerticalFlip: p=0.25
   RandomBrightnessContrast: p=0
   RGBShift: p=0.0
   RandomShadow : p=0.0
   GaussianBlur: p=0.0
   Transpose: p=0
-  RandomRotate90: p=0
+  RandomRotate90: p=0.15
   Perspective: p=0.0
   Affine: p=0.0
   ToGray: p=0.0

@@ -1,25 +1,34 @@
 type: "segmentation"
 
 data:
-  #train: "E:/source/repos/Daten/Cells/train"
-  #valid: "E:/source/repos/Daten/Cells/valid"
-  #test: "E:/source/repos/Daten/Cells/valid"
+  train: "E:/source/repos/Daten/Cells/train"
+  valid: "E:/source/repos/Daten/Cells/valid"
+  test: "E:/source/repos/Daten/Cells/valid"
   #train: "E:/source/repos/Daten/HER-N/hubt/dataset/Cells/train"
   #valid: "E:/source/repos/Daten/HER-N/hubt/dataset/Cells/valid"
   #test: "E:/source/repos/Daten/HER-N/hubt/dataset/Cells/valid"
-  train: "E:/source/repos/Daten/PLA/train"
-  valid: "E:/source/repos/Daten/PLA/val"
-  test: "E:/source/repos/Daten/PLA/val"
+  #train: "E:/source/repos/Daten/PLA/train"
+  #valid: "E:/source/repos/Daten/PLA/val"
+  #test: "E:/source/repos/Daten/PLA/val"
+  #train: "E:/source/repos/Daten/Nuclei/Nuclei/Nuclei/train"
+  #valid: "E:/source/repos/Daten/Nuclei/Nuclei/Nuclei/val"
+  #test: "E:/source/repos/Daten/Nuclei/Nuclei/Nuclei/val"
+  #train: "custom_experiments/train"
+  #valid: "custom_experiments/valid"
+  #test: "custom_experiments/valid"
   
 
   weights: 
-    - "resnext50_32x4d, UnetPlussPluslast.pt"
+    - ""
+
   save_folder: "E:/source/repos/VisualDL" 
 
 # anchors
 models:
   - backbone: "resnext50_32x4d"
-    decoder: "UnetPlussPlus"
+    decoder: "Unet"
+
+
 
 
 
@@ -32,12 +41,10 @@ settings:
   workers: 4
   batch_size:
     - 2
-
+  scales: "None" #or None
   gradient_accumulation: 2
   criterions: #criterions defined in segmentation_models_pytorch.utils.losses can be used
     - "CrossEntropyLoss"
-    - "DiceLoss"
-
   tensorboard_log_dir: "tensorboard_log"
   metrics:
     - name: "Accuracy"
@@ -48,7 +55,7 @@ settings:
   monitor_metric_params: "num_classes=2"
   class_weights: False
   calculate_weight_map: False
-  early_stopping: 20
+  early_stopping: 500
 
 transforms:
   Resize: width = 128, height = 128

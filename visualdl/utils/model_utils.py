@@ -25,7 +25,7 @@ def train_all_epochs(model, train_loader, valid_loader, test_loader, epochs, cri
     scaler = torch.cuda.amp.GradScaler(enabled = False if device == 'cpu' else True)
     model = model.to(device)
     accumulate_every = accumulate_batch // train_loader.batch_size
-    best_metric = float("inf")
+    best_metric = float("-inf")
     cnt = 0
     for epoch in range(epochs):
         training_bar = tqdm(train_loader)
@@ -34,7 +34,7 @@ def train_all_epochs(model, train_loader, valid_loader, test_loader, epochs, cri
             valid_bar = tqdm(valid_loader)
             tmp = evaluate(model, valid_bar, criterions=criterions, criterion_scaling=criterion_scaling, writer=writer, metrics=metrics, monitor_metric=monitor_metric, device=device,
             epoch=epoch, name = name, average_outputs=False)
-            if best_metric > tmp:
+            if best_metric <= tmp:
                 best_metric = tmp
                 torch.save(model.state_dict(), os.path.join(save_folder, name + ".pt"))
                 cnt = 0
@@ -146,8 +146,8 @@ def evaluate(model, valid_bar, criterions, criterion_scaling, writer, metrics, m
         metric.reset()
     model.train()
 
-    return total_loss / len(valid_bar)
-    #return monitor_metric.compute()
+    #return total_loss / len(valid_bar)
+    return monitor_metric.compute()
 
 def test_trainer(models: list, test_loaders, metrics):
     assert test_loaders
