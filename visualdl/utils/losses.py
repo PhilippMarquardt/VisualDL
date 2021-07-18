@@ -12,7 +12,7 @@ from torch.nn.modules.loss import CrossEntropyLoss
 class MultiLoss():
     def __init__(self, losses):
         self.losses = losses
-        self.included = [CrossEntropyLoss]
+        self.included = [CrossEntropyLoss] #Only the included ones apply the weight map
 
     def get_loss(self, loss, inp, target, weight_map):
         if any([type(loss) == x for x in self.included]):

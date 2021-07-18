@@ -1,64 +1,72 @@
 type: "segmentation"
 
 data:
-  train: "E:/source/repos/Daten/Cells/train"
-  valid: "E:/source/repos/Daten/Cells/valid"
-  test: "E:/source/repos/Daten/Cells/valid"
+  #train: "E:/source/repos/Daten/Cells/train"
+  #valid: "E:/source/repos/Daten/Cells/valid"
+  #test: "E:/source/repos/Daten/Cells/valid"
   #train: "E:/source/repos/Daten/HER-N/hubt/dataset/Cells/train"
   #valid: "E:/source/repos/Daten/HER-N/hubt/dataset/Cells/valid"
   #test: "E:/source/repos/Daten/HER-N/hubt/dataset/Cells/valid"
   #train: "E:/source/repos/Daten/PLA/train"
   #valid: "E:/source/repos/Daten/PLA/val"
   #test: "E:/source/repos/Daten/PLA/val"
-  #train: "E:/source/repos/Daten/Nuclei/Nuclei/Nuclei/train"
-  #valid: "E:/source/repos/Daten/Nuclei/Nuclei/Nuclei/val"
-  #test: "E:/source/repos/Daten/Nuclei/Nuclei/Nuclei/val"
+  train: "E:/source/repos/Daten/Nuclei/Nuclei/Nuclei/train"
+  valid: "E:/source/repos/Daten/Nuclei/Nuclei/Nuclei/val"
+  test: "E:/source/repos/Daten/Nuclei/Nuclei/Nuclei/val"
   #train: "custom_experiments/train"
   #valid: "custom_experiments/valid"
   #test: "custom_experiments/valid"
   
 
   weights: 
-    - ""
+    - "None"
 
   save_folder: "E:/source/repos/VisualDL" 
 
 # anchors
 models:
+
   - backbone: "resnext50_32x4d"
     decoder: "FullAxialUnet"
+
+
+  
+
+
 
 
 
 
 
 settings:
-  nc: 2
+  nc: 6
   in_channels: 3
   epochs: 5000
   optimizer: "AdamW"
   lr: 0.0001
-  workers: 4
+  workers: 0
   batch_size:
     - 2
+
   scales: "None" #or None
   gradient_accumulation: 2
   criterions: #criterions defined in segmentation_models_pytorch.utils.losses can be used
     - "CrossEntropyLoss"
+
   tensorboard_log_dir: "tensorboard_log"
   metrics:
     - name: "Accuracy"
-      params: "num_classes=2"
+      params: "num_classes=6"
     - name: "IoU"
-      params: "num_classes=2"
+      params: "num_classes=6"
   monitor_metric_name: "IoU"
-  monitor_metric_params: "num_classes=2"
+  monitor_metric_params: "num_classes=6"
   class_weights: False
   calculate_weight_map: False
-  early_stopping: 500
+  early_stopping: 10
 
 transforms:
-  Resize: width = 128, height = 128
+  Resize: width = 256, height = 256
   HorizontalFlip: p=0.25
   VerticalFlip: p=0.25
   RandomBrightnessContrast: p=0.0

@@ -68,10 +68,11 @@ def get_weight_map(imgs):
         dilate_img = cv2.dilate(img, kernel, iterations=1)
         img1_bg = dilate_img - img
         img1 = img1_bg[:,:,0]
-        clipper = np.clip(img1, 1, 4)
+        clipper = np.clip(img1, 1, 3)
         weight_maps.append(clipper) # weight edges by factor (e.g. 6)
     weight_maps = torch.tensor(weight_maps)
     return weight_maps
+    
 def parse_classification_config(config_path):
     pass
 

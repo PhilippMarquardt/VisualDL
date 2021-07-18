@@ -1,0 +1,70 @@
+type: "detection"
+
+data:
+  train: "E:/source/repos/Daten/Cells/train"
+  valid: "E:/source/repos/Daten/Cells/valid"
+  test: "E:/source/repos/Daten/Cells/valid"
+  #train: "E:/source/repos/Daten/HER-N/hubt/dataset/Cells/train"
+  #valid: "E:/source/repos/Daten/HER-N/hubt/dataset/Cells/valid"
+  #test: "E:/source/repos/Daten/HER-N/hubt/dataset/Cells/valid"
+  #train: "E:/source/repos/Daten/PLA/train"
+  #valid: "E:/source/repos/Daten/PLA/val"
+  #test: "E:/source/repos/Daten/PLA/val"
+  
+
+  weights: 
+    - "None"
+  save_folder: "E:/source/repos/VisualDL" 
+
+# anchors
+models:
+  - backbone: "resnext50_32x4d"
+    decoder: "UnetPlussPlus"
+
+
+
+settings:
+  nc: 2
+  in_channels: 3
+  epochs: 5000
+  optimizer: "AdamW"
+  lr: 0.00003
+  workers: 2
+  batch_size:
+    - 2
+
+  gradient_accumulation: 2
+  criterions: #criterions defined in segmentation_models_pytorch.utils.losses can be used
+    - "CrossEntropyLoss"
+    - "DiceLoss"
+
+  tensorboard_log_dir: "tensorboard_log"
+  metrics:
+    - name: "Accuracy"
+      params: "num_classes=2"
+    - name: "IoU"
+      params: "num_classes=2"
+  monitor_metric_name: "IoU"
+  monitor_metric_params: "num_classes=2"
+  class_weights: False
+  calculate_weight_map: True
+  early_stopping: 500
+
+transforms:
+  Resize: width = 128, height = 128
+  HorizontalFlip: p=0.25
+  VerticalFlip: p=0.25
+  RandomBrightnessContrast: p=0.0
+  RGBShift: p=0.0
+  RandomShadow : p=0.0
+  GaussianBlur: p=0.0
+  Transpose: p=0.15
+  RandomRotate90: p=0.15
+  Perspective: p=0.0
+  Affine: p=0.0
+  ToGray: p=0.0
+  RandomScale: p=0.0
+
+
+  
+

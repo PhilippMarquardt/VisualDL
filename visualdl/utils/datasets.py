@@ -77,7 +77,7 @@ class SegmentationDataset(Dataset):
         kernel = np.ones((2, 2), np.uint8)
         import cv2
         # Using cv2.erode() method 
-        mask = cv2.erode(mask, kernel) 
+        #mask = cv2.erode(mask, kernel) 
         return torch.tensor(img, dtype = torch.float).permute(2, 0, 1), torch.tensor(mask, dtype = torch.long)
 
 
