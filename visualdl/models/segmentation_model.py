@@ -1,3 +1,4 @@
+from numpy import e
 from visualdl.utils.utils import timm_universal_encoders
 from .model_base import ModelBase
 from ..utils.model_utils import evaluate, visualize,  train_all_epochs
@@ -14,7 +15,7 @@ from .TransInUnet import TransInUnet
 from .hrnet import HRNetV2
 
 class SegmentationModel(ModelBase):
-    def __init__(self, encoder_name, decoder_name, nc, in_channels, criterions, metrics, monitor_metric, optimizer, lr, accumulate_batch, tensorboard_dir, class_weights, calculate_weight_map, weight, save_folder, early_stopping, multi_scale = None, image_size = None):
+    def __init__(self, encoder_name, decoder_name, nc, in_channels, criterions, metrics, monitor_metric, optimizer, lr, accumulate_batch, tensorboard_dir, class_weights, calculate_weight_map, weight, save_folder, early_stopping, multi_scale = None, max_image_size = None, use_attention = False):
         #if encoder_name not in timm_universal_encoders(pretrained=True) and "timm-u" in encoder_name:
         #    model = eval(f'smp.{decoder_name}(encoder_name="{encoder_name}", encoder_weights="None", in_channels={in_channels}, classes = {nc})')
         #else:
@@ -22,12 +23,15 @@ class SegmentationModel(ModelBase):
         if decoder_name.lower() == "U2NET".lower():
             model = U2NET(in_channels, nc)
         elif decoder_name.lower() == "TransInUnet".lower():
-            model =TransInUnet(image_size, nc)
+            model =TransInUnet(max_image_size, nc)
         elif decoder_name.lower() == "HrNetV2".lower():
             model = HRNetV2(nc)
         else:
             #model = eval(f'smp.{decoder_name}(encoder_name="{encoder_name}", encoder_weights="imagenet", in_channels={in_channels}, classes = {nc}, image_size = 128)')
-            model = eval(f'smp.create_model(arch="{decoder_name}", encoder_name="{encoder_name}", encoder_weights="imagenet", in_channels={in_channels}, classes = {nc}, image_size = {image_size})')
+            if use_attention:
+                model = eval(f'smp.create_model(arch="{decoder_name}", encoder_name="{encoder_name}", encoder_weights="imagenet", in_channels={in_channels}, classes = {nc}, image_size = {max_image_size}, decoder_attention_type = "{"scse"}")')
+            else:
+                model = eval(f'smp.create_model(arch="{decoder_name}", encoder_name="{encoder_name}", encoder_weights="imagenet", in_channels={in_channels}, classes = {nc}, image_size = {max_image_size})')
         #if multi_scale is not None and multi_scale is not 'None' and len(multi_scale) > 0:
         #    model = MultiScaleSegmentation(model, multi_scale)
         

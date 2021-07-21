@@ -45,7 +45,8 @@ class SegmentationTrainer(TrainerBase):
                         self.save_folder,
                         self.early_stopping,
                         self.cfg['settings']['scales'],
-                        int(self.cfg['transforms']['Resize'][-3:]))  for models, weight in zip(self.cfg['models'], self.weights)]
+                        int(self.cfg['settings']['max_image_size']),
+                        self.use_attention)  for models, weight in zip(self.cfg['models'], self.weights)]
 
         
         

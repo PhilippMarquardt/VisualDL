@@ -58,7 +58,10 @@ def train_one_epoch(model, training_bar, criterions, criterion_scaling, average_
         #TODO implement average_outputs
         with torch.cuda.amp.autocast():
             loss = None
-            predictions = model(x)
+            try:
+                predictions = model(x)
+            except:
+                continue
             #for cr, scal in zip(criterions, criterion_scaling):
                 #cr = torch.nn.CrossEntropyLoss(reduction="none")
             #    if loss is None:
@@ -125,7 +128,10 @@ def evaluate(model, valid_bar, criterions, criterion_scaling, writer, metrics, m
         #TODO implement average_outputs
         with torch.cuda.amp.autocast():
             with torch.no_grad():
-                predictions = model(x)
+                try:
+                    predictions = model(x)
+                except:
+                    continue
             loss = criterions(predictions, y)
             predictions = torch.argmax(predictions, 1)
         monitor_metric.update(predictions.detach().cpu(), y.detach().cpu())

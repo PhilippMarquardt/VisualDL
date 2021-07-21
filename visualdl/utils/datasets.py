@@ -68,7 +68,7 @@ class SegmentationDataset(Dataset):
     def __getitem__(self, idx):
         img = io.imread(self.train_images[idx]).astype(np.float32)
         mask = io.imread(self.train_masks[idx], as_gray = True).astype(np.float32)
-        #mask[mask > 0] = 1.0
+        mask[mask > 0] = 1.0
         img = img/255.
         if self.transform:
             transformed = self.transform(image = img, mask = mask)

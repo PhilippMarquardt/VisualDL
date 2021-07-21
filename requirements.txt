@@ -24,3 +24,7 @@ ttach
 
 tqdm
 
+einops
+
+uformer-pytorch
+

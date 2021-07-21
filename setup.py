@@ -27,6 +27,10 @@ setup(
 'ttach'
 ,
 'tqdm'
+,
+'einops'
+,
+'uformer-pytorch'
 
   ],
   license='MIT',
