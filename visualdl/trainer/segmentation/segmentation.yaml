@@ -1,24 +1,24 @@
 type: "segmentation"
 
 data:
-  train: "C:/Users/phili/Downloads/Telegram Desktop/NeueCells/Cells/train"
-  valid: "C:/Users/phili/Downloads/Telegram Desktop/NeueCells/Cells/valid"
-  test: "C:/Users/phili/Downloads/Telegram Desktop/NeueCells/Cells/valid"
+  #train: "C:/Users/phili/Downloads/Telegram Desktop/NeueCells/Cells/train"
+  #valid: "C:/Users/phili/Downloads/Telegram Desktop/NeueCells/Cells/valid"
+  #test: "C:/Users/phili/Downloads/Telegram Desktop/NeueCells/Cells/valid"
   #train: "E:/source/repos/Daten/HER-N/hubt/dataset/Cells/train"
   #valid: "E:/source/repos/Daten/HER-N/hubt/dataset/Cells/valid"
   #test: "E:/source/repos/Daten/HER-N/hubt/dataset/Cells/valid"
   #train: "E:/source/repos/Daten/PLA/train"
   #valid: "E:/source/repos/Daten/PLA/val"
   #test: "E:/source/repos/Daten/PLA/val"
-  #train: "E:/source/repos/Daten/Nuclei/Nuclei/Nuclei/train"
-  #valid: "E:/source/repos/Daten/Nuclei/Nuclei/Nuclei/val"
-  #test: "E:/source/repos/Daten/Nuclei/Nuclei/Nuclei/val"
+  train: "E:/source/repos/Daten/Nuclei/Nuclei/Nuclei/train"
+  valid: "E:/source/repos/Daten/Nuclei/Nuclei/Nuclei/val"
+  test: "E:/source/repos/Daten/Nuclei/Nuclei/Nuclei/val"
   #train: "custom_experiments/train"
   #valid: "custom_experiments/valid"
   #test: "custom_experiments/valid"
   
 
-  weights: ["resnext50_32x4d, Unetlast.pt", "resnext50_32x4d, Unetlast.pt"]
+  weights: ["None", "None"]
 
   save_folder: "E:/source/repos/VisualDL" 
 
@@ -32,30 +32,30 @@ models:
     decoder: "resunet"
 
 settings:
-  nc: 2
+  nc: 6
   in_channels: 3
   epochs: 500
   optimizer: "AdamW"
   lr: 0.0001
   workers: 0
-  batch_size: [2,2]
+  batch_size: [8,8]
   max_image_size: 256 #must be set for transformer based models because of the positional embedding
   scales: "None" #or None
   use_attention: True
-  gradient_accumulation: 2
+  gradient_accumulation: 8
   criterions: #criterions defined in segmentation_models_pytorch.utils.losses can be used
     - "CrossEntropyLoss"
 
   tensorboard_log_dir: "tensorboard_log"
   metrics:
     - name: "Accuracy"
-      params: "num_classes=2"
+      params: "num_classes=6"
     - name: "IoU"
-      params: "num_classes=2"
+      params: "num_classes=6"
   monitor_metric_name: "IoU"
-  monitor_metric_params: "num_classes=2"
+  monitor_metric_params: "num_classes=6"
   class_weights: False
-  calculate_weight_map: True
+  calculate_weight_map: False
   early_stopping: 15
 
 transforms:

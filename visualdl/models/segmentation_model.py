@@ -20,21 +20,27 @@ class SegmentationModel(ModelBase):
         #    model = eval(f'smp.{decoder_name}(encoder_name="{encoder_name}", encoder_weights="None", in_channels={in_channels}, classes = {nc})')
         #else:
         #try:
+        modelstring = ""
         if decoder_name.lower() == "U2NET".lower():
             model = U2NET(in_channels, nc)
+            modelstring = "U2NET(in_channels, nc)"
         elif decoder_name.lower() == "TransInUnet".lower():
             model =TransInUnet(max_image_size, nc)
+            modelstring = "TransInUnet(max_image_size, nc)"
         elif decoder_name.lower() == "HrNetV2".lower():
             model = HRNetV2(nc)
+            modelstring = "HRNetV2(nc)"
         else:
             #model = eval(f'smp.{decoder_name}(encoder_name="{encoder_name}", encoder_weights="imagenet", in_channels={in_channels}, classes = {nc}, image_size = 128)')
             if use_attention:
                 model = eval(f'smp.create_model(arch="{decoder_name}", encoder_name="{encoder_name}", encoder_weights="imagenet", in_channels={in_channels}, classes = {nc}, image_size = {max_image_size}, decoder_attention_type = "{"scse"}")')
+                modelstring = f'smp.create_model(arch="{decoder_name}", encoder_name="{encoder_name}", encoder_weights="imagenet", in_channels={in_channels}, classes = {nc}, image_size = {max_image_size}, decoder_attention_type = "{"scse"}")'
             else:
                 model = eval(f'smp.create_model(arch="{decoder_name}", encoder_name="{encoder_name}", encoder_weights="imagenet", in_channels={in_channels}, classes = {nc}, image_size = {max_image_size})')
+                modelstring = f'smp.create_model(arch="{decoder_name}", encoder_name="{encoder_name}", encoder_weights="imagenet", in_channels={in_channels}, classes = {nc}, image_size = {max_image_size})'
         #if multi_scale is not None and multi_scale is not 'None' and len(multi_scale) > 0:
         #    model = MultiScaleSegmentation(model, multi_scale)
-        
+        self.modelstring = modelstring
         # except:
         #     model = Uformer(
         #             dim = 64,           # initial dimensions after input projection, which increases by 2x each stage
@@ -55,6 +61,10 @@ class SegmentationModel(ModelBase):
 
     def __call__(self, x):
         return self.model(x)
+    
+    @staticmethod
+    def create_model(modelstring):
+        return eval(modelstring)
 
     def train(self, train_loader:DataLoader, valid_loader:DataLoader = None, test_loader:DataLoader = None, epochs:int = 1):
         """Trains the model on the given DataLoader.
@@ -68,7 +78,8 @@ class SegmentationModel(ModelBase):
         train_all_epochs(model = self.model, train_loader = train_loader, valid_loader=valid_loader, test_loader = test_loader, 
         epochs=epochs, criterions=self.loss, metrics = self.metrics, monitor_metric = self.monitor_metric, writer=self.writer, name=f"{self.encoder_name}, {self.decoder_name}", optimizer=self.optimizer, accumulate_batch=self.accumulate_batch,weight_map = self.calculate_weight_map,
         save_folder = self.save_folder,
-        early_stopping=self.early_stopping)
+        early_stopping=self.early_stopping,
+        modelstring=self.modelstring)
 
     def test(self, test_loader):
         pass

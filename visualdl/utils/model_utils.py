@@ -8,6 +8,7 @@ from .utils import get_all_combinations, get_weight_map
 from torchmetrics import ConfusionMatrix
 import logging
 import os
+import sys
 
 
 def visualize(model, layer, image):
@@ -19,7 +20,7 @@ def visualize(model, layer, image):
         return cam
 
 
-def train_all_epochs(model, train_loader, valid_loader, test_loader, epochs, criterions, metrics, monitor_metric, writer, optimizer, accumulate_batch, criterion_scaling = None, average_outputs = False, name:str = "", weight_map = False, save_folder = "", early_stopping = 10):
+def train_all_epochs(model, train_loader, valid_loader, test_loader, epochs, criterions, metrics, monitor_metric, writer, optimizer, accumulate_batch, criterion_scaling = None, average_outputs = False, name:str = "", weight_map = False, save_folder = "", early_stopping = 10, modelstring = ""):
     #criterions = [torch.nn.CrossEntropyLoss(reduction="none")]
     device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
     scaler = torch.cuda.amp.GradScaler(enabled = False if device == 'cpu' else True)
@@ -28,21 +29,30 @@ def train_all_epochs(model, train_loader, valid_loader, test_loader, epochs, cri
     best_metric = float("-inf")
     cnt = 0
     for epoch in range(epochs):
-        training_bar = tqdm(train_loader)
+        training_bar = tqdm(train_loader, file=sys.stdout)
         train_one_epoch(model, training_bar, criterions, criterion_scaling, average_outputs, device, epoch, optimizer, scaler, metrics, writer, name, accumulate_every, best_metric, weight_map)
         if valid_loader:
-            valid_bar = tqdm(valid_loader)
+            valid_bar = tqdm(valid_loader, file=sys.stdout)
             tmp = evaluate(model, valid_bar, criterions=criterions, criterion_scaling=criterion_scaling, writer=writer, metrics=metrics, monitor_metric=monitor_metric, device=device,
             epoch=epoch, name = name, average_outputs=False)
             if best_metric <= tmp:
                 best_metric = tmp
                 torch.save(model.state_dict(), os.path.join(save_folder, name + ".pt"))
+                torch.save({
+                    'epoch': epoch,
+                    'model_state_dict': model.state_dict(),
+                    'optimizer_state_dict': optimizer.state_dict(),
+                    'model':modelstring,
+                    'best_metric':best_metric}, os.path.join(save_folder, name + ".pt"))
                 cnt = 0
             else:
                 cnt +=1
             if cnt >= early_stopping:
-                torch.save(model.state_dict(), os.path.join(save_folder, name + "last.pt"))
-                model.load_state_dict(torch.load(os.path.join(save_folder, name + ".pt")))
+                torch.save({
+                    'epoch': epoch,
+                    'model_state_dict': model.state_dict(),
+                    'optimizer_state_dict': optimizer.state_dict()}, os.path.join(save_folder, name + "last.pt"))
+                model.load_state_dict(torch.load(os.path.join(save_folder, name + ".pt"))['model_state_dict'])
                 return
                 
 
@@ -161,7 +171,7 @@ def test_trainer(models: list, test_loaders, metrics):
     device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
     log_dict = {}
     combinations = get_all_combinations(models) #get all permutations of the model list
-    for cnt, model_comb in enumerate(tqdm(combinations)):
+    for cnt, model_comb in enumerate(tqdm(combinations),file=sys.stdout):
         for metric in metrics:
             metric.reset()
         names = ",".join([x.name for x in model_comb])    
@@ -183,3 +193,24 @@ def test_trainer(models: list, test_loaders, metrics):
         log_dict[names] = [metric.compute().item() for metric in metrics]
     return log_dict
                 
+
+
+def predict_images(model, images):
+    model.eval()
+    total_loss = 0.0 
+    device =  'cuda:0' if torch.cuda.is_available() else 'cpu'
+    model = model.to(device)
+    all_predictions = []
+    for cnt, image in enumerate(images):
+        image = image / 255.
+        image = torch.unsqueeze(torch.tensor(image, dtype = torch.float).permute(2, 0, 1), 0)
+        image = image.to(device)
+        model.zero_grad()
+        #TODO implement average_outputs
+        with torch.cuda.amp.autocast():
+            with torch.no_grad():
+                predictions = model(image)
+            predictions = torch.argmax(predictions, 1)
+        all_predictions.append(predictions.detach().cpu().numpy())
+
+    return all_predictions
