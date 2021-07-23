@@ -12,7 +12,7 @@ class ModelBase(ABC):
         self.model = model
         if weight != "None" and weight.endswith(".pt"):
             try:
-                self.model.load_state_dict(torch.load(weight), strict = False)
+                self.model.load_state_dict(torch.load(weight)['model_state_dict'], strict = False)
             except:
                 logging.warning(f"Could not load weights from {weight}")
         self.criterions = criterions
