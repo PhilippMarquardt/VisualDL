@@ -1,7 +1,7 @@
 from visualdl.trainer.classification.classification_trainer import *
 from visualdl.trainer.segmentation.segmentation_trainer import *
 import logging
-from visualdl.vdl import main
+from visualdl.vdl import train
 
 
 if __name__ == "__main__":
@@ -11,4 +11,4 @@ if __name__ == "__main__":
     #r"E:\source\repos\VisualDL\visualdl\trainer\classification\classification.yaml"
     #r"E:\source\repos\VisualDL\visualdl\trainer\segmentation\segmentation.yaml"
     #main(r"E:\source\repos\VisualDL\visualdl\trainer\classification\classification.yaml")
-    main(r"E:\source\repos\VisualDL\visualdl\trainer\segmentation\segmentation.yaml")
+    train(r"E:\source\repos\VisualDL\visualdl\trainer\segmentation\segmentation.yaml")
