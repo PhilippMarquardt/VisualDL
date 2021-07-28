@@ -5,7 +5,7 @@ import torch
 
 class ModelInference():
     def __init__(self, weight_path):
-        state = load(weight_path)
+        state = load(weight_path, map_location=torch.device('cpu'))
         self.model = eval(state['model'])
         self.model.load_state_dict(state['model_state_dict'])
         self.model.eval()
