@@ -4,6 +4,7 @@ from .trainer.classification.classification_trainer import ClassificationTrainer
 from .models.segmentation_model import SegmentationModel
 from .utils.model_utils import predict_images
 from torch import load
+import torch
 from .inference.inference import ModelInference
 
 
@@ -17,11 +18,11 @@ def train(cfg_path):
     print(t.test())
 
 
-def predict(images, weights):
+def predict(images, weights, device = 'cuda:0' if torch.cuda.is_available() else 'cpu'):
     state = load(weights)
     model = SegmentationModel.create_model(state['model'])
     model.load_state_dict(state['model_state_dict'])
-    return predict_images(model, images)
+    return predict_images(model, images, device)
 
 
 def get_inference_model(weights):

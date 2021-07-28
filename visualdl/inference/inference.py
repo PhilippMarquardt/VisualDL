@@ -1,6 +1,7 @@
 import segmentation_models_pytorch as smp
 from torch import load
 from ..utils.model_utils import predict_images
+import torch
 
 class ModelInference():
     def __init__(self, weight_path):
@@ -11,5 +12,5 @@ class ModelInference():
     def __call__(self, images):
         return self.predict(images)
 
-    def predict(self, images):
-        return predict_images(self.model, images)
+    def predict(self, images, device = 'cuda:0' if torch.cuda.is_available() else 'cpu'):
+        return predict_images(self.model, images, device)

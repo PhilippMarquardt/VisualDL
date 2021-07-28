@@ -195,10 +195,9 @@ def test_trainer(models: list, test_loaders, metrics):
                 
 
 
-def predict_images(model, images):
+def predict_images(model, images, device):
     model.eval()
     total_loss = 0.0 
-    device =  'cuda:0' if torch.cuda.is_available() else 'cpu'
     model = model.to(device)
     all_predictions = []
     for cnt, image in enumerate(images):
