@@ -7,7 +7,7 @@ class ModelInference():
         state = load(weight_path)
         self.model = eval(state['model'])
         self.model.load_state_dict(state['model_state_dict'])
-
+        self.model.eval()
     def __call__(self, images):
         return self.predict(images)
 

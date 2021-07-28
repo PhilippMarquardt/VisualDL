@@ -4,60 +4,60 @@ data:
   #train: "C:/Users/phili/Downloads/Telegram Desktop/NeueCells/Cells/train"
   #valid: "C:/Users/phili/Downloads/Telegram Desktop/NeueCells/Cells/valid"
   #test: "C:/Users/phili/Downloads/Telegram Desktop/NeueCells/Cells/valid"
-  train: "F:/source/repos/Daten/CellsComined/train"
-  valid: "F:/source/repos/Daten/CellsComined/valid"
-  test: "F:/source/repos/Daten/CellsComined/valid"
+  #train: "F:/source/repos/Daten/CellsComined/train"
+  #valid: "F:/source/repos/Daten/CellsComined/valid"
+  #test: "F:/source/repos/Daten/CellsComined/valid"
   #train: "E:/source/repos/Daten/PLA/train"
   #valid: "E:/source/repos/Daten/PLA/val"
   #test: "E:/source/repos/Daten/PLA/val"
-  #train: "E:/source/repos/Daten/Nuclei/Nuclei/Nuclei/train"
-  #valid: "E:/source/repos/Daten/Nuclei/Nuclei/Nuclei/val"
-  #test: "E:/source/repos/Daten/Nuclei/Nuclei/Nuclei/val"
+  train: "F:/source/repos/Daten/Nuclei/Nuclei/Nuclei/train"
+  valid: "F:/source/repos/Daten/Nuclei/Nuclei/Nuclei/val"
+  test: "F:/source/repos/Daten/Nuclei/Nuclei/Nuclei/val"
   #train: "custom_experiments/train"
   #valid: "custom_experiments/valid"
   #test: "custom_experiments/valid"
   #train: "E:/source/repos/Daten/HER-N/hubt\dataset\Cells\train"
 
-  weights: ["tu-resnest50d, UnetPludsasPlus.pt"]
+  weights: ["resnet18.pt"]
 
   save_folder: "" 
 
 # anchors
 models:
 
-  - backbone: "tu-resnest50d"
+  - backbone: "resnet18"
     decoder: "UnetPlusPlus"
 
 
 settings:
-  nc: 2
+  nc: 6
   in_channels: 3
   epochs: 500
   optimizer: "AdamW"
   lr: 0.0001
   workers: 0
-  batch_size: [32]
+  batch_size: [8]
   max_image_size: 256 #must be set for transformer based models because of the positional embedding
   scales: "None" #or None
-  use_attention: True
-  gradient_accumulation: 32
+  use_attention: False
+  gradient_accumulation: 8
   criterions: #criterions defined in segmentation_models_pytorch.utils.losses can be used
     - "CrossEntropyLoss"
 
   tensorboard_log_dir: "tensorboard_log"
   metrics:
     - name: "Accuracy"
-      params: "num_classes=2"
+      params: "num_classes=6"
     - name: "IoU"
-      params: "num_classes=2"
+      params: "num_classes=6"
   monitor_metric_name: "IoU"
-  monitor_metric_params: "num_classes=2"
+  monitor_metric_params: "num_classes=6"
   class_weights: False
-  calculate_weight_map: True
+  calculate_weight_map: False
   early_stopping: 150
 
 transforms:
-  Resize: width = 256, height = 256
+  Resize: width = 512, height = 512
   HorizontalFlip: p=0.25
   VerticalFlip: p=0.25
   RandomBrightnessContrast: p=0.0
