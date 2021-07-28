@@ -11,4 +11,4 @@ if __name__ == "__main__":
     #r"E:\source\repos\VisualDL\visualdl\trainer\classification\classification.yaml"
     #r"E:\source\repos\VisualDL\visualdl\trainer\segmentation\segmentation.yaml"
     #main(r"E:\source\repos\VisualDL\visualdl\trainer\classification\classification.yaml")
-    train(r"E:\source\repos\VisualDL\visualdl\trainer\segmentation\segmentation.yaml")
+    train(r"visualdl\trainer\segmentation\segmentation.yaml")

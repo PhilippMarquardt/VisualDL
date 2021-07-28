@@ -171,7 +171,7 @@ def test_trainer(models: list, test_loaders, metrics):
     device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
     log_dict = {}
     combinations = get_all_combinations(models) #get all permutations of the model list
-    for cnt, model_comb in enumerate(tqdm(combinations),file=sys.stdout):
+    for cnt, model_comb in enumerate(tqdm(combinations, file=sys.stdout)):
         for metric in metrics:
             metric.reset()
         names = ",".join([x.name for x in model_comb])    
