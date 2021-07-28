@@ -211,6 +211,7 @@ def predict_images(model, images):
             with torch.no_grad():
                 predictions = model(image)
             predictions = torch.argmax(predictions, 1)
-        all_predictions.append(predictions.detach().cpu().numpy())
+        for pred in predictions:
+            all_predictions.append(pred.detach().cpu().numpy())
 
     return all_predictions

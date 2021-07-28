@@ -4,7 +4,7 @@ from .trainer.classification.classification_trainer import ClassificationTrainer
 from .models.segmentation_model import SegmentationModel
 from .utils.model_utils import predict_images
 from torch import load
-
+from .inference.inference import ModelInference
 
 
 def train(cfg_path):
@@ -22,5 +22,12 @@ def predict(images, weights):
     model = SegmentationModel.create_model(state['model'])
     model.load_state_dict(state['model_state_dict'])
     return predict_images(model, images)
+
+
+def get_inference_model(weights):
+    return ModelInference(weights)
+
+
+
 
 
