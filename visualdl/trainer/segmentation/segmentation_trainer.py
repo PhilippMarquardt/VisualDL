@@ -46,7 +46,8 @@ class SegmentationTrainer(TrainerBase):
                         self.early_stopping,
                         self.cfg['settings']['scales'],
                         int(self.cfg['settings']['max_image_size']),
-                        self.use_attention)  for models, weight in zip(self.cfg['models'], self.weights)]
+                        self.use_attention,
+                        self.custom_data)  for models, weight in zip(self.cfg['models'], self.weights)]
 
         
         

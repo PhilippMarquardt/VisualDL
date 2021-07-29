@@ -20,7 +20,7 @@ def visualize(model, layer, image):
         return cam
 
 
-def train_all_epochs(model, train_loader, valid_loader, test_loader, epochs, criterions, metrics, monitor_metric, writer, optimizer, accumulate_batch, criterion_scaling = None, average_outputs = False, name:str = "", weight_map = False, save_folder = "", early_stopping = 10, modelstring = ""):
+def train_all_epochs(model, train_loader, valid_loader, test_loader, epochs, criterions, metrics, monitor_metric, writer, optimizer, accumulate_batch, criterion_scaling = None, average_outputs = False, name:str = "", weight_map = False, save_folder = "", early_stopping = 10, modelstring = "", custom_data = {}):
     #criterions = [torch.nn.CrossEntropyLoss(reduction="none")]
     device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
     scaler = torch.cuda.amp.GradScaler(enabled = False if device == 'cpu' else True)
@@ -43,7 +43,8 @@ def train_all_epochs(model, train_loader, valid_loader, test_loader, epochs, cri
                     'model_state_dict': model.state_dict(),
                     'optimizer_state_dict': optimizer.state_dict(),
                     'model':modelstring,
-                    'best_metric':best_metric}, os.path.join(save_folder, name + ".pt"))
+                    'best_metric':best_metric,
+                    'custom_data': custom_data}, os.path.join(save_folder, name + ".pt"))
                 cnt = 0
             else:
                 cnt +=1
@@ -51,7 +52,10 @@ def train_all_epochs(model, train_loader, valid_loader, test_loader, epochs, cri
                 torch.save({
                     'epoch': epoch,
                     'model_state_dict': model.state_dict(),
-                    'optimizer_state_dict': optimizer.state_dict()}, os.path.join(save_folder, name + "last.pt"))
+                    'optimizer_state_dict': optimizer.state_dict(),
+                    'model':modelstring,
+                    'best_metric':best_metric,
+                    'custom_data': custom_data}, os.path.join(save_folder, name + "last.pt"))
                 model.load_state_dict(torch.load(os.path.join(save_folder, name + ".pt"))['model_state_dict'])
                 return
                 
