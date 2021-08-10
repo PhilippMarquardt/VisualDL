@@ -24,7 +24,7 @@ class SegmentationModel(ModelBase):
             model = U2NET(in_channels, nc)
             modelstring = "U2NET(in_channels, nc)"
         elif decoder_name.lower() == "TransInUnet".lower():
-            model =TransInUnet(max_image_size, nc)
+            model = TransInUnet(max_image_size, nc)
             modelstring = "TransInUnet(max_image_size, nc)"
         elif decoder_name.lower() == "HrNetV2".lower():
             model = HRNetV2(nc)

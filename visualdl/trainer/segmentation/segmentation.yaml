@@ -10,66 +10,90 @@ data:
   #train: "E:/source/repos/Daten/PLA/train"
   #valid: "E:/source/repos/Daten/PLA/val"
   #test: "E:/source/repos/Daten/PLA/val"
-  train: "F:/source/repos/Daten/Nuclei/Nuclei/Nuclei/train"
-  valid: "F:/source/repos/Daten/Nuclei/Nuclei/Nuclei/val"
-  test: "F:/source/repos/Daten/Nuclei/Nuclei/Nuclei/val"
+  #train: "C:/Users/phili/Downloads/Telegram Desktop/Cells her2 256/train"
+  #valid: "C:/Users/phili/Downloads/Telegram Desktop/Cells her2 256/valid"
+  #test: "C:/Users/phili/Downloads/Telegram Desktop/Cells her2 256/valid"
+  #train: "F:/source/repos/Daten/Nuclei/Nuclei/Nuclei/train"
+  #valid: "F:/source/repos/Daten/Nuclei/Nuclei/Nuclei/val"
+  #test: "F:/source/repos/Daten/Nuclei/Nuclei/Nuclei/val"
+  #train: "F:/source/repos/Daten/HER-N/Pdl1Combined/Tumor Cells 512/train"
+  #valid: "F:/source/repos/Daten/HER-N/Pdl1Combined/Tumor Cells 512/valid"
+  #test: "F:/source/repos/Daten/HER-N/Pdl1Combined/Tumor Cells 512/valid"
   #train: "custom_experiments/train"
   #valid: "custom_experiments/valid"
   #test: "custom_experiments/valid"
   #train: "E:/source/repos/Daten/HER-N/hubt\dataset\Cells\train"
-
-  weights: ["resnet18.pt"]
+  #train: "C:/Users/phili/Downloads/Telegram Desktop/Cells her2 512/train"
+  #valid: "C:/Users/phili/Downloads/Telegram Desktop/Cells her2 512/valid"
+  #test: "C:/Users/phili/Downloads/Telegram Desktop/Cells her2 512/valid"
+  train: "F:/source/repos/Daten/Glomeruli/trainer"
+  valid: "F:/source/repos/Daten/Glomeruli/valid"
+  test: "F:/source/repos/Daten/Glomeruli/valid"
+  weights: ["F:/source/repos/VisualDL/tu-resnest200e, UnetPlusPlus.pt"]
 
   save_folder: "" 
 
 # anchors
 models:
-  - backbone: "tu-resnest50d"
+  - backbone: "tu-resnest200e"
     decoder: "UnetPlusPlus"
 
+  
+
+  
 
 
 settings:
-  nc: 6
+  nc: 2
   in_channels: 3
-  epochs: 500
+  epochs: 5
   optimizer: "AdamW"
   lr: 0.0001
-  workers: 0
-  batch_size: [16]
+  workers: 2
+  batch_size: [4]
   max_image_size: 512 #must be set for transformer based models because of the positional embedding
   scales: "None" #or None
   use_attention: False
-  gradient_accumulation: 16
+  gradient_accumulation: 4
   criterions: #criterions defined in segmentation_models_pytorch.utils.losses can be used
     - "CrossEntropyLoss"
+
 
   tensorboard_log_dir: "tensorboard_log"
   metrics:
     - name: "Accuracy"
-      params: "num_classes=6"
+      params: "num_classes=2"
     - name: "IoU"
-      params: "num_classes=6"
+      params: "num_classes=2"
   monitor_metric_name: "IoU"
-  monitor_metric_params: "num_classes=6"
+  monitor_metric_params: "num_classes=2"
   class_weights: False
   calculate_weight_map: False
-  early_stopping: 20
-  custom_data: {structure_indices : [19, 24, 25, 30, 20], image_size: 512, object_based : True}
+  early_stopping: 50
+  #nuclei
+  #custom_data: {structure_indices : [19, 24, 25, 30, 20], image_size: 512, object_based : True}
+  #her2
+  #custom_data: {structure_indices : [5], image_size: 512, object_based : False}
+  #gomeurlus
+  custom_data: {structure_indices : [2], image_size: 512, object_based : False}
+  #pdl1
+  #custom_data: {'structure_indices': [4, 5, 6], 'image_size': 512, 'object_based': False}
+
 transforms:
   Resize: width = 512, height = 512
   HorizontalFlip: p=0.25
   VerticalFlip: p=0.25
-  RandomBrightnessContrast: p=0.0
-  RGBShift: p=0.0
-  RandomShadow : p=0.0
+  RandomBrightnessContrast: p=0.15
+  RGBShift: p=0.1
+  RandomShadow : p=0.05
   GaussianBlur: p=0.0
   Transpose: p=0.15
   RandomRotate90: p=0.15
-  Perspective: p=0.0
-  Affine: p=0.0
+  Perspective: p=0.05
+  Affine: p=0.05
   ToGray: p=0.0
   RandomScale: p=0.0
+
 
 
   

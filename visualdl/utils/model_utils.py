@@ -26,7 +26,7 @@ def train_all_epochs(model, train_loader, valid_loader, test_loader, epochs, cri
     scaler = torch.cuda.amp.GradScaler(enabled = False if device == 'cpu' else True)
     model = model.to(device)
     accumulate_every = accumulate_batch // train_loader.batch_size
-    best_metric = float("-inf")
+    best_metric = float("inf")
     cnt = 0
     for epoch in range(epochs):
         training_bar = tqdm(train_loader, file=sys.stdout)
@@ -35,7 +35,7 @@ def train_all_epochs(model, train_loader, valid_loader, test_loader, epochs, cri
             valid_bar = tqdm(valid_loader, file=sys.stdout)
             tmp = evaluate(model, valid_bar, criterions=criterions, criterion_scaling=criterion_scaling, writer=writer, metrics=metrics, monitor_metric=monitor_metric, device=device,
             epoch=epoch, name = name, average_outputs=False)
-            if best_metric <= tmp:
+            if best_metric >= tmp:
                 best_metric = tmp
                 torch.save(model.state_dict(), os.path.join(save_folder, name + ".pt"))
                 torch.save({
@@ -166,8 +166,8 @@ def evaluate(model, valid_bar, criterions, criterion_scaling, writer, metrics, m
         metric.reset()
     model.train()
 
-    #return total_loss / len(valid_bar)
-    return monitor_metric.compute()
+    return total_loss / len(valid_bar)
+    #return monitor_metric.compute()
 
 def test_trainer(models: list, test_loaders, metrics):
     assert test_loaders
@@ -197,9 +197,24 @@ def test_trainer(models: list, test_loaders, metrics):
         log_dict[names] = [metric.compute().item() for metric in metrics]
     return log_dict
                 
+def make_single_class_per_contour(img, min_size = None):
+    img = img.astype(np.uint8)
+    orig = img.copy()
+    img[img > 0] = 255
+    contours, hierarchy = cv2.findContours(image=img, mode=cv2.RETR_TREE, method=cv2.CHAIN_APPROX_NONE)
+    for i, cnt in enumerate(contours):        
+        area = cv2.contourArea(cnt) 
+        mask = np.zeros_like(orig)
+        cv2.drawContours(mask, [cnt], -1, 255, -1)
+        pts = np.where(mask == 255)
+        vals = np.unique(orig[pts[0], pts[1]], return_counts = True)
+        orig[pts[0], pts[1]] = vals[0][np.argmax(vals[1])]
+        if min_size is not None:        
+            if area < min_size:
+                orig[pts[0], pts[1]] = 0
+    return orig
 
-
-def predict_images(model, images, device):
+def predict_images(model, images, device, single_class_per_contour=False, min_size=None):
     model.eval()
     total_loss = 0.0 
     model = model.to(device)
@@ -214,6 +229,9 @@ def predict_images(model, images, device):
             with torch.no_grad():
                 predictions = model(image)
             predictions = torch.argmax(predictions, 1)
-            all_predictions.append(predictions[0].detach().cpu().numpy())
+            predictions = predictions[0].detach().cpu().numpy()
+            if single_class_per_contour:
+                predictions = make_single_class_per_contour(predictions, min_size)
+            all_predictions.append(predictions)
 
     return all_predictions

@@ -18,5 +18,5 @@ class ModelInference():
     def __call__(self, images):
         return self.predict(images)
 
-    def predict(self, images):
-        return predict_images(self.model, images, self.device)
+    def predict(self, images, single_class_per_contour = False, min_size = None):
+        return predict_images(self.model, images, self.device, single_class_per_contour, min_size)

@@ -7,9 +7,9 @@ from torch import nn
 from torch.nn import functional as F
 
 class AxialBottleneck(nn.Module):
-    def __init__(self, dim, heads ):
+    def __init__(self, dim, heads, image_size):
         super().__init__()
-        self.ax = AxialAttention(dim=dim, dim_index=1, heads = heads)
+        self.ax = AxialAttention(dim=dim, dim_index=1,axial_pos_emb_shape = (image_size,image_size), heads = heads)
 
     def forward(self, x):
         tmp = self.ax(x)
@@ -25,7 +25,7 @@ class DecoderBlock(nn.Module):
                 heads= 8):
         super().__init__()   
         #self.ax = AxialImageTransformer(dim = in_channels + skip_channels,heads= heads,depth = depth,axial_pos_emb_shape = (size,size), reversible=False)
-        self.ax = nn.ModuleList([AxialBottleneck(dim=in_channels + skip_channels,heads=heads) for _ in range(depth)])
+        self.ax = nn.ModuleList([AxialBottleneck(dim=in_channels + skip_channels,heads=heads, image_size=size) for _ in range(depth)])
         self.out = Conv2dReLU(in_channels + skip_channels, out_channels, 1)
         
     def forward(self, x, skip = None):
@@ -84,7 +84,7 @@ class TransInUnet(nn.Module):
         self.third = TNT(image_size = image_size//4, patch_size = 2, pixel_dim = 16, pixel_size = 1, patch_dim = init_dim * 8, depth = 6, heads = 8, channels = init_dim * 4)
         self.fourth = TNT(image_size = image_size//8, patch_size = 2, pixel_dim = 16, pixel_size = 1, patch_dim = init_dim * 16, depth = 8, heads = 12, channels = init_dim * 8)
         self.cup = ViT(
-            image_size = 8,
+            image_size = int(image_size / (2**(4 - 1))),
             patch_size = 1,
             dim = init_dim * 32,
             depth = 8,
