@@ -25,8 +25,8 @@ def predict(images, weights, device = 'cuda:0' if torch.cuda.is_available() else
     return predict_images(model, images, device)
 
 
-def get_inference_model(weights):
-    return ModelInference(weights)
+def get_inference_model(weights, type = "segmentation"):
+    return ModelInference(weights, type=type)
 
 
 

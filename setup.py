@@ -31,6 +31,12 @@ setup(
 'einops'
 ,
 'uformer-pytorch'
+,
+'matplotlib'
+,
+'numpy',
+'Pillow', 'PyYAML', 'scipy', 'seaborn>=0.11.0', 'pandas'
+
 
   ],
   license='MIT',
