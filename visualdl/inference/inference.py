@@ -1,3 +1,4 @@
+import segmentation_models_pytorch as smp
 from torch import load
 from ..utils.model_utils import predict_images
 import torch
@@ -25,7 +26,6 @@ class ModelInference():
         self.device = device
         self.type = type
         if type == "segmentation":
-            import segmentation_models_pytorch as smp
             if device.lower() == "cpu":
                 state = load(weight_path, map_location=torch.device('cpu'))
             else:
