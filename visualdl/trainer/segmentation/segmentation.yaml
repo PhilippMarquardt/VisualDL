@@ -23,19 +23,19 @@ data:
   #valid: "custom_experiments/valid"
   #test: "custom_experiments/valid"
   #train: "E:/source/repos/Daten/HER-N/hubt\dataset\Cells\train"
-  #train: "C:/Users/phili/Downloads/Telegram Desktop/Cells her2 512/train"
-  #valid: "C:/Users/phili/Downloads/Telegram Desktop/Cells her2 512/valid"
-  #test: "C:/Users/phili/Downloads/Telegram Desktop/Cells her2 512/valid"
-  train: "F:/source/repos/Daten/Glomeruli/trainer"
-  valid: "F:/source/repos/Daten/Glomeruli/valid"
-  test: "F:/source/repos/Daten/Glomeruli/valid"
+  train: "C:/Users/phili/Downloads/Telegram Desktop/Cells her2 512/train"
+  valid: "C:/Users/phili/Downloads/Telegram Desktop/Cells her2 512/valid"
+  test: "C:/Users/phili/Downloads/Telegram Desktop/Cells her2 512/valid"
+  #train: "F:/source/repos/Daten/Glomeruli/trainer"
+  #valid: "F:/source/repos/Daten/Glomeruli/valid"
+  #test: "F:/source/repos/Daten/Glomeruli/valid"
   weights: ["F:/source/repos/VisualDL/tu-resnest200e, UnetPlusPlus.pt"]
 
   save_folder: "" 
 
 # anchors
 models:
-  - backbone: "tu-resnest200e"
+  - backbone: "vgg11"
     decoder: "UnetPlusPlus"
 
   
@@ -62,11 +62,11 @@ settings:
   tensorboard_log_dir: "tensorboard_log"
   metrics:
     - name: "Accuracy"
-      params: "num_classes=2"
+      params: "num_classes=6"
     - name: "IoU"
-      params: "num_classes=2"
+      params: "num_classes=6"
   monitor_metric_name: "IoU"
-  monitor_metric_params: "num_classes=2"
+  monitor_metric_params: "num_classes=6"
   class_weights: False
   calculate_weight_map: False
   early_stopping: 50
@@ -80,7 +80,7 @@ settings:
   #custom_data: {'structure_indices': [4, 5, 6], 'image_size': 512, 'object_based': False}
 
 transforms:
-  Resize: width = 512, height = 512
+  Resize: width = 256, height = 256
   HorizontalFlip: p=0.25
   VerticalFlip: p=0.25
   RandomBrightnessContrast: p=0.15
