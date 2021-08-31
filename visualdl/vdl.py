@@ -1,3 +1,4 @@
+import torch
 
 def train(cfg_path):
     from .utils.utils import parse_yaml
