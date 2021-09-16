@@ -27,35 +27,30 @@ def train_all_epochs(model, train_loader, valid_loader, test_loader, epochs, cri
     model = model.to(device)
     accumulate_every = accumulate_batch // train_loader.batch_size
     best_metric = float("inf")
+    best_dict = {}
     cnt = 0
     for epoch in range(epochs):
         training_bar = tqdm(train_loader, file=sys.stdout)
-        train_one_epoch(model, training_bar, criterions, criterion_scaling, average_outputs, device, epoch, optimizer, scaler, metrics, writer, name, accumulate_every, best_metric, weight_map)
+        train_dict = train_one_epoch(model, training_bar, criterions, criterion_scaling, average_outputs, device, epoch, optimizer, scaler, metrics, writer, name, accumulate_every, best_metric, weight_map)
         if valid_loader:
             valid_bar = tqdm(valid_loader, file=sys.stdout)
-            tmp = evaluate(model, valid_bar, criterions=criterions, criterion_scaling=criterion_scaling, writer=writer, metrics=metrics, monitor_metric=monitor_metric, device=device,
+            tmp, m = evaluate(model, valid_bar, criterions=criterions, criterion_scaling=criterion_scaling, writer=writer, metrics=metrics, monitor_metric=monitor_metric, device=device,
             epoch=epoch, name = name, average_outputs=False)
             if best_metric >= tmp:
                 best_metric = tmp
-                torch.save(model.state_dict(), os.path.join(save_folder, name + ".pt"))
+                best_dict = m
                 torch.save({
                     'epoch': epoch,
                     'model_state_dict': model.state_dict(),
                     'optimizer_state_dict': optimizer.state_dict(),
                     'model':modelstring,
-                    'best_metric':best_metric,
+                    'validation_metrics':best_dict,
+                    'train_metrics': train_dict,
                     'custom_data': custom_data}, os.path.join(save_folder, name + ".pt"))
                 cnt = 0
             else:
                 cnt +=1
             if cnt >= early_stopping:
-                torch.save({
-                    'epoch': epoch,
-                    'model_state_dict': model.state_dict(),
-                    'optimizer_state_dict': optimizer.state_dict(),
-                    'model':modelstring,
-                    'best_metric':best_metric,
-                    'custom_data': custom_data}, os.path.join(save_folder, name + "last.pt"))
                 model.load_state_dict(torch.load(os.path.join(save_folder, name + ".pt"))['model_state_dict'])
                 return
                 
@@ -66,6 +61,7 @@ def train_one_epoch(model, training_bar, criterions, criterion_scaling, average_
     for metric in metrics:
         metric.reset() 
     total_loss = 0.0    
+    train_dict = {}
     for cnt, (x,y) in enumerate(training_bar):
         x = x.to(device)
         y = y.to(device)
@@ -120,16 +116,20 @@ def train_one_epoch(model, training_bar, criterions, criterion_scaling, average_
         writer.add_scalar(f"train/train-loss", current_loss, epoch)
         training_bar.set_description(metric_str % tuple([epoch+1, current_loss, best_metric]+epoch_values))   
 
-    
+    epoch_values = [metric.compute().item() for metric in metrics]
+    for metric, val in zip(metrics, epoch_values):
+        train_dict[metric.__class__.__name__] = val
     for metric in metrics:
         metric.reset() 
-                
+    train_dict["train_loss"] = total_loss / len(training_bar)
+    return train_dict
                 
     
 def evaluate(model, valid_bar, criterions, criterion_scaling, writer, metrics, monitor_metric, device, epoch, name, average_outputs = False):
     assert writer is not None
     assert metrics is not None
     assert monitor_metric is not None
+    best_dict = {}
     monitor_metric.reset()
     for metric in metrics:
         metric.reset()
@@ -160,14 +160,17 @@ def evaluate(model, valid_bar, criterions, criterion_scaling, writer, metrics, m
         total_loss += loss.item()
         current_loss = total_loss / float((cnt+1))
         writer.add_scalar(f"valid/valid-loss", current_loss, epoch)
-        valid_bar.set_description(metric_str % tuple([epoch+1, current_loss]+epoch_values))     
-        
+        valid_bar.set_description(metric_str % tuple([epoch+1, current_loss]+epoch_values))  
+    epoch_values = [metric.compute().item() for metric in metrics]
+    for metric, val in zip(metrics, epoch_values):
+        best_dict[metric.__class__.__name__] = val
     for metric in metrics:
         metric.reset()
     model.train()
 
-    return total_loss / len(valid_bar)
-    #return monitor_metric.compute()
+    best_dict['validation_monitor_metric'] = monitor_metric.compute().item()
+    best_dict['validation_loss'] = total_loss / len(valid_bar)
+    return total_loss / len(valid_bar), best_dict
 
 def test_trainer(models: list, test_loaders, metrics):
     assert test_loaders
