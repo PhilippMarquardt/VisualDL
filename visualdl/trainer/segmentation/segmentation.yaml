@@ -29,9 +29,9 @@ data:
   #train: "F:/source/repos/Daten/Glomeruli/trainer"
   #valid: "F:/source/repos/Daten/Glomeruli/valid"
   #test: "F:/source/repos/Daten/Glomeruli/valid"
-  train: "F:/source/repos/Daten/knochenpartikel/knochenpartikel"
-  valid: "F:/source/repos/Daten/knochenpartikel/knochenpartikel/valid"
-  test: "F:/source/repos/Daten/knochenpartikel/knochenpartikel/valid"
+  #train: "F:/source/repos/Daten/knochenpartikel/knochenpartikel"
+  #valid: "F:/source/repos/Daten/knochenpartikel/knochenpartikel/valid"
+  #test: "F:/source/repos/Daten/knochenpartikel/knochenpartikel/valid"
   weights: ["F:/source/repos/VisualDL/tu-resnest50d, UnetPlusPlus.pt"]
 
   save_folder: "" 
@@ -85,7 +85,7 @@ settings:
   custom_data: {structure_indices : [1], image_size: 512, object_based : False}
 
 transforms:
-  Resize: width = 128, height = 128
+  Resize: width = 256, height = 256
   HorizontalFlip: p=0.25
   VerticalFlip: p=0.25
   RandomBrightnessContrast: p=0.0
