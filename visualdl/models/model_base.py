@@ -7,7 +7,7 @@ import logging
 from torch.utils.tensorboard import SummaryWriter
 
 class ModelBase(ABC):    
-    def __init__(self, nc, criterions, metrics, monitor_metric, optimizer, lr, accumulate_batch, tensorboard_dir, class_weights, model, calculate_weight_map, weight, save_folder, early_stopping, custom_data):
+    def __init__(self, nc, criterions, metrics, monitor_metric, optimizer, lr, accumulate_batch, tensorboard_dir, class_weights, model, calculate_weight_map, weight, save_folder, early_stopping, custom_data, calculate_distance_maps):
         self.nc = nc
         self.model = model
         if weight != "None" and weight.endswith(".pt"):
@@ -32,7 +32,10 @@ class ModelBase(ABC):
         self.save_folder = save_folder
         self.loss = MultiLoss(self.criterions)
         self.custom_data = custom_data
-
+        self.calculate_distance_maps = calculate_distance_maps
+        self.distance_map_loss = None
+        if self.calculate_distance_maps:
+            self.distance_map_loss = torch.nn.MSELoss()
         
     
        

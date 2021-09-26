@@ -23,16 +23,16 @@ data:
   #valid: "custom_experiments/valid"
   #test: "custom_experiments/valid"
   #train: "E:/source/repos/Daten/HER-N/hubt\dataset\Cells\train"
-  train: "C:/Users/phili/Downloads/Telegram Desktop/Cells her2 512/train"
-  valid: "C:/Users/phili/Downloads/Telegram Desktop/Cells her2 512/valid"
-  test: "C:/Users/phili/Downloads/Telegram Desktop/Cells her2 512/valid"
+  train: "C:/Users/phili/Downloads/Telegram Desktop/Cells her2 256/train"
+  valid: "C:/Users/phili/Downloads/Telegram Desktop/Cells her2 256/valid"
+  test: "C:/Users/phili/Downloads/Telegram Desktop/Cells her2 256/valid"
   #train: "F:/source/repos/Daten/Glomeruli/trainer"
   #valid: "F:/source/repos/Daten/Glomeruli/valid"
   #test: "F:/source/repos/Daten/Glomeruli/valid"
   #train: "F:/source/repos/Daten/knochenpartikel/knochenpartikel"
   #valid: "F:/source/repos/Daten/knochenpartikel/knochenpartikel/valid"
   #test: "F:/source/repos/Daten/knochenpartikel/knochenpartikel/valid"
-  weights: ["F:/source/repos/VisualDL/tu-resnest50d, UnetPlusPlus.pt"]
+  weights: ["F:/source/repos/VisualDL/tu-resnest50d, UnetPlusPluss.pt"]
 
   save_folder: "" 
 
@@ -49,15 +49,16 @@ models:
 settings:
   nc: 2
   in_channels: 3
-  epochs: 15
+  epochs: 155
   optimizer: "AdamW"
   lr: 0.00001
   workers: 2
-  batch_size: [4]
+  batch_size: [16]
   max_image_size: 512 #must be set for transformer based models because of the positional embedding
   scales: "None" #or None
   use_attention: False
-  gradient_accumulation: 4
+  
+  gradient_accumulation: 16
   criterions: #criterions defined in segmentation_models_pytorch.utils.losses can be used
     - "CrossEntropyLoss"
 
@@ -71,7 +72,9 @@ settings:
   monitor_metric_name: "IoU"
   monitor_metric_params: "num_classes=2"
   class_weights: False
-  calculate_weight_map: False
+  calculate_weight_map: True
+  calculate_distance_maps: True
+  add_object_detection_model: False
   early_stopping: 50
   #nuclei
   #custom_data: {structure_indices : [19, 24, 25, 30, 20], image_size: 512, object_based : True}

@@ -134,3 +134,5 @@ dmypy.json
 *.pt
 *.png
 *.jpg
+
+visualdl/dependenciesyolov5/runs/*

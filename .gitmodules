@@ -1,0 +1,3 @@
+[submodule "visualdl/dependencies/yolov5"]
+	path = visualdl/dependencies/yolov5
+	url = https://github.com/ultralytics/yolov5.git

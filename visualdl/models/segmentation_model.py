@@ -14,12 +14,13 @@ from .TransInUnet import TransInUnet
 from .hrnet import HRNetV2
 
 class SegmentationModel(ModelBase):
-    def __init__(self, encoder_name, decoder_name, nc, in_channels, criterions, metrics, monitor_metric, optimizer, lr, accumulate_batch, tensorboard_dir, class_weights, calculate_weight_map, weight, save_folder, early_stopping, multi_scale = None, max_image_size = None, use_attention = False, custom_data = {}):
+    def __init__(self, encoder_name, decoder_name, nc, in_channels, criterions, metrics, monitor_metric, optimizer, lr, accumulate_batch, tensorboard_dir, class_weights, calculate_weight_map, weight, save_folder, early_stopping, multi_scale = None, max_image_size = None, use_attention = False, custom_data = {}, calculate_distance_maps = False):
         #if encoder_name not in timm_universal_encoders(pretrained=True) and "timm-u" in encoder_name:
         #    model = eval(f'smp.{decoder_name}(encoder_name="{encoder_name}", encoder_weights="None", in_channels={in_channels}, classes = {nc})')
         #else:
         #try:
         modelstring = ""
+        nc = nc if not calculate_distance_maps else nc+1
         if decoder_name.lower() == "U2NET".lower():
             model = U2NET(in_channels, nc)
             modelstring = "U2NET(in_channels, nc)"
@@ -41,10 +42,10 @@ class SegmentationModel(ModelBase):
         self.modelstring = modelstring
 
     
-            
+        print("CalucalteDistanceMpas:", calculate_distance_maps)   
         super().__init__(nc, criterions, metrics, monitor_metric, optimizer, lr, accumulate_batch, tensorboard_dir,
          class_weights, model = model, calculate_weight_map = calculate_weight_map,
-          weight = weight, save_folder=save_folder, early_stopping=early_stopping, custom_data = custom_data)
+          weight = weight, save_folder=save_folder, early_stopping=early_stopping, custom_data = custom_data, calculate_distance_maps=calculate_distance_maps)
         self.encoder_name = encoder_name
         self.decoder_name = decoder_name
         self.name = f"{encoder_name} - {decoder_name}"
@@ -70,7 +71,8 @@ class SegmentationModel(ModelBase):
         save_folder = self.save_folder,
         early_stopping=self.early_stopping,
         modelstring=self.modelstring,
-        custom_data=self.custom_data)
+        custom_data=self.custom_data,
+        distance_map_loss=self.distance_map_loss)
 
     def test(self, test_loader):
         pass

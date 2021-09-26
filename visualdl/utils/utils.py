@@ -93,7 +93,8 @@ def get_transform_from_config(cfg:dict):
     return A.Compose(transforms), A.Compose(valid_trans)
                  
         
-
+def create_od_dataset_from_semantic_segmentation(train, valid, test):
+    pass
 
 
     

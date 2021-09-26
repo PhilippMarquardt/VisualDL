@@ -9,6 +9,7 @@ from torchmetrics import ConfusionMatrix
 import logging
 import os
 import sys
+import torch
 
 
 def visualize(model, layer, image):
@@ -20,8 +21,9 @@ def visualize(model, layer, image):
         return cam
 
 
-def train_all_epochs(model, train_loader, valid_loader, test_loader, epochs, criterions, metrics, monitor_metric, writer, optimizer, accumulate_batch, criterion_scaling = None, average_outputs = False, name:str = "", weight_map = False, save_folder = "", early_stopping = 10, modelstring = "", custom_data = {}):
-    #criterions = [torch.nn.CrossEntropyLoss(reduction="none")]
+def train_all_epochs(model, train_loader, valid_loader, test_loader, epochs, criterions, metrics, monitor_metric, writer, optimizer,
+ accumulate_batch, criterion_scaling = None, average_outputs = False, name:str = "", weight_map = False, save_folder = "",
+  early_stopping = 10, modelstring = "", custom_data = {}, distance_map_loss = None):
     device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
     scaler = torch.cuda.amp.GradScaler(enabled = False if device == 'cpu' else True)
     model = model.to(device)
@@ -31,11 +33,13 @@ def train_all_epochs(model, train_loader, valid_loader, test_loader, epochs, cri
     cnt = 0
     for epoch in range(epochs):
         training_bar = tqdm(train_loader, file=sys.stdout)
-        train_dict = train_one_epoch(model, training_bar, criterions, criterion_scaling, average_outputs, device, epoch, optimizer, scaler, metrics, writer, name, accumulate_every, best_metric, weight_map)
+        train_dict = train_one_epoch(model, training_bar, criterions, criterion_scaling,
+         average_outputs, device, epoch, optimizer, scaler, metrics, writer, name,
+          accumulate_every, best_metric, weight_map, distance_map_loss)
         if valid_loader:
             valid_bar = tqdm(valid_loader, file=sys.stdout)
             tmp, m = evaluate(model, valid_bar, criterions=criterions, criterion_scaling=criterion_scaling, writer=writer, metrics=metrics, monitor_metric=monitor_metric, device=device,
-            epoch=epoch, name = name, average_outputs=False)
+            epoch=epoch, name = name, average_outputs=False, distance_map_loss=distance_map_loss)
             if best_metric >= tmp:
                 best_metric = tmp
                 best_dict = m
@@ -55,44 +59,77 @@ def train_all_epochs(model, train_loader, valid_loader, test_loader, epochs, cri
                 return
                 
 
-         
+def get_distance_map(mask):
+    mask = mask.clone()
+    mask = mask.type(torch.uint8)
+    mask = mask.numpy()
+    mask[mask > 0] = 255
+    distances = []
+    for cnt, ma in enumerate(mask):
+        dist = cv2.distanceTransform(ma, cv2.DIST_L2, 5)
+        distances.append(cv2.normalize(dist, dist, 0, 1.0, cv2.NORM_MINMAX))
+        dist[dist <= 0.7] = 0
+        cv2.imwrite(f"{cnt}.png", dist*255.)
+        cv2.imwrite(f"{cnt}a.png", ma)
+    a = np.stack(np.array(distances), axis = 0)
+    return torch.tensor(a, dtype=torch.float)
+
+
+def get_distance_map_fixed(mask):
+    mask = mask.clone()
+    mask = mask.type(torch.uint8)
+    mask = mask.numpy()
+    mask[mask > 0] = 255 #set all classes to the same value
+    distances = []
+    for cnt2, img in enumerate(mask):
+        to = np.zeros_like(img, dtype=np.float32)
+        contours, hierarchy = cv2.findContours(image=img, mode=cv2.RETR_TREE, method=cv2.CHAIN_APPROX_NONE)
+        for i, cnt in enumerate(contours):
+            mask2 = np.zeros_like(img)
+            cv2.drawContours(mask2, [cnt], -1, 255, -1)
+            dist = cv2.distanceTransform(mask2, cv2.DIST_L2, 5)
+            ab = cv2.normalize(dist, dist, 0, 1.0, cv2.NORM_MINMAX)
+            pts = np.where(ab > 0)
+            to[pts[0], pts[1]] = ab[pts[0], pts[1]]
+        # print(cv2.imwrite(f"{cnt2}.png", to*255.))
+        # print(cv2.imwrite(f"{cnt2}a.png", img))
+        # print(cv2.imwrite("hier.png", img))
+
+        distances.append(to)
+    #return distances
+    a = np.stack(np.array(distances), axis = 0)
+    return torch.tensor(a, dtype=torch.float)
         
-def train_one_epoch(model, training_bar, criterions, criterion_scaling, average_outputs = False, device = None, epoch = 0, optimizer = None, scaler = None, metrics = None, writer = None, name:str = "", accumulate_every = 1, best_metric = 0.0, weight_map = False):
+def train_one_epoch(model, training_bar, criterions, criterion_scaling, average_outputs = False, device = None, epoch = 0, optimizer = None, scaler = None,
+ metrics = None, writer = None, name:str = "", accumulate_every = 1, best_metric = 0.0, weight_map = False, distance_map_loss = None):
+    sig = torch.nn.Sigmoid()
     for metric in metrics:
         metric.reset() 
     total_loss = 0.0    
     train_dict = {}
     for cnt, (x,y) in enumerate(training_bar):
         x = x.to(device)
+        if distance_map_loss:
+            dist = get_distance_map_fixed(y)
+            dist = dist.to(device)
         y = y.to(device)
         #TODO implement average_outputs
         with torch.cuda.amp.autocast():
             loss = None
             try:
                 predictions = model(x)
+                if distance_map_loss:
+                    
+                   
+                    distance_map_predictions = sig(predictions[:,-1,:,:])
+                    predictions = predictions[:,0:-1,:,:]
             except:
                 continue
-            #for cr, scal in zip(criterions, criterion_scaling):
-                #cr = torch.nn.CrossEntropyLoss(reduction="none")
-            #    if loss is None:
-            #        loss = cr(predictions, y) 
-            #    else:
-            #        tmp = cr(predictions, y) 
-            #        loss += tmp
-            #TODO: add weight map here
+            
             weight_maps = get_weight_map(y.detach().cpu().numpy() * 255.).to(device) if weight_map else None
-            #for cnt, map in enumerate(weight_maps):
-            #    map[map == 1] = 0
-            #    cv2.imwrite(f"{cnt}.png", map.detach().cpu().numpy()  * 255.)
             loss = criterions(predictions, y, weight_maps)
-            #weight_maps = get_weight_map(y.detach().cpu().numpy() * 255.).to(device)
-            #loss *= weight_maps
-            #for cnt, yy in enumerate(y):
-            #    cv2.imwrite(f"{cnt}.png", yy.detach().cpu().numpy() * 255)
-
-
-
-            #loss = loss.mean()
+            if distance_map_loss:
+                loss += distance_map_loss(distance_map_predictions, dist)
             predictions = torch.argmax(predictions, 1)
         for metric in metrics:
             metric.update(predictions.detach().cpu(), y.detach().cpu())
@@ -125,7 +162,7 @@ def train_one_epoch(model, training_bar, criterions, criterion_scaling, average_
     return train_dict
                 
     
-def evaluate(model, valid_bar, criterions, criterion_scaling, writer, metrics, monitor_metric, device, epoch, name, average_outputs = False):
+def evaluate(model, valid_bar, criterions, criterion_scaling, writer, metrics, monitor_metric, device, epoch, name, average_outputs = False, distance_map_loss = None):
     assert writer is not None
     assert metrics is not None
     assert monitor_metric is not None
@@ -142,8 +179,10 @@ def evaluate(model, valid_bar, criterions, criterion_scaling, writer, metrics, m
         #TODO implement average_outputs
         with torch.cuda.amp.autocast():
             with torch.no_grad():
-                try:
+                try:            
                     predictions = model(x)
+                    if distance_map_loss:
+                        predictions = predictions[:, 0:-1,:,:]
                 except:
                     continue
             loss = criterions(predictions, y)

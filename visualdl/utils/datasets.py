@@ -7,6 +7,7 @@ import albumentations as A
 import numpy as np
 from tqdm import tqdm
 import logging
+import cv2
 
 class ClassificationDataset(Dataset):
     def __init__(self, root_folder, transform, class_weights = False):
@@ -79,6 +80,9 @@ class SegmentationDataset(Dataset):
         # Using cv2.erode() method 
         #mask = cv2.erode(mask, kernel) 
         return torch.tensor(img, dtype = torch.float).permute(2, 0, 1), torch.tensor(mask, dtype = torch.long)
+
+
+
 
 
 class ImageOnlyDataset(Dataset):

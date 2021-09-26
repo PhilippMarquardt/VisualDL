@@ -25,9 +25,7 @@ class SegmentationTrainer(TrainerBase):
         assert len(self.cfg['settings']['batch_size']) == len(self.cfg['models'])
         assert len(self.weights) == len(self.cfg['models'])
         logging.info(f"Training segmentation model with the following config:\n {pprint.pformat(self.cfg)}")
-        
-
-
+        self.add_object_detection_model = self.cfg['settings']['add_object_detection_model']
         self.models = [SegmentationModel(models['backbone'],
                         models['decoder'], 
                         self.nc, 
@@ -47,7 +45,8 @@ class SegmentationTrainer(TrainerBase):
                         self.cfg['settings']['scales'],
                         int(self.cfg['settings']['max_image_size']),
                         self.use_attention,
-                        self.custom_data)  for models, weight in zip(self.cfg['models'], self.weights)]
+                        self.custom_data,
+                        self.cfg['settings']['calculate_distance_maps'])  for models, weight in zip(self.cfg['models'], self.weights)]
 
         
         
@@ -58,6 +57,9 @@ class SegmentationTrainer(TrainerBase):
         for cnt, (train_loader, valid_loader, test_loader, model) in enumerate(zip(self.train_loaders, self.valid_loaders, self.test_laoders, self.models)):
             logging.info(f"Training {model.name}")
             model.train(train_loader, valid_loader, test_loader, self.cfg['settings']['epochs']) 
+        if self.add_object_detection_model:
+            from ...trainer.detection.detection_trainer import DetectionTrainer
+            #od_trainer = DetectionTrainer()
         self.trained = True
     
     def test(self):
