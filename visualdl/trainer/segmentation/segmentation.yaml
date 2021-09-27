@@ -73,7 +73,7 @@ settings:
   monitor_metric_params: "num_classes=2"
   class_weights: False
   calculate_weight_map: True
-  calculate_distance_maps: True
+  calculate_distance_maps: False
   add_object_detection_model: False
   early_stopping: 50
   #nuclei
@@ -97,8 +97,8 @@ transforms:
   GaussianBlur: p=0.0
   Transpose: p=0.15
   RandomRotate90: p=0.15
-  Perspective: p=0.05
-  Affine: p=0.05
+  Perspective: p=0.00
+  Affine: p=0.00
   ToGray: p=0.0
   RandomScale: p=0.0
 

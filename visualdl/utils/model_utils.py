@@ -119,8 +119,6 @@ def train_one_epoch(model, training_bar, criterions, criterion_scaling, average_
             try:
                 predictions = model(x)
                 if distance_map_loss:
-                    
-                   
                     distance_map_predictions = sig(predictions[:,-1,:,:])
                     predictions = predictions[:,0:-1,:,:]
             except:

@@ -4,8 +4,8 @@ from .trainer.classification.classification_trainer import ClassificationTrainer
 from .trainer.detection.detection_trainer import DetectionTrainer
 from .models.segmentation_model import SegmentationModel
 from .utils.model_utils import predict_images
-from torch import load
 import torch
+from torch import load
 from .inference.inference import ModelInference
 
 
