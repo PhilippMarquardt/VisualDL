@@ -1,0 +1,3 @@
+[submodule "yolov5"]
+	path = visualdl/dependencies/yolov5
+	url = https://github.com/PhilippMarquardt/yolov5.git
