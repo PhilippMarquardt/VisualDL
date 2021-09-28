@@ -27,6 +27,7 @@ def train_all_epochs(model, train_loader, valid_loader, test_loader, epochs, cri
     device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
     scaler = torch.cuda.amp.GradScaler(enabled = False if device == 'cpu' else True)
     model = model.to(device)
+    has_distance_map = True if distance_map_loss is not None else False
     accumulate_every = accumulate_batch // train_loader.batch_size
     best_metric = float("inf")
     best_dict = {}
@@ -48,6 +49,7 @@ def train_all_epochs(model, train_loader, valid_loader, test_loader, epochs, cri
                     'model_state_dict': model.state_dict(),
                     'optimizer_state_dict': optimizer.state_dict(),
                     'model':modelstring,
+                    'has_distance_map': has_distance_map,
                     'validation_metrics':best_dict,
                     'train_metrics': train_dict,
                     'custom_data': custom_data}, os.path.join(save_folder, name + ".pt"))
@@ -254,11 +256,12 @@ def make_single_class_per_contour(img, min_size = None):
                 orig[pts[0], pts[1]] = 0
     return orig
 
-def predict_images(model, images, device, single_class_per_contour=False, min_size=None):
+def predict_images(model, images, device, single_class_per_contour=False, min_size=None, has_distance_map = False):
     model.eval()
     total_loss = 0.0 
     model = model.to(device)
     all_predictions = []
+    all_distance_maps = []
     for cnt, image in enumerate(images):
         image = image / 255.
         image = torch.unsqueeze(torch.tensor(image, dtype = torch.float).permute(2, 0, 1), 0)
@@ -268,10 +271,13 @@ def predict_images(model, images, device, single_class_per_contour=False, min_si
         with torch.cuda.amp.autocast():
             with torch.no_grad():
                 predictions = model(image)
+                if has_distance_map:
+                    distance_map =  predictions[:,-1]
+                    predictions = predictions[:,0:-1]
             predictions = torch.argmax(predictions, 1)
             predictions = predictions[0].detach().cpu().numpy()
             if single_class_per_contour:
                 predictions = make_single_class_per_contour(predictions, min_size)
             all_predictions.append(predictions)
-
-    return all_predictions
+            all_distance_maps.append(distance_map[0].detach().cpu().numpy())
+    return all_predictions, all_distance_maps

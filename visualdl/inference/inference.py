@@ -22,7 +22,7 @@ def predict_od(model, imgs, confidence = 0.45):
     return finals
 
 class ModelInference():
-    def __init__(self, weight_path, device = 'cuda:0' if torch.cuda.is_available() else 'cpu', type='segmentation'):
+    def __init__(self, weight_path, device = 'cuda:0' if torch.cuda.is_available() else 'cpu', type='segmentation', watershed_od = ""):
         self.device = device
         self.type = type
         if type == "segmentation":
@@ -34,15 +34,44 @@ class ModelInference():
             self.model = eval(state['model'])
             self.model.load_state_dict(state['model_state_dict'])
             self.model.eval()
+            self.has_distance_map = False
+            if 'has_distance_map' in self.state:
+                self.has_distance_map = bool(self.state['has_distance_map'])
         
         elif type == "od":
             self.model = torch.hub.load('ultralytics/yolov5', 'custom', path=weight_path)
+
+        elif type == "segmentation_od":
+            if device.lower() == "cpu":
+                state = load(weight_path, map_location=torch.device('cpu'))
+            else:
+                state = load(weight_path)
+            self.state = state
+            self.model = eval(state['model'])
+            self.model.load_state_dict(state['model_state_dict'])
+            self.model.eval()
+            self.has_distance_map = False
+            if 'has_distance_map' in self.state:
+                self.has_distance_map = bool(self.state['has_distance_map'])
+
+            self.model_od = torch.hub.load('ultralytics/yolov5', 'custom', path=watershed_od)
 
     def __call__(self, images):
         return self.predict(images)
 
     def predict(self, images, single_class_per_contour = False, min_size = None, confidence = 0.45):
         if self.type == "segmentation":
-            return predict_images(self.model, images, self.device, single_class_per_contour, min_size)
+            return predict_images(self.model, images, self.device, single_class_per_contour, min_size, self.has_distance_map)
         elif self.type == "od":
             return predict_od(self.model, images, confidence=confidence)
+        elif self.type == "segmentation_od":
+           boxes =  predict_od(self.model, images, confidence=confidence)
+           maps = predict_images(self.model, images, self.device, single_class_per_contour, min_size, self.has_distance_map)
+           if self.has_distance_map:
+               maps = maps[0]
+           for image, box, map in zip(images, boxes, maps):
+                pass
+           
+            
+            
+            

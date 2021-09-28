@@ -7,7 +7,7 @@ from .utils.model_utils import predict_images
 import torch
 from torch import load
 from .inference.inference import ModelInference
-
+import sys
 
 def train(cfg_path):
     type = parse_yaml(cfg_path)['type']
@@ -16,6 +16,12 @@ def train(cfg_path):
     elif type == "segmentation":
         t = SegmentationTrainer(cfg_path=cfg_path)
     elif type == "od":
+        not_unique_modules = ["models", "utils", "utils.metrics"]
+        for module in not_unique_modules:            
+            try:
+                del sys.modules[module]
+            except:
+                pass
         t = DetectionTrainer(cfg_path=cfg_path)
     t.train()
     print("DONE TRAINING")

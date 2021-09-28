@@ -3,6 +3,7 @@ type: "od"
 data:
   train: "F:/source/repos/Daten/ObjectDetection/SingleClassHer2256/train"
   valid: "F:/source/repos/Daten/ObjectDetection/SingleClassHer2256/valid"
+  save_folder: "runs"
 # anchors
 settings:
   nc: 1

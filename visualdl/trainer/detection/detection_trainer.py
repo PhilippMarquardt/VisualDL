@@ -47,6 +47,7 @@ class DetectionTrainer():
         setattr(opts, "device", 0)
         setattr(opts, "workers", 0)
         setattr(opts, "hyp", hyperfile)
+        setattr(opts, "project", self.cfg['data']['save_folder'])
         #setattr(opts, "cache", "disk")
         print(opts)
         main(opts)
