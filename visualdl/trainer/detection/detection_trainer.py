@@ -23,7 +23,7 @@ class DetectionTrainer():
         with open(newfile, "w",  encoding = "utf-8") as handle:
             a = yaml.dump(a, handle)
 
-        modelfile = os.path.join(self.this_dir, r"../../dependencies/yolov5/yolomodels/yolov5m.yaml")  
+        modelfile = os.path.join(self.this_dir, r"../../dependencies/yolov5/models/yolov5m.yaml")  
         with open(modelfile, "r",  encoding = "utf-8") as handle:
             a = yaml.load(handle, Loader=yaml.FullLoader)
         a['nc'] = int(self.cfg['settings']['nc'])
@@ -35,7 +35,7 @@ class DetectionTrainer():
         python_path = sys.executable
         train_script = os.path.join(self.this_dir, r"../../dependencies/yolov5/train.py")  
         datafile = os.path.join(self.this_dir, r"../../dependencies/yolov5/data/hsa.yaml") 
-        modelfile = os.path.join(self.this_dir, r"../../dependencies/yolov5/yolomodels/yolov5m.yaml") 
+        modelfile = os.path.join(self.this_dir, r"../../dependencies/yolov5/models/yolov5m.yaml") 
         hyperfile = os.path.join(self.this_dir, r"../../dependencies/yolov5/data/hyps/hyp.scratch.yaml") 
         opts = parse_opt()
         setattr(opts, "imgsz", self.cfg['settings']['imgsize'])
