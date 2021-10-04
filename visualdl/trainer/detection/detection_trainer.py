@@ -12,8 +12,8 @@ class DetectionTrainer():
         self.cfg = parse_yaml(cfg_path)
         assert self.cfg['type'] == "od", "Provided yaml file must be a od config!"
         self.this_dir = os.path.dirname(os.path.abspath(__file__))
-        datafile = os.path.join(self.this_dir, r"../../dependencies/yolov5/data/coco128.yaml")  
-        newfile = os.path.join(self.this_dir, r"../../dependencies/yolov5/data/hsa.yaml")  
+        datafile = os.path.join(self.this_dir, r"../../dependencies/yolov5/coco128.yaml")  
+        newfile = os.path.join(self.this_dir, r"../../dependencies/yolov5/hsa.yaml")  
         with open(datafile, "r",  encoding = "utf-8") as handle:
             a = yaml.load(handle, Loader=yaml.FullLoader)
         a['train'] = self.cfg['data']['train']
@@ -34,9 +34,9 @@ class DetectionTrainer():
     def train(self):
         python_path = sys.executable
         train_script = os.path.join(self.this_dir, r"../../dependencies/yolov5/train.py")  
-        datafile = os.path.join(self.this_dir, r"../../dependencies/yolov5/data/hsa.yaml") 
+        datafile = os.path.join(self.this_dir, r"../../dependencies/yolov5/hsa.yaml") 
         modelfile = os.path.join(self.this_dir, r"../../dependencies/yolov5/models/yolov5m.yaml") 
-        hyperfile = os.path.join(self.this_dir, r"../../dependencies/yolov5/data/hyps/hyp.scratch.yaml") 
+        hyperfile = os.path.join(self.this_dir, r"../../dependencies/yolov5/hyp.scratch.yaml") 
         opts = parse_opt()
         setattr(opts, "imgsz", self.cfg['settings']['imgsize'])
         setattr(opts, "epochs", self.cfg['settings']['epochs'])

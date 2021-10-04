@@ -44,4 +44,5 @@ setup(
   author = 'Philipp Marquardt',
   author_email = 'p.marquardt15@googlemail.com',
   url = 'https://github.com/PhilippMarquardt/VisualDL',
+  package_data={'': ['*.yaml']}
 )
