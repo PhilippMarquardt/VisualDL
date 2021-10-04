@@ -1,4 +1,4 @@
-from ...dependencies.yolo.train import main, parse_opt
+from ...dependencies.yolov5.train import main, parse_opt
 from ...utils.utils import *
 import os
 import sysconfig
