@@ -1,6 +1,7 @@
 from .utils.utils import parse_yaml
 from .trainer.classification.classification_trainer import ClassificationTrainer
 from .trainer.detection.detection_trainer import DetectionTrainer
+from .trainer.segmentation.segmentation_trainer import SegmentationTrainer
 import torch
 from torch import load
 from .inference.inference import ModelInference
@@ -11,7 +12,6 @@ def train(cfg_path):
     if type == "classification":
         t = ClassificationTrainer(cfg_path=cfg_path)
     elif type == "segmentation":
-        from .trainer.segmentation.segmentation_trainer import SegmentationTrainer
         t = SegmentationTrainer(cfg_path=cfg_path)
     elif type == "od":
         t = DetectionTrainer(cfg_path=cfg_path)
