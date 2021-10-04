@@ -2,3 +2,6 @@
 [submodule "visualdl/dependencies/yolo"]
 	path = visualdl/dependencies/yolo
 	url = https://github.com/PhilippMarquardt/yolov5.git
+[submodule "visualdl/dependencies/yolov5"]
+	path = visualdl/dependencies/yolov5
+	url = https://github.com/PhilippMarquardt/yolov5.git
