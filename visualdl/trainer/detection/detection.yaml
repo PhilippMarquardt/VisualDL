@@ -1,15 +1,17 @@
 type: "od"
 
 data:
-  train: "F:/source/repos/Daten/ObjectDetection/SingleClassHer2256/train"
-  valid: "F:/source/repos/Daten/ObjectDetection/SingleClassHer2256/valid"
+  train: "F:/source/repos/Daten/ObjectDetection/Her2512/train"
+  valid: "F:/source/repos/Daten/ObjectDetection/Her2512/valid"
   save_folder: "runs"
+  weights: "F:/source/repos/VisualDL/runs/exp13/weights/best.pt"
 # anchors
 settings:
   nc: 1
-  epochs: 150
-  imgsize: 256
+  epochs: 300
+  imgsize: 512
   batch_size: 4
+
 
   
 

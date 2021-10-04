@@ -211,7 +211,7 @@ def evaluate(model, valid_bar, criterions, criterion_scaling, writer, metrics, m
     best_dict['validation_loss'] = total_loss / len(valid_bar)
     return total_loss / len(valid_bar), best_dict
 
-def test_trainer(models: list, test_loaders, metrics):
+def test_trainer(models: list, test_loaders, metrics, distance_map_loss = None):
     assert test_loaders
     assert metrics
     device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
@@ -262,6 +262,7 @@ def predict_images(model, images, device, single_class_per_contour=False, min_si
     model = model.to(device)
     all_predictions = []
     all_distance_maps = []
+    sig = torch.nn.Sigmoid()
     for cnt, image in enumerate(images):
         image = image / 255.
         image = torch.unsqueeze(torch.tensor(image, dtype = torch.float).permute(2, 0, 1), 0)
@@ -275,9 +276,14 @@ def predict_images(model, images, device, single_class_per_contour=False, min_si
                     distance_map =  predictions[:,-1]
                     predictions = predictions[:,0:-1]
             predictions = torch.argmax(predictions, 1)
+            
             predictions = predictions[0].detach().cpu().numpy()
             if single_class_per_contour:
                 predictions = make_single_class_per_contour(predictions, min_size)
             all_predictions.append(predictions)
+            
+            distance_map = sig(distance_map)
             all_distance_maps.append(distance_map[0].detach().cpu().numpy())
-    return all_predictions, all_distance_maps
+    if has_distance_map:
+        return all_predictions, all_distance_maps
+    return all_predictions

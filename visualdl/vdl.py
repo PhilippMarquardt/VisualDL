@@ -24,8 +24,8 @@ def train(cfg_path):
                 pass
         t = DetectionTrainer(cfg_path=cfg_path)
     t.train()
-    print("DONE TRAINING")
-    print(t.test())
+    #print("DONE TRAINING")
+    #print(t.test())
 
 
 def predict(images, weights, device = 'cuda:0' if torch.cuda.is_available() else 'cpu'):
@@ -35,8 +35,8 @@ def predict(images, weights, device = 'cuda:0' if torch.cuda.is_available() else
     return predict_images(model, images, device)
 
 
-def get_inference_model(weights, type = "segmentation"):
-    return ModelInference(weights, type=type)
+def get_inference_model(weights, type = "segmentation", watershed_od = ""):
+    return ModelInference(weights, type=type, watershed_od=watershed_od)
 
 
 

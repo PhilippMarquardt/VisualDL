@@ -1,8 +1,12 @@
 import segmentation_models_pytorch as smp
 from torch import load
-from ..utils.model_utils import predict_images
+from ..utils.model_utils import predict_images, make_single_class_per_contour
 import torch
-
+import numpy as np
+import cv2
+from scipy import ndimage as ndi
+from skimage.segmentation import watershed
+from skimage.morphology import square
 
 def predict_od(model, imgs, confidence = 0.45):
     size = imgs[0].shape[0]
@@ -65,13 +69,26 @@ class ModelInference():
         elif self.type == "od":
             return predict_od(self.model, images, confidence=confidence)
         elif self.type == "segmentation_od":
-           boxes =  predict_od(self.model, images, confidence=confidence)
-           maps = predict_images(self.model, images, self.device, single_class_per_contour, min_size, self.has_distance_map)
-           if self.has_distance_map:
-               maps = maps[0]
-           for image, box, map in zip(images, boxes, maps):
-                pass
-           
+            all_segmentations = []
+            boxes =  predict_od(self.model_od, images, confidence=confidence)
+            maps = predict_images(self.model, images, self.device, single_class_per_contour, min_size, self.has_distance_map)
+            if self.has_distance_map:
+                maps = maps[0]
+            #images must be rgb
+            for image, box, map in zip(images, boxes, maps):
+                label_map = np.int32(np.zeros_like(map))
+                p = 1
+                for b in box:
+                    label_map = cv2.circle(label_map, b[-1], 1, p, -1)
+                    p += 1
+                distance = ndi.distance_transform_edt(map)
+                #mapss = np.uint8(ndi.binary_fill_holes(map))
+                labels = watershed(-distance, label_map, mask=map, watershed_line = True)
+                labels[labels > 0] = map[labels>0]
+                kernel = np.ones((2, 2), np.uint8)
+                labels = cv2.erode(np.uint8(labels), kernel)
+                all_segmentations.append(make_single_class_per_contour(labels, min_size))
+            return all_segmentations
             
             
             

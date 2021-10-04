@@ -42,6 +42,8 @@ class DetectionTrainer():
         setattr(opts, "epochs", self.cfg['settings']['epochs'])
         setattr(opts, "batch-size", self.cfg['settings']['batch_size'])
         setattr(opts, "batch", self.cfg['settings']['batch_size'])
+        if self.cfg['data']['weights'] is not "None":
+            setattr(opts, "weights", self.cfg['data']['weights'])
         setattr(opts, "data", datafile)
         setattr(opts, "cfg", modelfile)
         setattr(opts, "device", 0)
