@@ -281,7 +281,7 @@ def predict_images(model, images, device, single_class_per_contour=False, min_si
             if single_class_per_contour:
                 predictions = make_single_class_per_contour(predictions, min_size)
             all_predictions.append(predictions)
-            
-            distance_map = sig(distance_map)
-            all_distance_maps.append(distance_map[0].detach().cpu().numpy())
+            if has_distance_map:
+                distance_map = sig(distance_map)
+                all_distance_maps.append(distance_map[0].detach().cpu().numpy())
     return all_predictions, all_distance_maps
