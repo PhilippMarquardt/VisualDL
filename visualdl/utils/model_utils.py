@@ -284,6 +284,4 @@ def predict_images(model, images, device, single_class_per_contour=False, min_si
             
             distance_map = sig(distance_map)
             all_distance_maps.append(distance_map[0].detach().cpu().numpy())
-    if has_distance_map:
-        return all_predictions, all_distance_maps
-    return all_predictions
+    return all_predictions, all_distance_maps
