@@ -71,9 +71,8 @@ class ModelInference():
         elif self.type == "segmentation_od":
             all_segmentations = []
             boxes =  predict_od(self.model_od, images, confidence=confidence)
-            maps = predict_images(self.model, images, self.device, single_class_per_contour, min_size, self.has_distance_map)
-            if self.has_distance_map:
-                maps = maps[0]
+            maps = predict_images(self.model, images, self.device, single_class_per_contour, min_size, self.has_distance_map)[0]
+            
             #images must be rgb
             for image, box, map in zip(images, boxes, maps):
                 label_map = np.int32(np.zeros_like(map))
