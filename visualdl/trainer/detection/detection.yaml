@@ -4,13 +4,14 @@ data:
   train: "F:/source/repos/Daten/ObjectDetection/Her2512/train"
   valid: "F:/source/repos/Daten/ObjectDetection/Her2512/valid"
   save_folder: "runs"
-  weights: "F:/source/repos/VisualDL/runs/exp13/weights/best.pt"
+  weights: "yolov5s.pt"
 # anchors
 settings:
   nc: 1
   epochs: 300
   imgsize: 512
   batch_size: 4
+
 
 
   
