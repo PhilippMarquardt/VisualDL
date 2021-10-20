@@ -1,4 +1,4 @@
-from ...dependencies.yolov5.train import main, parse_opt
+from ...dependencies.yolov5.train import main, parse_opt, run
 from ...utils.utils import *
 import os
 import sysconfig
@@ -37,24 +37,31 @@ class DetectionTrainer():
         datafile = os.path.join(self.this_dir, r"../../dependencies/yolov5/hsa.yaml") 
         modelfile = os.path.join(self.this_dir, r"../../dependencies/yolov5/models/yolov5m.yaml") 
         hyperfile = os.path.join(self.this_dir, r"../../dependencies/yolov5/hyp.scratch.yaml") 
-        opts = parse_opt()
-        setattr(opts, "imgsz", self.cfg['settings']['imgsize'])
-        setattr(opts, "epochs", self.cfg['settings']['epochs'])
-        setattr(opts, "batch-size", self.cfg['settings']['batch_size'])
-        setattr(opts, "batch", self.cfg['settings']['batch_size'])
-        if self.cfg['data']['weights'] is not "None":
-            setattr(opts, "weights", self.cfg['data']['weights'])
-        setattr(opts, "data", datafile)
-        setattr(opts, "cfg", modelfile)
-        setattr(opts, "device", 0)
-        setattr(opts, "workers", 0)
-        setattr(opts, "hyp", hyperfile)
-        setattr(opts, "project", self.cfg['data']['save_folder'])
+        #opts = parse_opt()
+        # setattr(opts, "imgsz", self.cfg['settings']['imgsize'])
+        # setattr(opts, "epochs", self.cfg['settings']['epochs'])
+        # setattr(opts, "batch_size", self.cfg['settings']['batch_size'])
+        # #setattr(opts, "rect", True)
+        # setattr(opts, "batch", self.cfg['settings']['batch_size'])
+        # if self.cfg['data']['weights'] != "None":
+        #     setattr(opts, "weights", self.cfg['data']['weights'])
+        # setattr(opts, "data", datafile)
+        # setattr(opts, "cfg", modelfile)
+        # setattr(opts, "device", 0)
+        # setattr(opts, "workers", 0)
+        # setattr(opts, "hyp", hyperfile)
+        # setattr(opts, "project", self.cfg['data']['save_folder'])
+        # if "device" in self.cfg['settings']:
+        #     setattr(opts, "device", "cpu")
+        # setattr(opts, "cache", "disk")
         if "device" in self.cfg['settings']:
-            setattr(opts, "device", "cpu")
-        #setattr(opts, "cache", "disk")
-        print(opts)
-        main(opts)
+            run(imgsz = self.cfg['settings']['imgsize'], epochs = self.cfg['settings']['epochs'], batch_size = self.cfg['settings']['batch_size'], batch=self.cfg['settings']['batch_size'],
+            data = datafile, cfg=modelfile,workers=0, hyp=hyperfile, project=self.cfg['data']['save_folder'], device="cpu", weights = self.cfg['data']['weights'])
+        else:
+            run(imgsz = self.cfg['settings']['imgsize'], epochs = self.cfg['settings']['epochs'], batch_size = self.cfg['settings']['batch_size'], batch=self.cfg['settings']['batch_size'],
+            data = datafile, cfg=modelfile,device=0, workers=0, hyp=hyperfile, project=self.cfg['data']['save_folder'], weights = self.cfg['data']['weights'])
+        #print(opts)
+        #main(opts)
         pass
 
     def test(self):

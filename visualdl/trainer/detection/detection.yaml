@@ -1,16 +1,16 @@
 type: "od"
 
 data:
-  train: "F:/source/repos/Daten/ObjectDetection/Her2512/train"
-  valid: "F:/source/repos/Daten/ObjectDetection/Her2512/valid"
+  train: "F:/source/repos/Daten/ObjectDetection/Her2New/train"
+  valid: "F:/source/repos/Daten/ObjectDetection/Her2New/valid"
   save_folder: "runs"
-  weights: "yolov5s.pt"
+  weights: "runs/exp72/weights/best.pt"
 # anchors
 settings:
   nc: 1
-  epochs: 300
+  epochs: 500
   imgsize: 512
-  batch_size: 4
+  batch_size: 8
 
 
 

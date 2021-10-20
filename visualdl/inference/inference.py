@@ -7,6 +7,7 @@ import cv2
 from scipy import ndimage as ndi
 from skimage.segmentation import watershed
 from skimage.morphology import square
+from ..models.dpt.models import DPTSegmentationModel
 
 def predict_od(model, imgs, confidence = 0.45):
     size = imgs[0].shape[0]
@@ -63,15 +64,15 @@ class ModelInference():
     def __call__(self, images):
         return self.predict(images)
 
-    def predict(self, images, single_class_per_contour = False, min_size = None, confidence = 0.45):
+    def predict(self, images, single_class_per_contour = False, min_size = None, confidence = 0.45, fill_holes = True):
         if self.type == "segmentation":
-            return predict_images(self.model, images, self.device, single_class_per_contour, min_size, self.has_distance_map)
+            return predict_images(self.model, images, self.device, single_class_per_contour, min_size, self.has_distance_map, fill_holes=fill_holes)
         elif self.type == "od":
             return predict_od(self.model, images, confidence=confidence)
         elif self.type == "segmentation_od":
             all_segmentations = []
             boxes =  predict_od(self.model_od, images, confidence=confidence)
-            maps = predict_images(self.model, images, self.device, single_class_per_contour, min_size, self.has_distance_map)[0]
+            maps = predict_images(self.model, images, self.device, single_class_per_contour, min_size, self.has_distance_map, fill_holes = fill_holes)[0]
             
             #images must be rgb
             for image, box, map in zip(images, boxes, maps):
@@ -80,12 +81,24 @@ class ModelInference():
                 for b in box:
                     label_map = cv2.circle(label_map, b[-1], 1, p, -1)
                     p += 1
+
+
+
+
+
+                #ndi waterhsed    
                 distance = ndi.distance_transform_edt(map)
                 #mapss = np.uint8(ndi.binary_fill_holes(map))
                 labels = watershed(-distance, label_map, mask=map, watershed_line = True)
                 labels[labels > 0] = map[labels>0]
                 kernel = np.ones((2, 2), np.uint8)
                 labels = cv2.erode(np.uint8(labels), kernel)
+
+
+                # rgb_mask = cv2.cvtColor(map, cv2.COLOR_GRAY2RGB)
+                # labels = cv2.watershed(rgb_mask, label_map)
+                # kernel = np.ones((2, 2), np.uint8)
+                # labels = cv2.erode(np.uint8(labels), kernel)
                 all_segmentations.append(make_single_class_per_contour(labels, min_size))
             return all_segmentations
             

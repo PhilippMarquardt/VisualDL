@@ -10,7 +10,7 @@ import logging
 import os
 import sys
 import torch
-
+from scipy import ndimage as ndi
 
 def visualize(model, layer, image):
         cam = GradCAM(model=model, target_layer=layer, use_cuda=torch.cuda.is_available())
@@ -205,6 +205,7 @@ def evaluate(model, valid_bar, criterions, criterion_scaling, writer, metrics, m
         best_dict[metric.__class__.__name__] = val
     for metric in metrics:
         metric.reset()
+    model.zero_grad()
     model.train()
 
     best_dict['validation_monitor_metric'] = monitor_metric.compute().item()
@@ -256,7 +257,7 @@ def make_single_class_per_contour(img, min_size = None):
                 orig[pts[0], pts[1]] = 0
     return orig
 
-def predict_images(model, images, device, single_class_per_contour=False, min_size=None, has_distance_map = False):
+def predict_images(model, images, device, single_class_per_contour=False, min_size=None, has_distance_map = False, fill_holes = False):
     model.eval()
     total_loss = 0.0 
     model = model.to(device)
@@ -280,8 +281,22 @@ def predict_images(model, images, device, single_class_per_contour=False, min_si
             predictions = predictions[0].detach().cpu().numpy()
             if single_class_per_contour:
                 predictions = make_single_class_per_contour(predictions, min_size)
+            if fill_holes:
+                unique_values = np.unique(predictions)
+                all_classes = np.zeros_like(predictions)
+                for val in unique_values:
+                    if val == 0:
+                        continue
+                    tmp = np.zeros_like(predictions)
+                    tmp[predictions==val] = 1
+                    tmp = np.uint8(ndi.binary_fill_holes(tmp))
+                    tmp = tmp.astype(np.int32)
+                    all_classes[tmp == 1] = val
+                predictions = all_classes
             all_predictions.append(predictions)
             if has_distance_map:
                 distance_map = sig(distance_map)
                 all_distance_maps.append(distance_map[0].detach().cpu().numpy())
+
+            
     return all_predictions, all_distance_maps

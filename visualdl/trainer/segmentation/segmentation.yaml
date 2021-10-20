@@ -23,28 +23,29 @@ data:
   #valid: "custom_experiments/valid"
   #test: "custom_experiments/valid"
   #train: "E:/source/repos/Daten/HER-N/hubt\dataset\Cells\train"
-  train: "F:/source/repos/Daten/FinalHer2512/train"
-  valid: "F:/source/repos/Daten/FinalHer2512/valid"
-  test: "F:/source/repos/Daten/FinalHer2512/valid"
+  train: "C:/Users/phili/Downloads/Telegram Desktop/dataset_14810/dataset/train"
+  valid: "C:/Users/phili/Downloads/Telegram Desktop/dataset_14810/dataset/valid"
+  test: "C:/Users/phili/Downloads/Telegram Desktop/dataset_14810/dataset/valid"
+  #train: "C:/Users/phili/Downloads/Telegram Desktop/datasetClassified/dataset/train"
+  #valid: "C:/Users/phili/Downloads/Telegram Desktop/datasetClassified/dataset/valid"
+  #test: "C:/Users/phili/Downloads/Telegram Desktop/datasetClassified/dataset/valid"
   #train: "F:/source/repos/Daten/Glomeruli/trainer"
   #valid: "F:/source/repos/Daten/Glomeruli/valid"
   #test: "F:/source/repos/Daten/Glomeruli/valid"
   #train: "F:/source/repos/Daten/knochenpartikel/knochenpartikel"
   #valid: "F:/source/repos/Daten/knochenpartikel/knochenpartikel/valid"
   #test: "F:/source/repos/Daten/knochenpartikel/knochenpartikel/valid"
-  weights: ["Her22Classes2.pt"]
+  #train: "C:/Users/phili/Downloads/Telegram Desktop/ROCHE/dataset/train"
+  #valid: "C:/Users/phili/Downloads/Telegram Desktop/ROCHE/dataset/valid"
+  #test: "C:/Users/phili/Downloads/Telegram Desktop/ROCHE/dataset/valid"
+  weights: ["tu-resnest50d, dpt.pt"]
 
   save_folder: "" 
 
 # anchors
 models:
   - backbone: "tu-resnest50d"
-    decoder: "UnetPlusPlus"
-
-  
-
-  
-
+    decoder: "dpt"
 
 settings:
   nc: 2
@@ -53,12 +54,12 @@ settings:
   optimizer: "AdamW"
   lr: 0.00001
   workers: 0
-  batch_size: [8]
+  batch_size: [4]
   max_image_size: 512 #must be set for transformer based models because of the positional embedding
   scales: "None" #or None
   use_attention: False
   
-  gradient_accumulation: 8
+  gradient_accumulation: 4
   criterions: #criterions defined in segmentation_models_pytorch.utils.losses can be used
     - "CrossEntropyLoss"
 
@@ -85,7 +86,7 @@ settings:
   #pdl1
   #custom_data: {'structure_indices': [4, 5, 6], 'image_size': 512, 'object_based': False}
   #Knochenpartikel
-  custom_data: {structure_indices : [1], image_size: 512, object_based : False}
+  custom_data: {structure_indices : [5], image_size: 512, object_based : False}
 
 transforms:
   Resize: width = 512, height = 512
@@ -95,7 +96,7 @@ transforms:
   RGBShift: p=0.0
   RandomShadow : p=0.00
   GaussianBlur: p=0.0
-  Transpose: p=0.15
+  Transpose: p=0.0
   RandomRotate90: p=0.15
   Perspective: p=0.00
   Affine: p=0.00

@@ -17,7 +17,7 @@ class ModelBase(ABC):
                 logging.warning(f"Could not load weights from {weight}")
         self.criterions = criterions
         self.metrics = metrics
-        self.lr = lr
+        self.lr = lr  
         self.criterions = [eval(f"{name}(reduction='none')") for name in criterions]
         #self.criterions = [DiceLoss()]
         self.writer = SummaryWriter(tensorboard_dir)
