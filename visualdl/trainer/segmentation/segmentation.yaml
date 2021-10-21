@@ -22,7 +22,7 @@ data:
   #train: "custom_experiments/train"
   #valid: "custom_experiments/valid"
   #test: "custom_experiments/valid"
-  #train: "E:/source/repos/Daten/HER-N/hubt\dataset\Cells\train"
+  #train: "E:/source/repos/Daten/HER-N/hubt/dataset/Cells/train"
   train: "C:/Users/phili/Downloads/Telegram Desktop/dataset_14810/dataset/train"
   valid: "C:/Users/phili/Downloads/Telegram Desktop/dataset_14810/dataset/valid"
   test: "C:/Users/phili/Downloads/Telegram Desktop/dataset_14810/dataset/valid"
@@ -38,28 +38,31 @@ data:
   #train: "C:/Users/phili/Downloads/Telegram Desktop/ROCHE/dataset/train"
   #valid: "C:/Users/phili/Downloads/Telegram Desktop/ROCHE/dataset/valid"
   #test: "C:/Users/phili/Downloads/Telegram Desktop/ROCHE/dataset/valid"
-  weights: ["tu-resnest50d, dpt.pt"]
+  #train: "C:/Users/phili/Downloads/Telegram Desktop/Cells her2 128/train"
+  #valid: "C:/Users/phili/Downloads/Telegram Desktop/Cells her2 128/valid"
+  #test: "C:/Users/phili/Downloads/Telegram Desktop/Cells her2 128/valid"
+  weights: ["tu-efficientnetv2_rw_m, TransUnet.pt"]
 
   save_folder: "" 
 
 # anchors
 models:
-  - backbone: "tu-resnest50d"
-    decoder: "dpt"
+  - backbone: "tu-efficientnetv2_rw_m"
+    decoder: "TransUnet"
 
 settings:
   nc: 2
   in_channels: 3
   epochs: 3000
   optimizer: "AdamW"
-  lr: 0.00001
+  lr: 3e-5
   workers: 0
-  batch_size: [4]
+  batch_size: [8]
   max_image_size: 512 #must be set for transformer based models because of the positional embedding
   scales: "None" #or None
   use_attention: False
   
-  gradient_accumulation: 4
+  gradient_accumulation: 8
   criterions: #criterions defined in segmentation_models_pytorch.utils.losses can be used
     - "CrossEntropyLoss"
 
@@ -74,7 +77,7 @@ settings:
   monitor_metric_params: "num_classes=2"
   class_weights: False
   calculate_weight_map: True
-  calculate_distance_maps: True
+  calculate_distance_maps: False
   add_object_detection_model: False
   early_stopping: 50
   #nuclei

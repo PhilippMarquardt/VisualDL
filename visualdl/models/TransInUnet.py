@@ -104,9 +104,6 @@ class TransInUnet(nn.Module):
         #out1 = self.init_ax(self.first_conv(x)) #128
         out1 = self.init_conv(self.first_conv(x)) #128
         out2 = self.first(out1) #64
-
-
-
         out3 = self.second(out2) #32
         out4 = self.third(out3) #16
         out5 = self.fourth(out4) #8

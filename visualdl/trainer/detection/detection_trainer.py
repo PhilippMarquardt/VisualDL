@@ -54,12 +54,13 @@ class DetectionTrainer():
         # if "device" in self.cfg['settings']:
         #     setattr(opts, "device", "cpu")
         # setattr(opts, "cache", "disk")
+        device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
         if "device" in self.cfg['settings']:
             run(imgsz = self.cfg['settings']['imgsize'], epochs = self.cfg['settings']['epochs'], batch_size = self.cfg['settings']['batch_size'], batch=self.cfg['settings']['batch_size'],
             data = datafile, cfg=modelfile,workers=0, hyp=hyperfile, project=self.cfg['data']['save_folder'], device="cpu", weights = self.cfg['data']['weights'])
         else:
             run(imgsz = self.cfg['settings']['imgsize'], epochs = self.cfg['settings']['epochs'], batch_size = self.cfg['settings']['batch_size'], batch=self.cfg['settings']['batch_size'],
-            data = datafile, cfg=modelfile,device=0, workers=0, hyp=hyperfile, project=self.cfg['data']['save_folder'], weights = self.cfg['data']['weights'])
+            data = datafile, cfg=modelfile,device=device, workers=0, hyp=hyperfile, project=self.cfg['data']['save_folder'], weights = self.cfg['data']['weights'])
         #print(opts)
         #main(opts)
         pass
