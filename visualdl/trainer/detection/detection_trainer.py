@@ -32,10 +32,10 @@ class DetectionTrainer():
         
 
     def train(self):
-        python_path = sys.executable
-        train_script = os.path.join(self.this_dir, r"../../dependencies/yolov5/train.py")  
+        assert self.cfg['settings']['modelsize'] in ["s", "m", "l"]
+
         datafile = os.path.join(self.this_dir, r"../../dependencies/yolov5/hsa.yaml") 
-        modelfile = os.path.join(self.this_dir, r"../../dependencies/yolov5/models/yolov5m.yaml") 
+        modelfile = os.path.join(self.this_dir, f"../../dependencies/yolov5/models/yolov5{self.cfg['settings']['modelsize']}.yaml") 
         hyperfile = os.path.join(self.this_dir, r"../../dependencies/yolov5/hyp.scratch.yaml") 
         #opts = parse_opt()
         # setattr(opts, "imgsz", self.cfg['settings']['imgsize'])

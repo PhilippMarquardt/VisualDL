@@ -12,8 +12,24 @@ class ModelBase(ABC):
         self.model = model
         if weight != "None" and weight.endswith(".pt"):
             try:
-                self.model.load_state_dict(torch.load(weight)['model_state_dict'], strict = False)
-            except:
+
+                own_state = self.model.state_dict()
+                load_state = torch.load(weight)['model_state_dict']
+                for name, param in load_state.items():
+                    if name not in own_state:
+                        continue
+                    else:
+                        if own_state[name].shape != load_state[name].shape:
+                            continue
+                    if isinstance(param, Parameter):
+                        # backwards compatibility for serialized parameters
+                        param = param.data
+                    own_state[name].copy_(param)
+                
+
+                #self.model.load_state_dict(torch.load(weight)['model_state_dict'], strict = False)
+            except Exception as e:
+                print(e)
                 logging.warning(f"Could not load weights from {weight}")
         self.criterions = criterions
         self.metrics = metrics

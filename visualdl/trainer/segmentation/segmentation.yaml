@@ -23,9 +23,9 @@ data:
   #valid: "custom_experiments/valid"
   #test: "custom_experiments/valid"
   #train: "E:/source/repos/Daten/HER-N/hubt/dataset/Cells/train"
-  train: "C:/Users/phili/Downloads/Telegram Desktop/dataset_14810/dataset/train"
-  valid: "C:/Users/phili/Downloads/Telegram Desktop/dataset_14810/dataset/valid"
-  test: "C:/Users/phili/Downloads/Telegram Desktop/dataset_14810/dataset/valid"
+  train: "C:/Users/phili/Downloads/Telegram Desktop/dataset_14810all/dataset/train"
+  valid: "C:/Users/phili/Downloads/Telegram Desktop/dataset_14810all/dataset/valid"
+  test: "C:/Users/phili/Downloads/Telegram Desktop/dataset_14810all/dataset/valid"
   #train: "C:/Users/phili/Downloads/Telegram Desktop/datasetClassified/dataset/train"
   #valid: "C:/Users/phili/Downloads/Telegram Desktop/datasetClassified/dataset/valid"
   #test: "C:/Users/phili/Downloads/Telegram Desktop/datasetClassified/dataset/valid"
@@ -41,14 +41,14 @@ data:
   #train: "C:/Users/phili/Downloads/Telegram Desktop/Cells her2 128/train"
   #valid: "C:/Users/phili/Downloads/Telegram Desktop/Cells her2 128/valid"
   #test: "C:/Users/phili/Downloads/Telegram Desktop/Cells her2 128/valid"
-  weights: ["tu-efficientnetv2_rw_m, TransUnet.pt"]
+  weights: ["tu-efficientnetv2_rw_m, DoubleUnet.pt"]
 
   save_folder: "" 
 
 # anchors
 models:
   - backbone: "tu-efficientnetv2_rw_m"
-    decoder: "TransUnet"
+    decoder: "DoubleUnet"
 
 settings:
   nc: 2
@@ -95,7 +95,7 @@ transforms:
   Resize: width = 512, height = 512
   HorizontalFlip: p=0.25
   VerticalFlip: p=0.25
-  RandomBrightnessContrast: p=0.0
+  RandomBrightnessContrast: p=0.15
   RGBShift: p=0.0
   RandomShadow : p=0.00
   GaussianBlur: p=0.0

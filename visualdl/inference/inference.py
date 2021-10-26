@@ -8,6 +8,13 @@ from scipy import ndimage as ndi
 from skimage.segmentation import watershed
 from skimage.morphology import square
 from ..models.dpt.models import DPTSegmentationModel
+from ..models.dpt.models import DPTSegmentationModel
+from ..models.custom import U2NET
+from ..models.TransInUnet import TransInUnet
+from ..models.hrnet import HRNetV2
+from ..models.caranet.CaraNet import caranet
+from ..models.doubleunet.doubleunet import DoubleUnet
+
 
 def predict_od(model, imgs, confidence = 0.45):
     size = imgs[0].shape[0]
@@ -95,10 +102,13 @@ class ModelInference():
                 labels = cv2.erode(np.uint8(labels), kernel)
 
 
-                # rgb_mask = cv2.cvtColor(map, cv2.COLOR_GRAY2RGB)
-                # labels = cv2.watershed(rgb_mask, label_map)
+                # rgb_mask = cv2.cvtColor(map.astpye(np.uint8), cv2.COLOR_GRAY2RGB)
+                # markers = cv2.watershed(rgb_mask, label_map)
+                # empty = np.zeros_like(markers).astype(np.uint8)
+                # empty[markers == -1] = 255
                 # kernel = np.ones((2, 2), np.uint8)
-                # labels = cv2.erode(np.uint8(labels), kernel)
+                # labels = cv2.dilate(empty, kernel)
+                # maps[labels == 255] = 0
                 all_segmentations.append(make_single_class_per_contour(labels, min_size))
             return all_segmentations
             

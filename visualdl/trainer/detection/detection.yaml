@@ -1,16 +1,19 @@
 type: "od"
 
 data:
-  train: "F:/source/repos/Daten/ObjectDetection/Her2New/train"
-  valid: "F:/source/repos/Daten/ObjectDetection/Her2New/valid"
+  train: "C:/Users/phili/Downloads/Telegram Desktop/ODTest/dataset/train"
+  valid: "C:/Users/phili/Downloads/Telegram Desktop/ODTest/dataset/valid"
+  #train: "C:/Users/phili/Downloads/Telegram Desktop/ViktorOD/dataset/train"
+  #valid: "C:/Users/phili/Downloads/Telegram Desktop/ViktorOD/dataset/valid"
   save_folder: "runs"
-  weights: "runs/exp72/weights/best.pt"
+  weights: "yolov5s.pt"
 # anchors
 settings:
   nc: 1
-  epochs: 500
+  epochs: 5000
   imgsize: 512
-  batch_size: 8
+  batch_size: 1
+  modelsize: "s"
 
 
 
