@@ -13,9 +13,9 @@ from .dpt.models import DPTSegmentationModel
 from .custom import U2NET
 from .TransInUnet import TransInUnet
 from .hrnet import HRNetV2
-from .caranet.CaraNet import caranet
-from .doubleunet.doubleunet import DoubleUnet
-from .medtransformer.lib.models.axialnet import MedT, axialunet, gated, logo
+#from .caranet.CaraNet import caranet
+#from .doubleunet.doubleunet import DoubleUnet
+#from .medtransformer.lib.models.axialnet import MedT, axialunet, gated, logo
 
 
 class SegmentationModel(ModelBase):
@@ -34,15 +34,15 @@ class SegmentationModel(ModelBase):
         elif decoder_name.lower() == "dpt":
             model = DPTSegmentationModel(nc, backbone = "vitb_rn50_384")
             modelstring = f'DPTSegmentationModel({nc}, backbone = "vitb_rn50_384")'
-        elif decoder_name.lower() == "caranet":
-            model = caranet(num_classes=nc)
-            modelstring = f'caranet(num_classes = {nc})'
-        elif decoder_name.lower() == "doubleunet":
-            model = DoubleUnet(encoder_name=encoder_name,classes=nc)
-            modelstring = f'DoubleUnet(encoder_name = "{encoder_name}", classes = {nc})'
-        elif decoder_name.lower() == "medicaltransformer":
-            model = MedT(img_size = max_image_size, imgchan = 3, num_classes = nc)
-            modelstring = f'MedT(img_size = {max_image_size}, imgchan = {3}, num_classes = {nc})'
+        # elif decoder_name.lower() == "caranet":
+        #     model = caranet(num_classes=nc)
+        #     modelstring = f'caranet(num_classes = {nc})'
+        # elif decoder_name.lower() == "doubleunet":
+        #     model = DoubleUnet(encoder_name=encoder_name,classes=nc)
+        #     modelstring = f'DoubleUnet(encoder_name = "{encoder_name}", classes = {nc})'
+        # elif decoder_name.lower() == "medicaltransformer":
+        #     model = MedT(img_size = max_image_size, imgchan = 3, num_classes = nc)
+        #     modelstring = f'MedT(img_size = {max_image_size}, imgchan = {3}, num_classes = {nc})'
         else:
             if use_attention:
                 model = eval(f'smp.create_model(arch="{decoder_name}", encoder_name="{encoder_name}", encoder_weights="imagenet", in_channels={in_channels}, classes = {nc}, image_size = {max_image_size}, decoder_attention_type = "{"scse"}")')

@@ -9,11 +9,11 @@ from skimage.segmentation import watershed
 from skimage.morphology import square
 from ..models.dpt.models import DPTSegmentationModel
 from ..models.dpt.models import DPTSegmentationModel
-from ..models.custom import U2NET
-from ..models.TransInUnet import TransInUnet
-from ..models.hrnet import HRNetV2
-from ..models.caranet.CaraNet import caranet
-from ..models.doubleunet.doubleunet import DoubleUnet
+# from ..models.custom import U2NET
+# from ..models.TransInUnet import TransInUnet
+# from ..models.hrnet import HRNetV2
+# from ..models.caranet.CaraNet import caranet
+# from ..models.doubleunet.doubleunet import DoubleUnet
 
 
 def predict_od(model, imgs, confidence = 0.45):
