@@ -115,17 +115,17 @@ def train_one_epoch(model, training_bar, criterions, criterion_scaling, average_
             dist = get_distance_map_fixed(y)
             dist = dist.to(device)
         y = y.to(device)
-        #TODO implement average_outputs
+        #TODO Implement multiple outputs of network
         with torch.cuda.amp.autocast():
             loss = None
             try:
                 predictions = model(x)
-                if distance_map_loss:
-                    distance_map_predictions = sig(predictions[:,-1,:,:])
-                    predictions = predictions[:,0:-1,:,:]
+                
             except:
                 continue
-            
+            if distance_map_loss:
+                distance_map_predictions = sig(predictions[:,-1,:,:])
+                predictions = predictions[:,0:-1,:,:]
             weight_maps = get_weight_map(y.detach().cpu().numpy() * 255.).to(device) if weight_map else None
             loss = criterions(predictions, y, weight_maps)
             if distance_map_loss:

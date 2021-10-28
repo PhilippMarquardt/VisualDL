@@ -13,9 +13,9 @@ data:
   #train: "C:/Users/phili/Downloads/Telegram Desktop/Cells her2 256/train"
   #valid: "C:/Users/phili/Downloads/Telegram Desktop/Cells her2 256/valid"
   #test: "C:/Users/phili/Downloads/Telegram Desktop/Cells her2 256/valid"
-  #train: "F:/source/repos/Daten/Nuclei/Nuclei/Nuclei/train"
-  #valid: "F:/source/repos/Daten/Nuclei/Nuclei/Nuclei/val"
-  #test: "F:/source/repos/Daten/Nuclei/Nuclei/Nuclei/val"
+  train: "F:/source/repos/Daten/Nuclei/Nuclei/Nuclei/train"
+  valid: "F:/source/repos/Daten/Nuclei/Nuclei/Nuclei/val"
+  test: "F:/source/repos/Daten/Nuclei/Nuclei/Nuclei/val"
   #train: "F:/source/repos/Daten/HER-N/Pdl1Combined/Tumor Cells 512/train"
   #valid: "F:/source/repos/Daten/HER-N/Pdl1Combined/Tumor Cells 512/valid"
   #test: "F:/source/repos/Daten/HER-N/Pdl1Combined/Tumor Cells 512/valid"
@@ -41,14 +41,14 @@ data:
   #train: "C:/Users/phili/Downloads/Telegram Desktop/Cells her2 128/train"
   #valid: "C:/Users/phili/Downloads/Telegram Desktop/Cells her2 128/valid"
   #test: "C:/Users/phili/Downloads/Telegram Desktop/Cells her2 128/valid"
-  weights: ["tu-efficientnetv2_rw_m, DoubleUnet.pt"]
+  weights: ["tu-efficientnetv2_rw_m, Unetr.pt"]
 
   save_folder: "" 
 
 # anchors
 models:
   - backbone: "tu-efficientnetv2_rw_m"
-    decoder: "DoubleUnet"
+    decoder: "Unetr"
 
 settings:
   nc: 2
@@ -65,7 +65,7 @@ settings:
   gradient_accumulation: 8
   criterions: #criterions defined in segmentation_models_pytorch.utils.losses can be used
     - "CrossEntropyLoss"
-
+    #- "DiceLoss"
 
   tensorboard_log_dir: "tensorboard_log"
   metrics:
@@ -95,7 +95,7 @@ transforms:
   Resize: width = 512, height = 512
   HorizontalFlip: p=0.25
   VerticalFlip: p=0.25
-  RandomBrightnessContrast: p=0.15
+  RandomBrightnessContrast: p=0.0
   RGBShift: p=0.0
   RandomShadow : p=0.00
   GaussianBlur: p=0.0

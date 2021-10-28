@@ -13,10 +13,10 @@ from .dpt.models import DPTSegmentationModel
 from .custom import U2NET
 from .TransInUnet import TransInUnet
 from .hrnet import HRNetV2
-#from .caranet.CaraNet import caranet
-#from .doubleunet.doubleunet import DoubleUnet
-#from .medtransformer.lib.models.axialnet import MedT, axialunet, gated, logo
-
+from .caranet.CaraNet import caranet
+from .doubleunet.doubleunet import DoubleUnet
+from .medtransformer.lib.models.axialnet import MedT, axialunet, gated, logo
+from .unetr import UNETR
 
 class SegmentationModel(ModelBase):
     def __init__(self, encoder_name, decoder_name, nc, in_channels, criterions, metrics, monitor_metric, optimizer, lr, accumulate_batch, tensorboard_dir, class_weights, calculate_weight_map, weight, save_folder, early_stopping, multi_scale = None, max_image_size = None, use_attention = False, custom_data = {}, calculate_distance_maps = False):
@@ -34,15 +34,18 @@ class SegmentationModel(ModelBase):
         elif decoder_name.lower() == "dpt":
             model = DPTSegmentationModel(nc, backbone = "vitb_rn50_384")
             modelstring = f'DPTSegmentationModel({nc}, backbone = "vitb_rn50_384")'
-        # elif decoder_name.lower() == "caranet":
-        #     model = caranet(num_classes=nc)
-        #     modelstring = f'caranet(num_classes = {nc})'
-        # elif decoder_name.lower() == "doubleunet":
-        #     model = DoubleUnet(encoder_name=encoder_name,classes=nc)
-        #     modelstring = f'DoubleUnet(encoder_name = "{encoder_name}", classes = {nc})'
-        # elif decoder_name.lower() == "medicaltransformer":
-        #     model = MedT(img_size = max_image_size, imgchan = 3, num_classes = nc)
-        #     modelstring = f'MedT(img_size = {max_image_size}, imgchan = {3}, num_classes = {nc})'
+        elif decoder_name.lower() == "caranet":
+            model = caranet(num_classes=nc)
+            modelstring = f'caranet(num_classes = {nc})'
+        elif decoder_name.lower() == "doubleunet":
+            model = DoubleUnet(encoder_name=encoder_name,classes=nc)
+            modelstring = f'DoubleUnet(encoder_name = "{encoder_name}", classes = {nc})'
+        elif decoder_name.lower() == "medicaltransformer":
+            model = MedT(img_size = max_image_size, imgchan = 3, num_classes = nc)
+            modelstring = f'MedT(img_size = {max_image_size}, imgchan = {3}, num_classes = {nc})'
+        elif decoder_name.lower() == "unetr":
+            model = UNETR(in_channels=in_channels, out_channels=nc, img_size=(max_image_size, max_image_size))
+            modelstring = f'UNETR(in_channels={in_channels}, out_channels={nc}, img_size={(max_image_size, max_image_size)})'
         else:
             if use_attention:
                 model = eval(f'smp.create_model(arch="{decoder_name}", encoder_name="{encoder_name}", encoder_weights="imagenet", in_channels={in_channels}, classes = {nc}, image_size = {max_image_size}, decoder_attention_type = "{"scse"}")')

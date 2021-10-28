@@ -13,7 +13,8 @@ settings:
   epochs: 5000
   imgsize: 512
   batch_size: 1
-  modelsize: "s"
+  modelsize: "s" #s,m,l
+  custom_data: {structure_indices : [5], image_size: 512, object_based : False} #whaever ya want
 
 
 

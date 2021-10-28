@@ -3,18 +3,19 @@ from torch import load
 from ..utils.model_utils import predict_images, make_single_class_per_contour
 import torch
 import numpy as np
+import os
 import cv2
 from scipy import ndimage as ndi
 from skimage.segmentation import watershed
 from skimage.morphology import square
 from ..models.dpt.models import DPTSegmentationModel
 from ..models.dpt.models import DPTSegmentationModel
-# from ..models.custom import U2NET
-# from ..models.TransInUnet import TransInUnet
-# from ..models.hrnet import HRNetV2
-# from ..models.caranet.CaraNet import caranet
-# from ..models.doubleunet.doubleunet import DoubleUnet
-
+from ..models.custom import U2NET
+from ..models.TransInUnet import TransInUnet
+from ..models.hrnet import HRNetV2
+from ..models.caranet.CaraNet import caranet
+from ..models.doubleunet.doubleunet import DoubleUnet
+from ..models.unetr import UNETR
 
 def predict_od(model, imgs, confidence = 0.45):
     size = imgs[0].shape[0]
@@ -51,7 +52,11 @@ class ModelInference():
                 self.has_distance_map = bool(self.state['has_distance_map'])
         
         elif type == "od":
-            self.model = torch.hub.load('ultralytics/yolov5', 'custom', path=weight_path)
+            dirname = os.path.dirname(__file__)
+            dirname = dirname.replace(dirname.split("\\")[-1], "dependencies/yolov5")
+            self.state = {}
+            self.model, self.state['custom_data'] = torch.hub.load(dirname, 'custom', path=weight_path, source='local', return_custom_data = True)
+            
 
         elif type == "segmentation_od":
             if device.lower() == "cpu":
