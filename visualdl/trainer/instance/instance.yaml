@@ -1,0 +1,35 @@
+type: "instance"
+
+data:
+  train: "C:/Users/phili/Downloads/Telegram Desktop/InstanceSegmentation/dataset/train"
+  valid: "C:/Users/phili/Downloads/Telegram Desktop/InstanceSegmentation/dataset/valid"
+  save_folder: ""
+  weights: "maskrcnn.pt"
+# anchors
+settings:
+  nc: 1
+  epochs: 5000
+  batch_size: 4
+  max_boxes_per_image: 500
+  custom_data: {structure_indices : [5], image_size: 512, object_based : False} #whaever ya want
+
+
+transforms:
+  Resize: width = 512, height = 512
+  HorizontalFlip: p=0.25
+  VerticalFlip: p=0.25
+  RandomBrightnessContrast: p=0.0
+  RGBShift: p=0.0
+  RandomShadow : p=0.00
+  GaussianBlur: p=0.0
+  Transpose: p=0.0
+  RandomRotate90: p=0.15
+  Perspective: p=0.00
+  Affine: p=0.00
+  ToGray: p=0.0
+  RandomScale: p=0.0
+
+
+
+  
+
