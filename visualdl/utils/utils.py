@@ -13,7 +13,7 @@ def write_image(path, src):
     cv2.imwrite(path, src*255)
 
     
-def get_dataloader(dataset:Dataset, batch_size:int, workers:int, shuffle:bool = True) -> DataLoader:
+def get_dataloader(dataset:Dataset, batch_size:int, workers:int, shuffle:bool = True, collate_fn = None) -> DataLoader:
     """
     Return a dataloader for a dataset with specific settings
 
@@ -26,7 +26,9 @@ def get_dataloader(dataset:Dataset, batch_size:int, workers:int, shuffle:bool = 
     Returns:
         DataLoader: [description]
     """
-    return DataLoader(dataset, batch_size = batch_size, shuffle = shuffle, num_workers = workers)
+    if collate_fn is None:
+        return DataLoader(dataset, batch_size = batch_size, shuffle = shuffle, num_workers = workers)
+    return DataLoader(dataset, batch_size = batch_size, shuffle = shuffle, num_workers = workers, collate_fn=collate_fn)
     
 
 def parse_yaml(yaml_file:str) -> dict:

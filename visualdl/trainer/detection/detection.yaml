@@ -5,6 +5,10 @@ data:
   valid: "C:/Users/phili/Downloads/Telegram Desktop/ODTest/dataset/valid"
   #train: "C:/Users/phili/Downloads/Telegram Desktop/ViktorOD/dataset/train"
   #valid: "C:/Users/phili/Downloads/Telegram Desktop/ViktorOD/dataset/valid"
+  train: "C:/Users/phili/Downloads/Telegram Desktop/Nuclei_od/Nuclei_od/train"
+  valid: "C:/Users/phili/Downloads/Telegram Desktop/Nuclei_od/Nuclei_od/valid"
+  train: "F:/source/repos/VisualDL/custom_experiments/FinalHer2/train"
+  valid: "F:/source/repos/VisualDL/custom_experiments/FinalHer2/valid"
   save_folder: "runs"
   weights: "yolov5s.pt"
 # anchors
@@ -13,7 +17,7 @@ settings:
   epochs: 5000
   imgsize: 512
   batch_size: 1
-  modelsize: "s" #s,m,l
+  modelsize: "m" #s,m,l
   custom_data: {structure_indices : [5], image_size: 512, object_based : False} #whaever ya want
 
 

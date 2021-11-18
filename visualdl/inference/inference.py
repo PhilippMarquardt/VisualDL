@@ -1,10 +1,11 @@
 import segmentation_models_pytorch as smp
 from torch import load
-from ..utils.model_utils import predict_images, make_single_class_per_contour
+from ..utils.model_utils import predict_images, make_single_class_per_contour, predict_instance_segmentation
 import torch
 import numpy as np
 import os
 import cv2
+import torchvision
 from scipy import ndimage as ndi
 from skimage.segmentation import watershed
 from skimage.morphology import square
@@ -73,10 +74,20 @@ class ModelInference():
 
             self.model_od = torch.hub.load('ultralytics/yolov5', 'custom', path=watershed_od)
 
+        elif type == "instance":
+            if device.lower() == "cpu":
+                state = load(weight_path, map_location=torch.device('cpu'))
+            else:
+                state = load(weight_path)
+            self.state = state
+            self.model = eval(state['model'])
+            self.model.eval()
+            self.model.load_state_dict(state['model_state_dict'])
+
     def __call__(self, images):
         return self.predict(images)
 
-    def predict(self, images, single_class_per_contour = False, min_size = None, confidence = 0.45, fill_holes = True):
+    def predict(self, images, single_class_per_contour = False, min_size = None, confidence = 0.45, fill_holes = False):
         if self.type == "segmentation":
             return predict_images(self.model, images, self.device, single_class_per_contour, min_size, self.has_distance_map, fill_holes=fill_holes)
         elif self.type == "od":
@@ -84,8 +95,7 @@ class ModelInference():
         elif self.type == "segmentation_od":
             all_segmentations = []
             boxes =  predict_od(self.model_od, images, confidence=confidence)
-            maps = predict_images(self.model, images, self.device, single_class_per_contour, min_size, self.has_distance_map, fill_holes = fill_holes)[0]
-            
+            maps = predict_images(self.model, images, self.device, single_class_per_contour, min_size, self.has_distance_map, fill_holes = fill_holes)[0]    
             #images must be rgb
             for image, box, map in zip(images, boxes, maps):
                 label_map = np.int32(np.zeros_like(map))
@@ -93,10 +103,6 @@ class ModelInference():
                 for b in box:
                     label_map = cv2.circle(label_map, b[-1], 1, p, -1)
                     p += 1
-
-
-
-
 
                 #ndi waterhsed    
                 distance = ndi.distance_transform_edt(map)
@@ -107,15 +113,18 @@ class ModelInference():
                 labels = cv2.erode(np.uint8(labels), kernel)
 
 
-                # rgb_mask = cv2.cvtColor(map.astpye(np.uint8), cv2.COLOR_GRAY2RGB)
+                # rgb_mask = cv2.cvtColor(map.astype(np.uint8), cv2.COLOR_GRAY2RGB)
                 # markers = cv2.watershed(rgb_mask, label_map)
                 # empty = np.zeros_like(markers).astype(np.uint8)
                 # empty[markers == -1] = 255
                 # kernel = np.ones((2, 2), np.uint8)
                 # labels = cv2.dilate(empty, kernel)
-                # maps[labels == 255] = 0
+                # map[labels == 255] = 0
+                # labels = map.copy()
                 all_segmentations.append(make_single_class_per_contour(labels, min_size))
             return all_segmentations
+        elif self.type == "instance":
+            return predict_instance_segmentation(self.model, images, self.device, confidence)
             
             
             

@@ -11,9 +11,11 @@ import os
 import sys
 import torch
 from scipy import ndimage as ndi
+from skimage.morphology import skeletonize
 
-def visualize(model, layer, image):
-        cam = GradCAM(model=model, target_layer=layer, use_cuda=torch.cuda.is_available())
+def visualize(model, layer, image, use_cuda = False):
+        cam = GradCAM(model=model, target_layer=layer, use_cuda=use_cuda)
+        return cam
         heatmap = cv2.applyColorMap(np.uint8(255 * cam(input_tensor=image.unsqueeze(0))[0,:]), cv2.COLORMAP_JET)
         heatmap = np.float32(heatmap) / 255
         cam = heatmap + image.permute(1,2,0).numpy()
@@ -101,7 +103,31 @@ def get_distance_map_fixed(mask):
     #return distances
     a = np.stack(np.array(distances), axis = 0)
     return torch.tensor(a, dtype=torch.float)
+
+
+def get_skeleton(mask):
+    #mask[mask > 0] = 255 #set all classes to the same value
+    mask = mask.clone()
+    mask = mask.type(torch.uint8)
+    mask = mask.numpy()
+    mask[mask > 0] = 255 #set all classes to the same value
+    distances = []
+    for cnt2, img in enumerate(mask):
+        to = np.zeros_like(img, dtype=np.float32)
+        contours, hierarchy = cv2.findContours(image=img, mode=cv2.RETR_TREE, method=cv2.CHAIN_APPROX_NONE)
+        for i, cnt in enumerate(contours):
+            mask2 = np.zeros_like(img)
+            cv2.drawContours(mask2, [cnt], -1, 1, -1)
+            skeleton = skeletonize(mask2)
+            dist = cv2.distanceTransform(mask2, cv2.DIST_L2, 5)
+            ab = cv2.normalize(dist, dist, 0, 1.0, cv2.NORM_MINMAX)
+            pts = np.where(skeleton > 0)
+            to[pts[0], pts[1]] = ab[pts[0], pts[1]]
+        distances.append(to)
         
+    a = np.stack(np.array(distances), axis = 0)
+    return torch.tensor(a, dtype=torch.float)
+     
 def train_one_epoch(model, training_bar, criterions, criterion_scaling, average_outputs = False, device = None, epoch = 0, optimizer = None, scaler = None,
  metrics = None, writer = None, name:str = "", accumulate_every = 1, best_metric = 0.0, weight_map = False, distance_map_loss = None):
     sig = torch.nn.Sigmoid()
@@ -119,8 +145,7 @@ def train_one_epoch(model, training_bar, criterions, criterion_scaling, average_
         with torch.cuda.amp.autocast():
             loss = None
             try:
-                predictions = model(x)
-                
+                predictions = model(x)          
             except:
                 continue
             if distance_map_loss:
@@ -256,6 +281,23 @@ def make_single_class_per_contour(img, min_size = None):
             if area < min_size:
                 orig[pts[0], pts[1]] = 0
     return orig
+
+def predict_instance_segmentation(model, images, device, confidence = 0.35):
+    model.eval()
+    model = model.to(device)
+    all_predictions = []
+    for cnt, image in enumerate(images):
+        image = image / 255.
+        image = torch.unsqueeze(torch.tensor(image, dtype = torch.float).permute(2, 0, 1), 0)
+        image = image.to(device)
+        model.zero_grad()
+        with torch.cuda.amp.autocast():
+            with torch.no_grad():
+                predictions = model(image)
+
+        u = len(list(filter(lambda x:x >= confidence, list(predictions[0].values())[2])))
+        all_predictions.append([list(predictions[0].values())[i].cpu().detach().numpy()[0:u] for i in range(4)])
+    return all_predictions
 
 def predict_images(model, images, device, single_class_per_contour=False, min_size=None, has_distance_map = False, fill_holes = False):
     model.eval()

@@ -48,7 +48,7 @@ class TrainerBase(ABC):
         if self.test_path != '':
             self.test_loaders = [get_dataloader(dataset(self.test_path, transform = valid_trans), batch_size, 0) for batch_size in self.batch_sizes]
         self.class_weights = torch.FloatTensor(self.train_loaders[0].dataset.class_weights).to('cuda:0' if torch.cuda.is_available() else 'cpu') if self.calculate_class_weights else None
-
+        self.stopped = False
     @abstractmethod
     def train(self):
         pass
@@ -56,3 +56,6 @@ class TrainerBase(ABC):
     @abstractmethod
     def test(self):
         pass
+
+    def stop(self):
+        self.stopped = True
