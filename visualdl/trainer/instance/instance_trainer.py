@@ -1,3 +1,4 @@
+from torchvision.ops.misc import Conv2d
 from ...utils.datasets import InstanceSegmentationDataset
 from ...utils.utils import *
 from ...utils.utils import parse_yaml, get_transform_from_config, get_dataloader
@@ -9,7 +10,7 @@ import sysconfig
 import sys
 import subprocess
 import argparse
-
+from .engine import train_one_epoch, evaluate
 
 class InstanceTrainer():
     def __init__(self, cfg_path:dict):
@@ -21,13 +22,25 @@ class InstanceTrainer():
         weight_path = self.cfg['data']['weights']
         # load a model pre-trained on COCO
         self.model = torchvision.models.detection.maskrcnn_resnet50_fpn(pretrained=True, box_detections_per_img = self.cfg['settings']['max_boxes_per_image'])
+        
         self.modelstring = f"torchvision.models.detection.maskrcnn_resnet50_fpn(pretrained={True}, box_detections_per_img = {self.cfg['settings']['max_boxes_per_image']})"
+
+
+        if "nc" in self.cfg['settings']:
+            self.nc = self.cfg['settings']['nc']
+            self.model.roi_heads.mask_predictor.mask_fcn_logits = Conv2d(256, self.cfg['settings']['nc'], 1)
+        else:
+            self.nc = 91 #91 is standard classes imagenet
+
         if os.path.isfile(weight_path):
             try:
                 self.model.load_state_dict(torch.load(self.cfg['data']['weights'])['model_state_dict'], strict=False)
                 print("Weights loaded!")
             except:
                 print("Could not load weights!")
+        
+        
+        
         self.loader = get_dataloader(trainset, int(self.cfg['settings']['batch_size']), 0, collate_fn=lambda x: tuple(zip(*x)))
         self.valid_loader = get_dataloader(validset, 1, 0, collate_fn=lambda x: tuple(zip(*x)), shuffle=False)
         self.device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
@@ -42,7 +55,7 @@ class InstanceTrainer():
 
         # construct an optimizer
         params = [p for p in self.model.parameters() if p.requires_grad]
-        optimizer = torch.optim.SGD(params, lr=0.005,
+        optimizer = torch.optim.SGD(params, lr=0.0001,
                                     momentum=0.9, weight_decay=0.0005)
         # and a learning rate scheduler
         lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer,
@@ -67,6 +80,8 @@ class InstanceTrainer():
                
         #######TRAIN
         for i in range(num_epochs):
+            #train_one_epoch(self.model, optimizer, self.loader, self.device, i, print_freq=10, scaler=scaler)
+            #evaluate(self.model, self.valid_loader, device=self.device)
             loss = 0.0
             training_bar = tqdm(self.loader, file=sys.stdout)
             for cnt, (images,targets) in enumerate(training_bar):
@@ -82,20 +97,22 @@ class InstanceTrainer():
                 scaler.update()
                 self.model.zero_grad()
             valid_loss = evaluate(self.model, self.valid_loader)
-            lr_scheduler.step()
+            #lr_scheduler.step()
             if valid_loss < best_valid_loss:
                 best_valid_loss = valid_loss
                 torch.save({
                         'model_state_dict': self.model.state_dict(),
                         'custom_data': self.cfg['settings']['custom_data'],
+                        'nc': self.cfg['settings']['nc'],
                         'model': self.modelstring,
                         'image_size': 512}, os.path.join(self.savefolder, "maskrcnn.pt"))
             torch.save({
                         'model_state_dict': self.model.state_dict(),
                         'custom_data': self.cfg['settings']['custom_data'],
+                        'nc': self.cfg['settings']['nc'],
                         'model': self.modelstring,
                         'image_size': 512}, os.path.join(self.savefolder, "maskrcnnlast.pt"))
-        pass
+        # pass
 
     def test(self):
         pass

@@ -41,14 +41,15 @@ class InstanceSegmentationDataset(Dataset):
         self.use_cache = use_cache
         self.cached_data = []
         to_delete = []
+        self.max_boxes = 0
         for im, la in zip(self.train_images, self.train_masks):
-           mask = cv2.imread(la, 0)
+           mask = cv2.imread(la, 0) #Currently changed to the original image   
            if np.count_nonzero(mask) == 0:
                to_delete.append((im, la))
         for im, la in to_delete:
            self.train_images.remove(im)
            self.train_masks.remove(la)
-        pass
+        
     def __len__(self):
         return len(self.train_images)
 
@@ -90,32 +91,33 @@ class InstanceSegmentationDataset(Dataset):
             labels.append(cls.astype(np.int64))
             mask2[mask2>0] = 1 #somehow needs to be binary
             masks.append(mask2.astype(np.uint8))
-        # if len(contours) != 0:
-        boxes = torch.as_tensor(boxes, dtype=torch.float32)
-        # else:
-        #     boxes = torch.empty((0, 4), dtype=torch.float32)
-        # if len(contours) != 0:
-        labels = torch.as_tensor(labels, dtype=torch.int64)
-        # else:
-        #labels = torch.as_tensor([0], dtype=torch.int64)
-        # if len(contours) != 0:
-        masks = torch.as_tensor(masks, dtype=torch.uint8)
-        # else:
-        #masks = torch.as_tensor(torch.empty(0, 512, 512), dtype=torch.uint8)
-        # if len(contours) != 0:
-        area = (boxes[:, 3] - boxes[:, 1]) * (boxes[:, 2] - boxes[:, 0])
-        # else:
-        #     area = torch.tensor([0], dtype=torch.float32)
+        if len(contours) != 0:
+            boxes = torch.as_tensor(boxes, dtype=torch.float32)
+        else:
+             boxes = torch.empty((0, 4), dtype=torch.float32)
+        if len(contours) != 0:
+            labels = torch.as_tensor(labels, dtype=torch.int64)
+        else:
+            labels = torch.as_tensor([0], dtype=torch.int64)
+        if len(contours) != 0:
+            masks = torch.as_tensor(masks, dtype=torch.uint8)
+        else:
+            masks = torch.as_tensor(torch.empty(0, 512, 512), dtype=torch.uint8)
+        if len(contours) != 0:
+            area = (boxes[:, 3] - boxes[:, 1]) * (boxes[:, 2] - boxes[:, 0])
+        else:
+            area = torch.tensor([0], dtype=torch.float32)
         is_crowd = torch.zeros((len(contours),), dtype=torch.int64)
         image_id = torch.tensor([idx])
         target = dict()
-        
+        self.max_boxes = max(self.max_boxes, len(contours))
         target["boxes"] = boxes
         target["labels"] = labels
         target["masks"] = masks
         target["image_id"] = image_id
         target["area"] = area
         target["iscrowd"] = is_crowd
+        #self.cached_data.append() TODO: probably add to cached data but poor RAM :( 
         return torch.tensor(img, dtype=torch.float).permute(2,0,1), target
 
 class SegmentationDataset(Dataset):

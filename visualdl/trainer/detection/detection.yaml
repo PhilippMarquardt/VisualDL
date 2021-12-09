@@ -14,7 +14,7 @@ data:
 # anchors
 settings:
   nc: 1
-  epochs: 5000
+  epochs: 1
   imgsize: 512
   batch_size: 1
   modelsize: "m" #s,m,l

@@ -9,7 +9,7 @@ def combine_masks(masks, mask_threshold):
     """
     combine masks into one image
     """
-    maskimg = np.zeros((512, 512))
+    maskimg = np.zeros((512, 512))  #fix to proper size
     # print(len(masks.shape), masks.shape)
     for m, mask in enumerate(masks,1):
         maskimg[mask>mask_threshold] = m

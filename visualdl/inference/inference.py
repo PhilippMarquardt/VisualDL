@@ -1,4 +1,5 @@
 import segmentation_models_pytorch as smp
+from torchvision.ops.misc import Conv2d
 from torch import load
 from ..utils.model_utils import predict_images, make_single_class_per_contour, predict_instance_segmentation
 import torch
@@ -81,10 +82,15 @@ class ModelInference():
                 state = load(weight_path)
             self.state = state
             self.model = eval(state['model'])
+            if "nc" in state:
+                self.model.roi_heads.mask_predictor.mask_fcn_logits = Conv2d(256, self.state['nc'], 1)
             self.model.eval()
             self.model.load_state_dict(state['model_state_dict'])
 
     def __call__(self, images):
+        '''
+        Calls predict of this instance selected model
+        '''
         return self.predict(images)
 
     def predict(self, images, single_class_per_contour = False, min_size = None, confidence = 0.45, fill_holes = False):
@@ -104,7 +110,7 @@ class ModelInference():
                     label_map = cv2.circle(label_map, b[-1], 1, p, -1)
                     p += 1
 
-                #ndi waterhsed    
+                #ndi watershed    
                 distance = ndi.distance_transform_edt(map)
                 #mapss = np.uint8(ndi.binary_fill_holes(map))
                 labels = watershed(-distance, label_map, mask=map, watershed_line = True)

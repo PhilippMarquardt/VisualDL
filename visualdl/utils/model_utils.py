@@ -316,8 +316,8 @@ def predict_images(model, images, device, single_class_per_contour=False, min_si
             with torch.no_grad():
                 predictions = model(image)
                 if has_distance_map:
-                    distance_map =  predictions[:,-1]
-                    predictions = predictions[:,0:-1]
+                    distance_map =  predictions[:,-1] #if trained with distance map the last output class corresponds to the distance map which is not normalized with sigmoid at this point
+                    predictions = predictions[:,0:-1] #classes [0:n-2]
             predictions = torch.argmax(predictions, 1)
             
             predictions = predictions[0].detach().cpu().numpy()
