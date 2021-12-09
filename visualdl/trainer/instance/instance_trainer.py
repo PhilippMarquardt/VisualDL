@@ -25,8 +25,7 @@ class InstanceTrainer():
         
         self.modelstring = f"torchvision.models.detection.maskrcnn_resnet50_fpn(pretrained={True}, box_detections_per_img = {self.cfg['settings']['max_boxes_per_image']})"
 
-
-        if "nc" in self.cfg['settings']:
+        if "nc" in self.cfg['settings'].keys():
             self.nc = self.cfg['settings']['nc']
             self.model.roi_heads.mask_predictor.mask_fcn_logits = Conv2d(256, self.cfg['settings']['nc'], 1)
         else:
