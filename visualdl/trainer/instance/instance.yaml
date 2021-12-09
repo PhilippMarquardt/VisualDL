@@ -11,7 +11,7 @@ settings:
   batch_size: 1
   image_size: 256
   max_boxes_per_image: 800
-
+  nc: 5
   custom_data: {'structure_indices': [16, 17, 18, 19], 'image_size': 256, 'modeltype': 'instance segmentation', 'object_based': False, 'physical_tile_size': (113.19408504630164, 113.19408504630164), 'project_type': 'dummy', 'pyramid_level': -1, 'datetime': '01/12/2021 18:09', 'structures': 'Tumor Cells 0+, Tumor Cells 1+, Tumor Cells 2+, Tumor Cells 3+', 'objects_count': 31002, 'model': 'maskrcnn', 'files': {'File': ['05_.czi', '05_.czi', '05_.czi', '05_.czi'], 'Scene': [2, 2, 2, 2]}} #whaever ya want
 
 transforms:
