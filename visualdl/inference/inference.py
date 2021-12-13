@@ -7,6 +7,7 @@ import numpy as np
 import os
 import cv2
 import torchvision
+from torchvision.models.detection.anchor_utils import AnchorGenerator
 from scipy import ndimage as ndi
 from skimage.segmentation import watershed
 from skimage.morphology import square
@@ -73,7 +74,10 @@ class ModelInference():
             if 'has_distance_map' in self.state:
                 self.has_distance_map = bool(self.state['has_distance_map'])
 
-            self.model_od = torch.hub.load('ultralytics/yolov5', 'custom', path=watershed_od)
+            dirname = os.path.dirname(__file__)
+            dirname = dirname.replace(dirname.split("\\")[-1], "dependencies/yolov5")
+            self.od_state = {}
+            self.model_od, self.od_state['custom_data'] = torch.hub.load(dirname, 'custom', path=watershed_od, source='local', return_custom_data = True)
 
         elif type == "instance":
             if device.lower() == "cpu":
