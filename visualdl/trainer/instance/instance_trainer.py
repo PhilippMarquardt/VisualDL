@@ -14,7 +14,7 @@ import sysconfig
 import sys
 import subprocess
 import argparse
-from koila import LazyTensor, lazy
+#from koila import LazyTensor, lazy
 from .engine import train_one_epoch, evaluate
 
 class InstanceTrainer():
