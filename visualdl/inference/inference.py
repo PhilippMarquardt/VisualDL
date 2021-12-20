@@ -85,9 +85,9 @@ class ModelInference():
             else:
                 state = load(weight_path)
             self.state = state
-            self.model = eval(state['model'])
-            if "nc" in state:
-                self.model.roi_heads.mask_predictor.mask_fcn_logits = Conv2d(256, self.state['nc'], 1)
+            self.model = eval(state['model'].replace("\n", "").replace(" ", ""))
+            #if "nc" in state:
+                #self.model.roi_heads.mask_predictor.mask_fcn_logits = Conv2d(256, self.state['nc'], 1)
             self.model.eval()
             self.model.load_state_dict(state['model_state_dict'])
 

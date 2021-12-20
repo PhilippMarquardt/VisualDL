@@ -12,7 +12,7 @@ class ModelBase(ABC):
         self.model = model
         if weight != "None" and weight.endswith(".pt"):
             try:
-
+                
                 own_state = self.model.state_dict()
                 load_state = torch.load(weight)['model_state_dict']
                 for name, param in load_state.items():

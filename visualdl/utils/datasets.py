@@ -42,8 +42,10 @@ class InstanceSegmentationDataset(Dataset):
         self.cached_data = []
         to_delete = []
         self.max_boxes = 0
+        self.max_label = 0
         for im, la in zip(self.train_images, self.train_masks):
-           mask = cv2.imread(la, 0) #Currently changed to the original image   
+           mask = cv2.imread(la, 0) #Currently changed to the original image 
+           self.max_label = max(np.max(mask), self.max_label)  
            if np.count_nonzero(mask) == 0:
                to_delete.append((im, la))
         for im, la in to_delete:
@@ -62,16 +64,17 @@ class InstanceSegmentationDataset(Dataset):
     def __getitem__(self, idx):
         img = io.imread(self.train_images[idx]).astype(np.float32)
         img = img / 255.
-        mask = io.imread(self.train_masks[idx], as_gray = True)#.astype(np.float32)
-
+        mask = io.imread(self.train_masks[idx], as_gray = True)
+        #mask[mask > 0] = 1.0
         if self.transform:
             transformed = self.transform(image = img, mask = mask)
             img = transformed["image"]
             mask = transformed["mask"]
 
 
-        tmp = mask.copy()
+        tmp = mask.copy().astype(np.uint8)
         tmp[tmp > 0] = 1
+        
         contours,hierachy = cv2.findContours(tmp, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         boxes = []
         labels = []
@@ -85,7 +88,7 @@ class InstanceSegmentationDataset(Dataset):
             cv2.drawContours(mask2, [cont], -1, 255, -1)
             pts = np.where(mask2 > 0)
             _cls = mask[pts[0], pts[1]]
-            cls = np.unique(_cls)[np.argmax(np.unique(_cls, return_counts = True)[1])]
+            cls = np.unique(_cls)[np.argmax(np.unique(_cls, return_counts = True)[1])] #- 1
             mask2[pts[0], pts[1]] = mask[pts[0], pts[1]]
             boxes.append(rect)
             labels.append(cls.astype(np.int64))

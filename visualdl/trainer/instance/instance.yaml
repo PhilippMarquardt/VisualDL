@@ -3,16 +3,21 @@ type: "instance"
 data:
   train: "C:/Users/phili/Downloads/Telegram Desktop/AbsolutFinal/dataset/train"
   valid: "C:/Users/phili/Downloads/Telegram Desktop/AbsolutFinal/dataset/valid"
+  #train : "C:/Users/phili/Downloads/Telegram Desktop/Erlangen/dataset/train"
+  #valid: "C:/Users/phili/Downloads/Telegram Desktop/Erlangen/dataset/valid"
+  #train: "F:/source/repos/Daten/Glomeruli/trainer"
+  #valid: "F:/source/repos/Daten/Glomeruli/valid"
   save_folder: ""
-  weights: "maskrcnn.pt"
+  weights: "bayer.pt"
 # anchors
 settings:
-  epochs: 5000
+  epochs: 500
   batch_size: 1
-  image_size: 256
+  image_size: 800
   max_boxes_per_image: 800
   nc: 5
-  custom_data: {'structure_indices': [16, 17, 18, 19], 'image_size': 256, 'modeltype': 'instance segmentation', 'object_based': False, 'physical_tile_size': (113.19408504630164, 113.19408504630164), 'project_type': 'dummy', 'pyramid_level': -1, 'datetime': '01/12/2021 18:09', 'structures': 'Tumor Cells 0+, Tumor Cells 1+, Tumor Cells 2+, Tumor Cells 3+', 'objects_count': 31002, 'model': 'maskrcnn', 'files': {'File': ['05_.czi', '05_.czi', '05_.czi', '05_.czi'], 'Scene': [2, 2, 2, 2]}} #whaever ya want
+  anchors: [32,64,128,256,512]
+  custom_data: {'structure_indices': [16, 17, 18, 19], 'image_size': 512, 'modeltype': 'instance segmentation', 'object_based': False, 'physical_tile_size': (113.19408504630164, 113.19408504630164), 'project_type': 'dummy', 'pyramid_level': -1, 'datetime': '01/12/2021 18:09', 'structures': 'Tumor Cells 0+, Tumor Cells 1+, Tumor Cells 2+, Tumor Cells 3+', 'objects_count': 31002, 'model': 'maskrcnn', 'files': {'File': ['05_.czi', '05_.czi', '05_.czi', '05_.czi'], 'Scene': [2, 2, 2, 2]}} #whaever ya want
 
 transforms:
   Resize: width = 256, height = 256

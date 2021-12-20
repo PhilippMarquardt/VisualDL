@@ -1,15 +1,20 @@
+from torch.nn.parameter import Parameter
 from torchvision.ops.misc import Conv2d
+from torchvision.models.detection.anchor_utils import AnchorGenerator
 from ...utils.datasets import InstanceSegmentationDataset
 from ...utils.utils import *
 from ...utils.utils import parse_yaml, get_transform_from_config, get_dataloader
 import torchvision
+import torch
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
+from torchvision.models.detection.mask_rcnn import MaskRCNNPredictor
 from tqdm import tqdm
 import os
 import sysconfig
 import sys
 import subprocess
 import argparse
+from koila import LazyTensor, lazy
 from .engine import train_one_epoch, evaluate
 
 class InstanceTrainer():
@@ -21,22 +26,90 @@ class InstanceTrainer():
         self.savefolder = self.cfg['data']['save_folder']
         weight_path = self.cfg['data']['weights']
         # load a model pre-trained on COCO
-        self.model = torchvision.models.detection.maskrcnn_resnet50_fpn(pretrained=True, box_detections_per_img = self.cfg['settings']['max_boxes_per_image'])
+
+        #self.model = torchvision.models.detection.maskrcnn_resnet50_fpn(pretrained=True, box_detections_per_img = self.cfg['settings']['max_boxes_per_image'], min_size = self.cfg['settings']['image_size'], rpn_anchor_generator = AnchorGenerator(
+        #                ((8,), (16,), (32,), (64,), (128,)), ((0.5, 1.0, 2.0),) * 5
+        #            ))
         
-        self.modelstring = f"torchvision.models.detection.maskrcnn_resnet50_fpn(pretrained={True}, box_detections_per_img = {self.cfg['settings']['max_boxes_per_image']})"
+        
 
         if "nc" in self.cfg['settings'].keys():
             self.nc = self.cfg['settings']['nc']
-            self.model.roi_heads.mask_predictor.mask_fcn_logits = Conv2d(256, self.cfg['settings']['nc'], 1)
         else:
             self.nc = 91 #91 is standard classes imagenet
 
+
+        # self.model = torchvision.models.detection.maskrcnn_resnet50_fpn(pretrained=True,
+        # box_detections_per_img = self.cfg['settings']['max_boxes_per_image'],
+        # min_size = self.cfg['settings']['image_size'],
+        # num_classes=self.nc)  
+
+
+        model = torchvision.models.detection.maskrcnn_resnet50_fpn(pretrained=True,
+        box_detections_per_img = self.cfg['settings']['max_boxes_per_image'],
+        min_size = self.cfg['settings']['image_size'])
+
+        # model = torchvision.models.detection.maskrcnn_resnet50_fpn(pretrained=True,
+        # box_detections_per_img = self.cfg['settings']['max_boxes_per_image'],
+        # min_size = self.cfg['settings']['image_size'], trainable_backbone_layers=0,
+        # rpn_anchor_generator = AnchorGenerator(
+        #                ((16,), (32,), (64,), (128,), (256,)), ((0.5, 1.0, 2.0),) * 5
+        #         ))
+
+        # get number of input features for the classifier
+        in_features = model.roi_heads.box_predictor.cls_score.in_features
+        # replace the pre-trained head with a new one
+        model.roi_heads.box_predictor = FastRCNNPredictor(in_features, self.nc)
+
+        # now get the number of input features for the mask classifier
+        in_features_mask = model.roi_heads.mask_predictor.conv5_mask.in_channels
+        hidden_layer = 256
+        # and replace the mask predictor with a new one
+        model.roi_heads.mask_predictor = MaskRCNNPredictor(in_features_mask,
+                                                        hidden_layer,
+                                                        self.nc)
+        self.model = model
+
+        #self.modelstring = f"torchvision.models.detection.maskrcnn_resnet50_fpn(pretrained={True}, box_detections_per_img = {self.cfg['settings']['max_boxes_per_image']}, min_size =  {self.cfg['settings']['image_size']}, rpn_anchor_generator = {AnchorGenerator(((8,), (16,), (32,), (64,), (128,)), ((0.5, 1.0, 2.0),) * 5)}"
+        self.modelstring = f"torchvision.models.detection.maskrcnn_resnet50_fpn(pretrained={False},\
+                 box_detections_per_img = {self.cfg['settings']['max_boxes_per_image']},\
+                 min_size = {self.cfg['settings']['image_size']},\
+                 num_classes={self.nc})"
+
+
+        # self.modelstring = f"torchvision.models.detection.maskrcnn_resnet50_fpn(pretrained={False},\
+        #          box_detections_per_img = {self.cfg['settings']['max_boxes_per_image']},\
+        #          min_size = {self.cfg['settings']['image_size']},\
+        #          num_classes={self.nc},\
+        #          rpn_anchor_generator = AnchorGenerator(\
+        #                ((16,), (32,), (64,), (128,), (256,)), ((0.5, 1.0, 2.0),) * 5\
+        #         ))"
         if os.path.isfile(weight_path):
-            try:
-                self.model.load_state_dict(torch.load(self.cfg['data']['weights'])['model_state_dict'], strict=False)
-                print("Weights loaded!")
-            except:
-                print("Could not load weights!")
+            if weight_path != "None" and weight_path.endswith(".pt"):
+                try:
+                    own_state = self.model.state_dict()
+                    load_state = torch.load(weight_path)['model_state_dict']
+                    for name, param in load_state.items():
+                        if name not in own_state:
+                            continue
+                        else:
+                            if own_state[name].shape != load_state[name].shape:
+                                continue
+                        if isinstance(param, Parameter):
+                            # backwards compatibility for serialized parameters
+                            param = param.data
+                        own_state[name].copy_(param)
+                    
+
+                    #self.model.load_state_dict(torch.load(weight)['model_state_dict'], strict = False)
+                except Exception as e:
+                    print(e)
+                    logging.warning(f"Could not load weights from {weight_path}")
+            # try:
+            #     self.model.load_state_dict(torch.load(self.cfg['data']['weights'])['model_state_dict'], strict=False)
+            #     print("Weights loaded!")
+            # except:
+            #     print("Could not load weights!")
         
         
         
@@ -64,33 +137,34 @@ class InstanceTrainer():
         best_valid_loss = 10000000.0
         def evaluate(model, valid_loader):
             valid_bar = tqdm(valid_loader, file=sys.stdout)
-            loss = 0.0
+            total_loss = 0.0
             with torch.no_grad():
                 for cnt, (images,targets) in enumerate(valid_bar):
                     images = list(image.to(self.device) for image in images)
                     targets = [{k: v.to(self.device) for k, v in t.items()} for t in targets]
-                    with torch.cuda.amp.autocast():
+                    with torch.cuda.amp.autocast():                    
                         loss_dict = model(images, targets)
-                    loss = sum(loss for loss in loss_dict.values())
-                    loss += loss.item()
-                    valid_bar.set_description(f"Evaluating: Loss: {loss/(cnt+1)}")
+                        loss = sum(loss for loss in loss_dict.values())
+                        total_loss += loss.detach().item()
+                    valid_bar.set_description(f"Evaluating: Loss: {total_loss/(cnt+1)}")
             model.zero_grad()
-            return loss / len(valid_bar)
+            return total_loss / len(valid_bar)
                
         #######TRAIN
         for i in range(num_epochs):
             #train_one_epoch(self.model, optimizer, self.loader, self.device, i, print_freq=10, scaler=scaler)
             #evaluate(self.model, self.valid_loader, device=self.device)
-            loss = 0.0
+            total_loss = 0.0
             training_bar = tqdm(self.loader, file=sys.stdout)
             for cnt, (images,targets) in enumerate(training_bar):
                 images = list(image.to(self.device) for image in images)
                 targets = [{k: v.to(self.device) for k, v in t.items()} for t in targets]
+                #(images, targets) = lazy(images, targets, batch=0)
                 with torch.cuda.amp.autocast():
                     loss_dict = self.model(images, targets)
-                loss = sum(loss for loss in loss_dict.values())
-                loss += loss.item()
-                training_bar.set_description(f"Training: Epoch:{i} Loss: {loss/(cnt+1)} Best: {best_valid_loss}")
+                    loss = sum(loss for loss in loss_dict.values())
+                    total_loss += loss.detach().item()
+                training_bar.set_description(f"Training: Epoch:{i} Loss: {total_loss/(cnt+1)} Best: {best_valid_loss}")
                 scaler.scale(loss).backward()
                 scaler.step(optimizer)
                 scaler.update()
