@@ -35,7 +35,7 @@ setup(
 'matplotlib'
 ,
 'numpy',
-'Pillow', 'PyYAML', 'scipy', 'seaborn>=0.11.0', 'pandas', 'monai', 'pycocotools'
+'Pillow', 'PyYAML', 'scipy', 'seaborn>=0.11.0', 'pandas', 'monai', 'pycocotools', 'koila'
 
 
   ],
