@@ -20,7 +20,7 @@ setup(
 ,
 'grad-cam'
 ,
-'torchmetrics'
+'torchmetrics==0.6.2'
 ,
 'tensorboard'
 ,
