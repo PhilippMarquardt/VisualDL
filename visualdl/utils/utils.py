@@ -8,6 +8,7 @@ import albumentations as A
 import numpy as np
 import torch
 from timm import list_models
+import urllib.request
 
 def write_image(path, src):
     cv2.imwrite(path, src*255)
@@ -92,14 +93,20 @@ def get_transform_from_config(cfg:dict):
         transforms.append(eval(f"A.{key}({val})"))
     if len(valid_trans) == 0:
         valid_trans = None
-    return A.Compose(transforms), A.Compose(valid_trans)
+    return A.Compose(transforms) if transforms is not None else None, A.Compose(valid_trans) if valid_trans is not None else None
                  
         
 def create_od_dataset_from_semantic_segmentation(train, valid, test):
     pass
 
 
-    
+
+def is_internet_connection_availible(host='https://google.com'):
+    try:
+        urllib.request.urlopen(host) #Python 3.x
+        return True
+    except:
+        return False    
     
     
     

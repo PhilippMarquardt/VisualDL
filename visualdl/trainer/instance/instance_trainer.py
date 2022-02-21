@@ -32,7 +32,7 @@ class InstanceTrainer():
         #            ))
         
         
-
+        is_internet = is_internet_connection_availible()
         if "nc" in self.cfg['settings'].keys():
             self.nc = self.cfg['settings']['nc']
         else:
@@ -44,8 +44,8 @@ class InstanceTrainer():
         # min_size = self.cfg['settings']['image_size'],
         # num_classes=self.nc)  
 
-
-        model = torchvision.models.detection.maskrcnn_resnet50_fpn(pretrained=True,
+        print(is_internet)
+        model = torchvision.models.detection.maskrcnn_resnet50_fpn(pretrained=is_internet,
         box_detections_per_img = self.cfg['settings']['max_boxes_per_image'],
         min_size = self.cfg['settings']['image_size'])
 

@@ -47,7 +47,7 @@ class ModelInference():
             else:
                 state = load(weight_path)
             self.state = state
-            self.model = eval(state['model'])
+            self.model = eval(state['model'].replace('"imagenet"', "None"))
             self.model.load_state_dict(state['model_state_dict'])
             self.model.eval()
             self.has_distance_map = False
@@ -67,7 +67,7 @@ class ModelInference():
             else:
                 state = load(weight_path)
             self.state = state
-            self.model = eval(state['model'])
+            self.model = eval(state['model'].replace('"imagenet"', "None"))
             self.model.load_state_dict(state['model_state_dict'])
             self.model.eval()
             self.has_distance_map = False

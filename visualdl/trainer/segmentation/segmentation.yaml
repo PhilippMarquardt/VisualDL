@@ -41,10 +41,19 @@ data:
   #train: "C:/Users/phili/Downloads/Telegram Desktop/Cells her2 128/train"
   #valid: "C:/Users/phili/Downloads/Telegram Desktop/Cells her2 128/valid"
   #test: "C:/Users/phili/Downloads/Telegram Desktop/Cells her2 128/valid"
-  train: "D:/Hsa/temp/projects/168714ca-2337-44cb-b384-36215f416198/dataset/train"
-  valid: "D:/Hsa/temp/projects/168714ca-2337-44cb-b384-36215f416198/dataset/valid"
-  test: "D:/Hsa/temp/projects/168714ca-2337-44cb-b384-36215f416198/dataset/valid"
-  weights: ["tu-resnest50d, UnetPlusPlus.ptt"]
+  #train: "D:/Hsa/temp/projects/168714ca-2337-44cb-b384-36215f416198/dataset/train"
+  #valid: "D:/Hsa/temp/projects/168714ca-2337-44cb-b384-36215f416198/dataset/valid"
+  #test: "D:/Hsa/temp/projects/168714ca-2337-44cb-b384-36215f416198/dataset/valid"
+  train: "C:/Users/phili/Downloads/Telegram Desktop/PLATrain/train"
+  valid: "C:/Users/phili/Downloads/Telegram Desktop/PLATrain/valid"
+  test: "C:/Users/phili/Downloads/Telegram Desktop/PLATrain/valid"
+  train: "F:/source/repos/Daten/Glomeruli/trainer"
+  valid: "F:/source/repos/Daten/Glomeruli/valid"
+  test: "F:/source/repos/Daten/Glomeruli/valid"
+  # train: "C:/Users/phili/Downloads/Telegram Desktop/MarieUke/train"
+  # valid: "C:/Users/phili/Downloads/Telegram Desktop/MarieUke/valid"
+  # test: "C:/Users/phili/Downloads/Telegram Desktop/MarieUke/valid"
+  weights: ["tu-resnest50d, UnetPlusPlus.pttt"]
 
   save_folder: "" 
 
@@ -54,7 +63,7 @@ models:
     decoder: "UnetPlusPlus"
 
 settings:
-  nc: 5
+  nc: 2
   in_channels: 3
   epochs: 3000
   optimizer: "AdamW"
@@ -64,7 +73,7 @@ settings:
   max_image_size: 512 #must be set for transformer based models because of the positional embedding
   scales: "None" #or None
   use_attention: False
-  
+  ignore_index : -100
   gradient_accumulation: 2
   criterions: #criterions defined in segmentation_models_pytorch.utils.losses can be used
     - "CrossEntropyLoss"
@@ -73,13 +82,13 @@ settings:
   tensorboard_log_dir: "tensorboard_log"
   metrics:
     - name: "Accuracy"
-      params: "num_classes=5"
+      params: "num_classes=2"
     - name: "IoU"
-      params: "num_classes=5"
+      params: "num_classes=2"
   monitor_metric_name: "IoU"
-  monitor_metric_params: "num_classes=5"
+  monitor_metric_params: "num_classes=2"
   class_weights: False
-  calculate_weight_map: True
+  calculate_weight_map: False
   calculate_distance_maps: False
   add_object_detection_model: False
   early_stopping: 500
@@ -92,10 +101,74 @@ settings:
   #pdl1
   #custom_data: {'structure_indices': [4, 5, 6], 'image_size': 512, 'object_based': False}
   #Knochenpartikel
-  custom_data: {structure_indices : [5], image_size: 512, object_based : False}
+  #custom_data: {structure_indices : [5], image_size: 512, object_based : False}
+  #necrotic area
+#   custom_data: {'structure_indices': [2, 25],
+#  'image_size': 512,
+#  'modeltype': 'segmentation',
+#  'object_based': False,
+#  'physical_tile_size': (226.388852600035, 226.388852600035),
+#  'project_type': 'dummy',
+#  'pyramid_level': 1,
+#  'datetime': '21/01/2022 15:33',
+#  'structures': 'Tumor Area, Necrotic  Area',
+#  'objects_count': 312,
+#  'model': "[{'backbone': 'tu-resnest26d', 'decoder': 'Unet'}]",
+#  'files': {'File': ['05_.czi',
+#    '06_.czi',
+#    '07_.czi',
+#    '12_.czi',
+#    '13_.czi',
+#    '14_.czi',
+#    '17_.czi',
+#    '18_.czi',
+#    '19_.czi',
+#    '05_.czi',
+#    '06_.czi',
+#    '07_.czi',
+#    '12_.czi',
+#    '13_.czi',
+#    '14_.czi',
+#    '17_.czi',
+#    '18_.czi',
+#    '19_.czi'],
+#   'Scene': [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]},
+#  'calculate_weight_map': False}
+
+  custom_data: {'structure_indices': [2],
+  'image_size': 1024,
+  'modeltype': 'segmentation',
+  'object_based': False,
+  'physical_tile_size': (226.388852600035, 226.388852600035),
+  'project_type': 'dummy',
+  'pyramid_level': 0,
+  'datetime': '21/01/2022 15:33',
+  'structures': 'Glomerulus',
+  'objects_count': 312,
+  'model': "[{'backbone': 'tu-resnest26d', 'decoder': 'Unet'}]",
+  'files': {'File': ['05_.czi',
+  '06_.czi',
+  '07_.czi',
+  '12_.czi',
+  '13_.czi',
+  '14_.czi',
+  '17_.czi',
+  '18_.czi',
+  '19_.czi',
+  '05_.czi',
+  '06_.czi',
+  '07_.czi',
+  '12_.czi',
+  '13_.czi',
+  '14_.czi',
+  '17_.czi',
+  '18_.czi',
+  '19_.czi'],
+  'Scene': [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]},
+  'calculate_weight_map': False}
 
 transforms:
-  Resize: width = 512, height = 512
+  Resize: width = 1024, height = 1024
   HorizontalFlip: p=0.25
   VerticalFlip: p=0.25
   RandomBrightnessContrast: p=0.0

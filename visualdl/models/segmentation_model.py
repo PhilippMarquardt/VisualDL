@@ -7,7 +7,7 @@ from torch.utils.data.dataloader import DataLoader
 from ..utils.losses import *
 from torch.nn import *
 from torch.optim import *
-from ..utils.utils import timm_universal_encoders
+from ..utils.utils import timm_universal_encoders, is_internet_connection_availible
 from .multiscale import MultiScaleSegmentation, HieraricalMultiScale
 from .dpt.models import DPTSegmentationModel
 from .custom import U2NET
@@ -47,12 +47,14 @@ class SegmentationModel(ModelBase):
             model = UNETR(in_channels=in_channels, out_channels=nc, img_size=(max_image_size, max_image_size))
             modelstring = f'UNETR(in_channels={in_channels}, out_channels={nc}, img_size={(max_image_size, max_image_size)})'
         else:
+            is_internet = is_internet_connection_availible()
+            encoder_weights = None if not is_internet else f'"imagenet"'
             if use_attention:
-                model = eval(f'smp.create_model(arch="{decoder_name}", encoder_name="{encoder_name}", encoder_weights="imagenet", in_channels={in_channels}, classes = {nc}, image_size = {max_image_size}, decoder_attention_type = "{"scse"}")')
-                modelstring = f'smp.create_model(arch="{decoder_name}", encoder_name="{encoder_name}", encoder_weights="imagenet", in_channels={in_channels}, classes = {nc}, image_size = {max_image_size}, decoder_attention_type = "{"scse"}")'
+                model = eval(f'smp.create_model(arch="{decoder_name}", encoder_name="{encoder_name}", encoder_weights={encoder_weights}, in_channels={in_channels}, classes = {nc}, image_size = {max_image_size}, decoder_attention_type = "{"scse"}")')
+                modelstring = f'smp.create_model(arch="{decoder_name}", encoder_name="{encoder_name}", encoder_weights={encoder_weights}, in_channels={in_channels}, classes = {nc}, image_size = {max_image_size}, decoder_attention_type = "{"scse"}")'
             else:
-                model = eval(f'smp.create_model(arch="{decoder_name}", encoder_name="{encoder_name}", encoder_weights="imagenet", in_channels={in_channels}, classes = {nc}, image_size = {max_image_size})')
-                modelstring = f'smp.create_model(arch="{decoder_name}", encoder_name="{encoder_name}", encoder_weights="imagenet", in_channels={in_channels}, classes = {nc}, image_size = {max_image_size})'
+                model = eval(f'smp.create_model(arch="{decoder_name}", encoder_name="{encoder_name}", encoder_weights={encoder_weights}, in_channels={in_channels}, classes = {nc}, image_size = {max_image_size})')
+                modelstring = f'smp.create_model(arch="{decoder_name}", encoder_name="{encoder_name}", encoder_weights={encoder_weights}, in_channels={in_channels}, classes = {nc}, image_size = {max_image_size})'
 
         self.modelstring = modelstring
 
