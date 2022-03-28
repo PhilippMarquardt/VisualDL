@@ -1,0 +1,39 @@
+type: "series"
+
+data:
+  train: "F:/source/repos/VisualDL/custom_experiments/rnn.json" #path to json
+  valid: "F:/source/repos/VisualDL/custom_experiments/rnn.json" #path to json
+  weights: ["tu-resnest50d, UnetPlusPlus.pttt"]
+  save_folder: "" 
+
+settings:
+  outputs: {
+    "classes" : 3, #einzelsubstanz -> für gemische 0 hier
+    "continuous": 1 # einzelsubstanz -> für gemische 3 hier
+  }
+  in_channels: 3
+  epochs: 3000
+  optimizer: "AdamW"
+  lr: 3e-5
+  workers: 0
+  batch_size: 4
+
+  tensorboard_log_dir: "tensorboard_log"
+  custom_data: {'structure_indices': [2],
+  'image_size': 1024,
+  'modeltype': 'segmentation',
+  'object_based': False,
+  'physical_tile_size': (226.388852600035, 226.388852600035),
+  'project_type': 'dummy',
+  'pyramid_level': 0,
+  'datetime': '21/01/2022 15:33',
+  'structures': 'Glomerulus',
+  'objects_count': 312,
+  'model': "[{'backbone': 'tu-resnest26d', 'decoder': 'Unet'}]",
+  'files': {'File': ['05_.czi'],
+  'Scene': [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]},
+  'calculate_weight_map': False}
+
+
+  
+

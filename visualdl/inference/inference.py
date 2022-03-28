@@ -19,6 +19,8 @@ from ..models.hrnet import HRNetV2
 from ..models.caranet.CaraNet import caranet
 from ..models.doubleunet.doubleunet import DoubleUnet
 from ..models.unetr import UNETR
+from ..trainer.series.series_trainer import get_model, predict_series
+
 
 def predict_od(model, imgs, confidence = 0.45):
     size = imgs[0].shape[0]
@@ -91,6 +93,16 @@ class ModelInference():
             self.model.eval()
             self.model.load_state_dict(state['model_state_dict'])
 
+        elif type == "series":
+            if device.lower() == "cpu":
+                state = load(weight_path, map_location=torch.device('cpu'))
+            else:
+                state = load(weight_path)
+            self.state = state
+            self.model = get_model(state['classes'], state['continous'], state['features'])
+            self.model.eval()
+            self.model.load_state_dict(state['model_state_dict'])
+
     def __call__(self, images):
         '''
         Calls predict of this instance selected model
@@ -135,6 +147,11 @@ class ModelInference():
             return all_segmentations
         elif self.type == "instance":
             return predict_instance_segmentation(self.model, images, self.device, confidence)
+        elif self.type == "series":
+            return predict_series(self.model, images, self.device)
+                
+
+
             
             
             

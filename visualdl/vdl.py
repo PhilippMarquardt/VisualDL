@@ -4,6 +4,7 @@ from .trainer.classification.classification_trainer import ClassificationTrainer
 from .trainer.detection.detection_trainer import DetectionTrainer
 from .trainer.segmentation.segmentation_trainer import SegmentationTrainer
 from .trainer.instance.instance_trainer import InstanceTrainer
+from .trainer.series.series_trainer import SeriesTrainer
 import torch
 from torch import load
 from .inference.inference import ModelInference
@@ -19,6 +20,8 @@ def train(cfg_path):
         t = DetectionTrainer(cfg_path=cfg_path)
     elif type == "instance":
         t = InstanceTrainer(cfg_path=cfg_path)
+    elif type == "series":
+        t = SeriesTrainer(cfg_path=cfg_path)
     t.train()
     #print("DONE TRAINING")
     #print(t.test())
