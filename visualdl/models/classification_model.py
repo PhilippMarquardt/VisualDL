@@ -15,8 +15,8 @@ from torch.utils.tensorboard import SummaryWriter
 from torch.optim import *
 
 class ClassificationModel(ModelBase):
-    def __init__(self, name, nc, criterions, metrics, monitor_metric, optimizer, lr, accumulate_batch, tensorboard_dir, class_weights, weight, save_folder, early_stopping):
-        super().__init__(nc, criterions, metrics, monitor_metric, optimizer, lr, accumulate_batch, tensorboard_dir, class_weights, model = timm.create_model(name, pretrained=True, num_classes = nc), calculate_weight_map=False, weight=weight, save_folder=save_folder,early_stopping=early_stopping)
+    def __init__(self, name, nc, criterions, metrics, monitor_metric, optimizer, lr, accumulate_batch, tensorboard_dir, class_weights, weight, save_folder, early_stopping, custom_data):
+        super().__init__(nc, criterions, metrics, monitor_metric, optimizer, lr, accumulate_batch, tensorboard_dir, class_weights, model = timm.create_model(name, pretrained=True, num_classes = nc), calculate_weight_map=False, weight=weight, save_folder=save_folder,early_stopping=early_stopping, calculate_distance_maps=False, custom_data=custom_data)
         self.name = name
 
     def __call__(self, x):

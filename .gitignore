@@ -31,6 +31,7 @@ MANIFEST
 *.jpg
 *.txt
 *.cache
+*.zip
 mystore/*
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -139,3 +140,4 @@ dmypy.json
 
 visualdl/dependenciesyolov5/runs/*
 runs/*
+custom_experiments/dataset.zip

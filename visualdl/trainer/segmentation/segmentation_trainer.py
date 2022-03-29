@@ -26,6 +26,7 @@ class SegmentationTrainer(TrainerBase):
         assert len(self.weights) == len(self.cfg['models'])
         logging.info(f"Training segmentation model with the following config:\n {pprint.pformat(self.cfg)}")
         self.add_object_detection_model = self.cfg['settings']['add_object_detection_model']
+        self.use_attention = self.cfg['settings']['use_attention']
         self.models = [SegmentationModel(models['backbone'],
                         models['decoder'], 
                         self.nc, 

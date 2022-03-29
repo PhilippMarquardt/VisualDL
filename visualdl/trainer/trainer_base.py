@@ -31,7 +31,7 @@ class TrainerBase(ABC):
         self.save_folder = self.cfg['data']['save_folder']
         self.early_stopping = self.cfg['settings']['early_stopping']
         self.calculate_class_weights = self.cfg['settings']['class_weights']
-        self.use_attention = self.cfg['settings']['use_attention']
+        
         self.custom_data = self.cfg['settings']['custom_data']
         transforms, valid_trans = get_transform_from_config(cfg=self.cfg)
         #initialize loaders
