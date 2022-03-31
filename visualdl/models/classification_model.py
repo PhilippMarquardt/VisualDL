@@ -38,7 +38,7 @@ class ClassificationModel(ModelBase):
         train_all_epochs(model = self.model, train_loader = train_loader, valid_loader=valid_loader, test_loader = test_loader, 
         epochs=epochs, criterions=self.loss, metrics = self.metrics, monitor_metric = self.monitor_metric, writer=self.writer, name=self.name, optimizer=self.optimizer, accumulate_batch=self.accumulate_batch,weight_map=self.calculate_weight_map,
         save_folder=self.save_folder,
-        early_stopping=self.early_stopping, modelstring=self.modelstring)
+        early_stopping=self.early_stopping, modelstring=self.modelstring, custom_data=self.custom_data)
 
     def test(self, test_loader):
         pass
