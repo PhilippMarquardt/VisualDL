@@ -140,6 +140,7 @@ class SeriesTrainer():
         model.to(device)
         criterion = nn.CrossEntropyLoss()
         mseloss = nn.MSELoss()
+        bceloss = nn.BCELoss()
         scaler = torch.cuda.amp.GradScaler()
         best_valid_acc = float("inf")
         for i in range(epochs):

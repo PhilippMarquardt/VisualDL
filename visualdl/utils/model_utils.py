@@ -299,6 +299,25 @@ def predict_instance_segmentation(model, images, device, confidence = 0.35):
         all_predictions.append([list(predictions[0].values())[i].cpu().detach().numpy()[0:u] for i in range(4)])
     return all_predictions
 
+def predict_classification_images(model, images, device):
+    model.eval()
+    model = model.to(device)
+    all_predictions = []
+    for cnt, image in enumerate(images):
+        image = image / 255.
+        image = torch.unsqueeze(torch.tensor(image, dtype = torch.float).permute(2, 0, 1), 0)
+        image = image.to(device)
+        model.zero_grad()
+        #TODO implement average_outputs
+        with torch.cuda.amp.autocast():
+            with torch.no_grad():
+                predictions = model(image)
+
+            
+            predictions = predictions[0].detach().cpu().numpy()
+            all_predictions.append(predictions)
+    return all_predictions
+
 def predict_images(model, images, device, single_class_per_contour=False, min_size=None, has_distance_map = False, fill_holes = False):
     model.eval()
     total_loss = 0.0 

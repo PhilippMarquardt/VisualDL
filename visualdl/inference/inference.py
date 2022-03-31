@@ -1,7 +1,7 @@
 import segmentation_models_pytorch as smp
 from torchvision.ops.misc import Conv2d
 from torch import load
-from ..utils.model_utils import predict_images, make_single_class_per_contour, predict_instance_segmentation
+from ..utils.model_utils import predict_images, make_single_class_per_contour, predict_instance_segmentation, predict_classification_images
 import torch
 import numpy as np
 import os
@@ -20,7 +20,7 @@ from ..models.caranet.CaraNet import caranet
 from ..models.doubleunet.doubleunet import DoubleUnet
 from ..models.unetr import UNETR
 from ..trainer.series.series_trainer import get_model, predict_series
-
+import timm
 
 def predict_od(model, imgs, confidence = 0.45):
     size = imgs[0].shape[0]
@@ -102,6 +102,16 @@ class ModelInference():
             self.model = get_model(state['classes'], state['continous'], state['features'])
             self.model.eval()
             self.model.load_state_dict(state['model_state_dict'])
+        elif type == "classification":
+            if device.lower() == "cpu":
+                state = load(weight_path, map_location=torch.device('cpu'))
+            else:
+                state = load(weight_path)
+            self.state = state
+            print(state['model'])
+            self.model = eval(state['model'])
+            self.model.load_state_dict(state['model_state_dict'])
+            self.model.eval()
 
     def __call__(self, images):
         '''
@@ -149,6 +159,8 @@ class ModelInference():
             return predict_instance_segmentation(self.model, images, self.device, confidence)
         elif self.type == "series":
             return predict_series(self.model, images, self.device)
+        elif self.type == "classification":
+            return predict_classification_images(self.model, images, self.device)
                 
 
 
