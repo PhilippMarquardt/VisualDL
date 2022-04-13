@@ -40,6 +40,63 @@ predictions = model.predict([image]) #returns a list with the prediction for eac
 ```
 
 ## Config file
+### Classification config
+
+* data
+    * train: The path to the training root folder
+    * valid: The path to the valid root folder
+    * test: The path to the test root folder
+    * weights: A list of weights
+    * save_folder: The folder where the weights are saved
+* model_names: A list of model names. Must match up with the number of weights
+* settings
+    *  nc: The number of classes
+    *  epochs: The number of epochs
+    *  optimizer: The optimizer that is used for training
+    *  lr: The learning rate used for training
+    *  workers: The number of workers creating the dataset
+    *  batch_size: A list of numbers corresponding to each model given in the model names
+    *  gradient_accumulation: Gradient accumulation up to this batch size
+    *  criterions: A list of loss function. They will be added during training
+    *  tensorboard_log_dir: Directory for the tensorboard logs
+    *  metrics: A list of different metrics
+    *  class_weights: Calculates class weights when set to True
+    *  calculate_weight_map: Calculates the weight map if set to True
+    *  early_stopping: Early stopping if no improvement up to this number
+    *  custom_data: Anything you would want. Gets saved in the model file after training
+* transforms:
+    * A list of different Transforms from Albumentations    
+
+### Segmentation config
+* data
+    * train: The path to the training root folder
+    * valid: The path to the valid root folder
+    * test: The path to the test root folder
+    * weights: A list of weights
+    * save_folder: The folder where the weights are saved
+* models: A list of dictionaries containing a backbone and a decoder
+* settings
+    * nc: The number of classes 
+    * in_channels: The number of channels for the input layer
+    * epochs: The number of epochs
+    * optimizer: The optimizer that is used for training
+    * lr: The learning rate used for training
+    *  workers: The number of workers creating the dataset
+    *  batch_size: A list of numbers corresponding to each model given in the model names
+    *  gradient_accumulation: Gradient accumulation up to this batch size
+    *  criterions: A list of loss function. They will be added during training
+    *  use_attention: Whether to use attention
+    *  class_weights: Calculates class weights when set to True
+    *  calculate_weight_map: Calculates the weight map if set to True
+    *  calculate_distance_maps: Adds another class to the model that predicts the distance between each foreground object.
+    *  early_stopping: Early stopping if no improvement up to this number
+    *  custom_data: Anything you would want. Gets saved in the model file after training
+* transforms:
+    * A list of different Transforms from Albumentations
+    
+
+
+
 
 
    
