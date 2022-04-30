@@ -1,5 +1,5 @@
 from torch.nn.parameter import Parameter
-from torchvision.ops.misc import Conv2d
+#from torchvision.ops.misc import Conv2d
 from torchvision.models.detection.anchor_utils import AnchorGenerator
 from ...utils.datasets import InstanceSegmentationDataset
 from ...utils.utils import *
