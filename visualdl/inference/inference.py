@@ -1,5 +1,5 @@
 import segmentation_models_pytorch as smp
-from torchvision.ops.misc import Conv2d
+#from torchvision.ops.misc import Conv2d
 from torch import load
 from ..utils.model_utils import predict_images, make_single_class_per_contour, predict_instance_segmentation, predict_classification_images
 import torch
