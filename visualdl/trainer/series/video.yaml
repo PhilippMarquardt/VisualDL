@@ -1,0 +1,100 @@
+type: "video"
+
+data:
+  train: "F:/source/repos/VisualDL/custom_experiments/Lukas/dataset/train"
+  valid: "F:/source/repos/VisualDL/custom_experiments/Lukas/dataset/train"
+  test: "F:/source/repos/VisualDL/custom_experiments/Lukas/dataset/train"
+
+  weights: "path_to_weight"
+
+  save_folder: "F:/source/repos/VisualDL" 
+  
+
+settings:
+  outputs: {
+    "classes" : 3, 
+    "continuous": 2 
+  }
+  multiple_classes_per_datapoint: True
+  modelname: "resnet50"
+  #modelname: "resnext50_32x4d"
+  epochs: 100
+  optimizer: "AdamW"
+  lr: 0.0001
+  workers: 0
+  batch_size:
+    - 2
+
+  
+  gradient_accumulation: 2
+  criterions:
+    - "CrossEntropyLoss"
+  tensorboard_log_dir: "tensorboard_logs"
+  metrics:
+    - name: "F1"
+      params: "num_classes=5"
+    - name: "Accuracy"
+      params: ""
+    - name: "CohenKappa"
+      params: "num_classes=5"
+
+  monitor_metric_name: "Accuracy"
+  monitor_metric_params: "num_classes=5"
+  class_weights: False
+  calculate_weight_map: False
+  early_stopping: 50
+  custom_data: {'structure_indices': [2],
+  'image_size': 1024,
+  'modeltype': 'segmentation',
+  'object_based': False,
+  'physical_tile_size': (226.388852600035, 226.388852600035),
+  'project_type': 'dummy',
+  'pyramid_level': 0,
+  'datetime': '21/01/2022 15:33',
+  'structures': 'Glomerulus',
+  'objects_count': 312,
+  'model': "[{'backbone': 'tu-resnest26d', 'decoder': 'Unet'}]",
+  'files': {'File': ['05_.czi',
+  '06_.czi',
+  '07_.czi',
+  '12_.czi',
+  '13_.czi',
+  '14_.czi',
+  '17_.czi',
+  '18_.czi',
+  '19_.czi',
+  '05_.czi',
+  '06_.czi',
+  '07_.czi',
+  '12_.czi',
+  '13_.czi',
+  '14_.czi',
+  '17_.czi',
+  '18_.czi',
+  '19_.czi'],
+  'Scene': [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]},
+  'calculate_weight_map': False}
+  
+transforms:
+  Resize: width = 512, height = 512
+  HorizontalFlip: p=0.25
+  VerticalFlip: p=0.25
+  RandomBrightnessContrast: p=0
+  RGBShift: p=0.0
+  RandomShadow : p=0.0
+  GaussianBlur: p=0.0
+  Transpose: p=0
+  RandomRotate90: p=0.15
+  Perspective: p=0.0
+  Affine: p=0.0
+  ToGray: p=0.0
+  RandomScale: p=0.0
+
+
+  
+
+
+
+
+  
+

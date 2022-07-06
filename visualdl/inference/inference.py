@@ -112,7 +112,7 @@ class ModelInference():
             self.model = eval(state['model'])
             self.model.load_state_dict(state['model_state_dict'])
             self.model.eval()
-
+        
     def __call__(self, images):
         '''
         Calls predict of this instance selected model

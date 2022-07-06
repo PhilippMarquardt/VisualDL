@@ -168,6 +168,7 @@ class SegmentationDataset(Dataset):
         import cv2
         # Using cv2.erode() method 
         #mask = cv2.erode(mask, kernel) 
+        #img = cv2.cvtColor(img,cv2.COLOR_GRAY2RGB)
         return torch.tensor(img, dtype = torch.float).permute(2, 0, 1), torch.tensor(mask, dtype = torch.long)
 
 

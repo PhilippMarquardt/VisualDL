@@ -53,42 +53,50 @@ data:
   # train: "C:/Users/phili/Downloads/Telegram Desktop/MarieUke/train"
   # valid: "C:/Users/phili/Downloads/Telegram Desktop/MarieUke/valid"
   # test: "C:/Users/phili/Downloads/Telegram Desktop/MarieUke/valid"
-  weights: ["tu-resnest50d, UnetPlusPlus.pttt"]
+  train: "F:/source/repos/Daten/TubulusBigger/train"
+  valid: "F:/source/repos/Daten/TubulusBigger/valid"
+  test: "F:/source/repos/Daten/TubulusBigger/valid"
+
+  train: "F:/source/repos/Bachelorarbeit/train"
+  valid: "F:/source/repos/Bachelorarbeit/valid"
+  test: "F:/source/repos/Bachelorarbeit/valid"
+  weights: ["tu-resnest50d, Unet.pt"]
 
   save_folder: "" 
 
 # anchors
 models:
   - backbone: "tu-resnest50d"
-    decoder: "UnetPlusPlus"
+    decoder: "Unet"
 
 settings:
-  nc: 2
+  nc: 16
   in_channels: 3
   epochs: 3000
   optimizer: "AdamW"
   lr: 3e-5
   workers: 0
-  batch_size: [2]
+  batch_size: [8]
   max_image_size: 512 #must be set for transformer based models because of the positional embedding
   scales: "None" #or None
   use_attention: False
   ignore_index : -100
-  gradient_accumulation: 2
+  gradient_accumulation: 8
   criterions: #criterions defined in segmentation_models_pytorch.utils.losses can be used
-    - "CrossEntropyLoss"
+    - "DiceLoss"
+    #- "CrossEntropyLoss"
     #- "DiceLoss"
 
   tensorboard_log_dir: "tensorboard_log"
   metrics:
     - name: "Accuracy"
-      params: "num_classes=2"
+      params: "num_classes=16"
     - name: "IoU"
-      params: "num_classes=2"
+      params: "num_classes=16"
   monitor_metric_name: "IoU"
-  monitor_metric_params: "num_classes=2"
+  monitor_metric_params: "num_classes=16"
   class_weights: False
-  calculate_weight_map: False
+  calculate_weight_map: True
   calculate_distance_maps: False
   add_object_detection_model: False
   early_stopping: 500
@@ -168,17 +176,17 @@ settings:
   'calculate_weight_map': False}
 
 transforms:
-  Resize: width = 1024, height = 1024
+  Resize: width = 512, height = 512
   HorizontalFlip: p=0.25
   VerticalFlip: p=0.25
   RandomBrightnessContrast: p=0.0
   RGBShift: p=0.0
   RandomShadow : p=0.00
   GaussianBlur: p=0.0
-  Transpose: p=0.0
+  Transpose: p=0.15
   RandomRotate90: p=0.15
   Perspective: p=0.00
-  Affine: p=0.00
+  Affine: p=0.15
   ToGray: p=0.0
   RandomScale: p=0.0
 
