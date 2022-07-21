@@ -88,7 +88,13 @@ class ModelInference():
                 state = load(weight_path)
             self.state = state
             self.model = eval(state['model'].replace("\n", "").replace(" ", ""))
-            #if "nc" in state:
+            if "in_channels" in state:
+                self.model.backbone.body.conv1 = torch.nn.Conv2d(self.cfg['settings']['in_channels'],
+                               self.model.backbone.body.conv1.out_channels,
+                               kernel_size=7,
+                               stride=2,
+                               padding=3,
+                               bias=False)
                 #self.model.roi_heads.mask_predictor.mask_fcn_logits = Conv2d(256, self.state['nc'], 1)
             self.model.eval()
             self.model.load_state_dict(state['model_state_dict'])
@@ -158,7 +164,7 @@ class ModelInference():
         elif self.type == "instance":
             return predict_instance_segmentation(self.model, images, self.device, confidence)
         elif self.type == "series":
-            return predict_series(self.model, images, self.device)
+            return predict_series(self.model, images, self.device, self.state['multi_label'])
         elif self.type == "classification":
             return predict_classification_images(self.model, images, self.device)
                 

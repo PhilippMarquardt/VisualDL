@@ -29,7 +29,7 @@ class DoubleConv(nn.Module):
         return self.double_conv(x)
 
 
-def predict_series(model, data, device):
+def predict_series(model, data, device, multi_label = False):
     preds = []
     model = model.to(device)
     
@@ -39,7 +39,10 @@ def predict_series(model, data, device):
         with torch.cuda.amp.autocast():
             #print(model(tmp).shape)
             predictions, mse = model(tmp)
-            predictions = F.softmax(predictions, dim = -1)
+            if not multi_label:
+                predictions = F.softmax(predictions, dim = -1)
+            else:
+                predictions = F.sigmoid(predictions, dim = -1)
             preds.append((predictions[0].detach().cpu().numpy(), mse[0].detach().cpu().numpy()))
     return preds
             
@@ -223,6 +226,7 @@ class SeriesTrainer():
                     'model_state_dict': model.state_dict(),
                     'classes':self.cfg['settings']['outputs']['classes'],
                     'continous': self.cfg['settings']['outputs']['continuous'],
+                    'multi_label': self.multi_label,
                     'features': np.array(train_x[0]).shape[1],
                     'custom_data': self.cfg['settings']['custom_data']}, os.path.join(self.cfg['data']['save_folder'], "model.pt"))
                     #torch.save(model.state_dict(), f"bbbb.pt")

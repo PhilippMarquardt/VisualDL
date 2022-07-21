@@ -57,9 +57,9 @@ data:
   valid: "F:/source/repos/Daten/TubulusBigger/valid"
   test: "F:/source/repos/Daten/TubulusBigger/valid"
 
-  train: "F:/source/repos/Bachelorarbeit/train"
-  valid: "F:/source/repos/Bachelorarbeit/valid"
-  test: "F:/source/repos/Bachelorarbeit/valid"
+  train: "C:/Users/phili/Downloads/Telegram Desktop/fl_test_dataset/fl_test_dataset/train"
+  valid: "C:/Users/phili/Downloads/Telegram Desktop/fl_test_dataset/fl_test_dataset/valid"
+  test: "C:/Users/phili/Downloads/Telegram Desktop/fl_test_dataset/fl_test_dataset/valid"
   weights: ["tu-resnest50d, Unet.pt"]
 
   save_folder: "" 
@@ -71,7 +71,7 @@ models:
 
 settings:
   nc: 16
-  in_channels: 3
+  in_channels: 4
   epochs: 3000
   optimizer: "AdamW"
   lr: 3e-5
@@ -84,7 +84,7 @@ settings:
   gradient_accumulation: 8
   criterions: #criterions defined in segmentation_models_pytorch.utils.losses can be used
     - "DiceLoss"
-    #- "CrossEntropyLoss"
+    - "CrossEntropyLoss"
     #- "DiceLoss"
 
   tensorboard_log_dir: "tensorboard_log"

@@ -17,6 +17,8 @@ data:
   valid: "D:/Hsa/temp/projects/a71beea2-97d4-4b3e-9463-122a50f4b900/dataset/valid"
   train: "F:/source/repos/Daten/TubulusBigger/train"
   valid: "F:/source/repos/Daten/TubulusBigger/valid"
+  # train: "C:/Users/phili/Downloads/Telegram Desktop/fl_test_dataset/fl_test_dataset/train"
+  # valid: "C:/Users/phili/Downloads/Telegram Desktop/fl_test_dataset/fl_test_dataset/valid"
   save_folder: ""
   weights: "maskrcnn.pt"
 # anchors
@@ -24,6 +26,7 @@ settings:
   epochs: 500
   batch_size: 4
   image_size: 800
+  in_channels: 3
   max_boxes_per_image: 800
   nc: 2
   anchors: [32,64,128,256,512]

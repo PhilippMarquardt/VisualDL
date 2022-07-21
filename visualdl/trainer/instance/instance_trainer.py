@@ -48,7 +48,12 @@ class InstanceTrainer():
         model = torchvision.models.detection.maskrcnn_resnet50_fpn(pretrained=is_internet,
         box_detections_per_img = self.cfg['settings']['max_boxes_per_image'],
         min_size = self.cfg['settings']['image_size'])
-
+        model.backbone.body.conv1 = torch.nn.Conv2d(self.cfg['settings']['in_channels'],
+                               model.backbone.body.conv1.out_channels,
+                               kernel_size=7,
+                               stride=2,
+                               padding=3,
+                               bias=False)
         # model = torchvision.models.detection.maskrcnn_resnet50_fpn(pretrained=True,
         # box_detections_per_img = self.cfg['settings']['max_boxes_per_image'],
         # min_size = self.cfg['settings']['image_size'], trainable_backbone_layers=0,
@@ -178,12 +183,14 @@ class InstanceTrainer():
                         'custom_data': self.cfg['settings']['custom_data'],
                         'nc': self.cfg['settings']['nc'],
                         'model': self.modelstring,
+                        'in_channels': self.cfg['settings']['in_channels'],
                         'image_size': 512}, os.path.join(self.savefolder, "maskrcnn.pt"))
             torch.save({
                         'model_state_dict': self.model.state_dict(),
                         'custom_data': self.cfg['settings']['custom_data'],
                         'nc': self.cfg['settings']['nc'],
                         'model': self.modelstring,
+                        'in_channels': self.cfg['settings']['in_channels'],
                         'image_size': 512}, os.path.join(self.savefolder, "maskrcnnlast.pt"))
         # pass
 
