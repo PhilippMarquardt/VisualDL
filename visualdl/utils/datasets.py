@@ -63,7 +63,7 @@ class InstanceSegmentationDataset(Dataset):
     #         idx+=1
     def __getitem__(self, idx):
         if self.train_images[idx].endswith(".npy"):
-            img = np.load(self.train_images[idx])
+            img = np.load(self.train_images[idx]).astype(np.float32)
         else:
             img = io.imread(self.train_images[idx]).astype(np.float32)
         img = img / 255.
@@ -160,7 +160,7 @@ class SegmentationDataset(Dataset):
 
     def __getitem__(self, idx):
         if self.train_images[idx].endswith(".npy"):
-            img = np.load(self.train_images[idx])
+            img = np.load(self.train_images[idx]).astype(np.float32)
         else:
             img = io.imread(self.train_images[idx]).astype(np.float32)
         mask = io.imread(self.train_masks[idx], as_gray = True).astype(np.float32)

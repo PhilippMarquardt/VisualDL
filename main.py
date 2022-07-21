@@ -14,8 +14,8 @@ if __name__ == "__main__":
     
     
     #train(r"visualdl\trainer\detection\detection.yaml")
-    #train(r"visualdl\trainer\segmentation\segmentation.yaml")
-    train(r"visualdl\trainer\instance\instance.yaml")
+    train(r"visualdl\trainer\segmentation\segmentation.yaml")
+    #train(r"visualdl\trainer\instance\instance.yaml")
     #train(r"visualdl\trainer\classification\classification.yaml")
     #train(r"visualdl\trainer\series\series.yaml")
     #train(r"visualdl\trainer\series\video.yaml")
