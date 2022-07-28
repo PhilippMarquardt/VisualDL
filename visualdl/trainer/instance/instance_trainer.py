@@ -17,6 +17,12 @@ import argparse
 #from koila import LazyTensor, lazy
 from .engine import train_one_epoch, evaluate
 
+from .utils import GeneralizedRCNNTransform
+
+
+
+
+
 class InstanceTrainer():
     def __init__(self, cfg_path:dict):
         self.cfg = parse_yaml(cfg_path)
@@ -44,16 +50,20 @@ class InstanceTrainer():
         # min_size = self.cfg['settings']['image_size'],
         # num_classes=self.nc)  
 
-        print(is_internet)
+        
         model = torchvision.models.detection.maskrcnn_resnet50_fpn(pretrained=is_internet,
         box_detections_per_img = self.cfg['settings']['max_boxes_per_image'],
         min_size = self.cfg['settings']['image_size'])
-        model.backbone.body.conv1 = torch.nn.Conv2d(self.cfg['settings']['in_channels'],
-                               model.backbone.body.conv1.out_channels,
-                               kernel_size=7,
-                               stride=2,
-                               padding=3,
-                               bias=False)
+        if self.cfg['settings']['in_channels'] != 3:
+            model.transform =  GeneralizedRCNNTransform(image_mean=[0.485, 0.456, 0.406], image_std=[0.229, 0.224, 0.225], min_size=(800,), max_size=1333, mode='bilinear')
+            model.backbone.body.conv1 = torch.nn.Conv2d(self.cfg['settings']['in_channels'],
+                                model.backbone.body.conv1.out_channels,
+                                kernel_size=7,
+                                stride=2,
+                                padding=3,
+                                bias=False)
+
+        
         # model = torchvision.models.detection.maskrcnn_resnet50_fpn(pretrained=True,
         # box_detections_per_img = self.cfg['settings']['max_boxes_per_image'],
         # min_size = self.cfg['settings']['image_size'], trainable_backbone_layers=0,
@@ -74,7 +84,7 @@ class InstanceTrainer():
                                                         hidden_layer,
                                                         self.nc)
         self.model = model
-
+        #print(self.model)
         #self.modelstring = f"torchvision.models.detection.maskrcnn_resnet50_fpn(pretrained={True}, box_detections_per_img = {self.cfg['settings']['max_boxes_per_image']}, min_size =  {self.cfg['settings']['image_size']}, rpn_anchor_generator = {AnchorGenerator(((8,), (16,), (32,), (64,), (128,)), ((0.5, 1.0, 2.0),) * 5)}"
         self.modelstring = f"torchvision.models.detection.maskrcnn_resnet50_fpn(pretrained={False},\
                  box_detections_per_img = {self.cfg['settings']['max_boxes_per_image']},\
@@ -134,6 +144,8 @@ class InstanceTrainer():
         params = [p for p in self.model.parameters() if p.requires_grad]
         optimizer = torch.optim.SGD(params, lr=0.0001,
                                     momentum=0.9, weight_decay=0.0005)
+
+        optimizer = torch.optim.AdamW(self.model.parameters(), lr=1e-4, weight_decay = 1e-5)
         # and a learning rate scheduler
         lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer,
                                                     step_size=3,

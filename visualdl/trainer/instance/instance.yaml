@@ -17,6 +17,10 @@ data:
   valid: "D:/Hsa/temp/projects/a71beea2-97d4-4b3e-9463-122a50f4b900/dataset/valid"
   train: "F:/source/repos/Daten/TubulusBigger/train"
   valid: "F:/source/repos/Daten/TubulusBigger/valid"
+  train: "C:/Users/phili/Downloads/Telegram Desktop/dataset (4)/dataset/train"
+  valid: "C:/Users/phili/Downloads/Telegram Desktop/dataset (4)/dataset/valid"
+  train: "G:/Windows/Datasets/Liver/Dataset Liver gH2Ax Signals 256 v3/dataset_128/train"
+  valid: "G:/Windows/Datasets/Liver/Dataset Liver gH2Ax Signals 256 v3/dataset_128/valid"
   # train: "C:/Users/phili/Downloads/Telegram Desktop/fl_test_dataset/fl_test_dataset/train"
   # valid: "C:/Users/phili/Downloads/Telegram Desktop/fl_test_dataset/fl_test_dataset/valid"
   save_folder: ""
@@ -24,7 +28,7 @@ data:
 # anchors
 settings:
   epochs: 500
-  batch_size: 4
+  batch_size: 2
   image_size: 800
   in_channels: 3
   max_boxes_per_image: 800
@@ -35,7 +39,7 @@ settings:
   custom_data: {'structure_indices': [16, 17, 18, 19], 'image_size': 256, 'modeltype': 'instance segmentation', 'object_based': False, 'physical_tile_size': (113.19408504630164, 113.19408504630164), 'project_type': 'dummy', 'pyramid_level': -1, 'datetime': '01/12/2021 18:09', 'structures': 'Tumor Cells 0+, Tumor Cells 1+, Tumor Cells 2+, Tumor Cells 3+', 'objects_count': 31002, 'model': 'maskrcnn', 'files': {'File': ['05_.czi', '05_.czi', '05_.czi', '05_.czi'], 'Scene': [2, 2, 2, 2]}} #whaever ya want
 
 transforms:
-  Resize: width = 1024, height = 1024
+  Resize: width = 256, height = 256
   HorizontalFlip: p=0.25
   VerticalFlip: p=0.25
   RandomBrightnessContrast: p=0.0
@@ -51,24 +55,6 @@ transforms:
 
 
 
-  
-
-
-
-transforms:
-  Resize: width = 512, height = 512
-  HorizontalFlip: p=0.25
-  VerticalFlip: p=0.25
-  RandomBrightnessContrast: p=0.0
-  RGBShift: p=0.0
-  RandomShadow : p=0.00
-  GaussianBlur: p=0.1
-  Transpose: p=0.0
-  RandomRotate90: p=0.15
-  Perspective: p=0.00
-  Affine: p=0.00
-  ToGray: p=0.0
-  RandomScale: p=0.0
 
 
 
