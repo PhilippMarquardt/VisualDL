@@ -19,8 +19,8 @@ data:
   valid: "F:/source/repos/Daten/TubulusBigger/valid"
   train: "C:/Users/phili/Downloads/Telegram Desktop/dataset (4)/dataset/train"
   valid: "C:/Users/phili/Downloads/Telegram Desktop/dataset (4)/dataset/valid"
-  train: "G:/Windows/Datasets/Liver/Dataset Liver gH2Ax Signals 256 v3/dataset_128/train"
-  valid: "G:/Windows/Datasets/Liver/Dataset Liver gH2Ax Signals 256 v3/dataset_128/valid"
+  # train: "G:/Windows/Datasets/Liver/Dataset Liver gH2Ax Signals 256 v3/dataset_128/train"
+  # valid: "G:/Windows/Datasets/Liver/Dataset Liver gH2Ax Signals 256 v3/dataset_128/valid"
   # train: "C:/Users/phili/Downloads/Telegram Desktop/fl_test_dataset/fl_test_dataset/train"
   # valid: "C:/Users/phili/Downloads/Telegram Desktop/fl_test_dataset/fl_test_dataset/valid"
   save_folder: ""
@@ -30,7 +30,7 @@ settings:
   epochs: 500
   batch_size: 2
   image_size: 800
-  in_channels: 3
+  in_channels: 4
   max_boxes_per_image: 800
   nc: 2
   anchors: [32,64,128,256,512]

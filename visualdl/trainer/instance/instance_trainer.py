@@ -56,12 +56,12 @@ class InstanceTrainer():
         min_size = self.cfg['settings']['image_size'])
         if self.cfg['settings']['in_channels'] != 3:
             model.transform =  GeneralizedRCNNTransform(image_mean=[0.485, 0.456, 0.406], image_std=[0.229, 0.224, 0.225], min_size=(800,), max_size=1333, mode='bilinear')
-            model.backbone.body.conv1 = torch.nn.Conv2d(self.cfg['settings']['in_channels'],
-                                model.backbone.body.conv1.out_channels,
-                                kernel_size=7,
-                                stride=2,
-                                padding=3,
-                                bias=False)
+        model.backbone.body.conv1 = torch.nn.Conv2d(self.cfg['settings']['in_channels'],
+                            model.backbone.body.conv1.out_channels,
+                            kernel_size=7,
+                            stride=2,
+                            padding=3,
+                            bias=False)
 
         
         # model = torchvision.models.detection.maskrcnn_resnet50_fpn(pretrained=True,

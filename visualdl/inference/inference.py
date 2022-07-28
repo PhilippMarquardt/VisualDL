@@ -91,12 +91,13 @@ class ModelInference():
             self.model = eval(state['model'].replace("\n", "").replace(" ", ""))
             if "in_channels" in state and state['in_channels'] != 3:
                 self.model.transform =  GeneralizedRCNNTransform(image_mean=[0.485, 0.456, 0.406], image_std=[0.229, 0.224, 0.225], min_size=(800,), max_size=1333, mode='bilinear')
-                self.model.backbone.body.conv1 = torch.nn.Conv2d(self.cfg['settings']['in_channels'],
-                               self.model.backbone.body.conv1.out_channels,
-                               kernel_size=7,
-                               stride=2,
-                               padding=3,
-                               bias=False)
+            if "in_channels" in state:
+                self.model.backbone.body.conv1 = torch.nn.Conv2d(state['in_channels'],
+                                self.model.backbone.body.conv1.out_channels,
+                                kernel_size=7,
+                                stride=2,
+                                padding=3,
+                                bias=False)
                 
                 #self.model.roi_heads.mask_predictor.mask_fcn_logits = Conv2d(256, self.state['nc'], 1)
             self.model.eval()
