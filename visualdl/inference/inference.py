@@ -168,7 +168,10 @@ class ModelInference():
         elif self.type == "instance":
             return predict_instance_segmentation(self.model, images, self.device, confidence)
         elif self.type == "series":
-            return predict_series(self.model, images, self.device, self.state['multi_label'])
+            if 'multi_label' in self.state:
+                return predict_series(self.model, images, self.device, self.state['multi_label'])
+            else:
+                return predict_series(self.model, images, self.device, False)
         elif self.type == "classification":
             return predict_classification_images(self.model, images, self.device)
                 
