@@ -1,4 +1,3 @@
-from turtle import forward
 import timm
 import yaml
 from ...utils.utils import *
