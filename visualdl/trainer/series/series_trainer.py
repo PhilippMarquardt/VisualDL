@@ -29,7 +29,7 @@ class DoubleConv(nn.Module):
         return self.double_conv(x)
 
 
-def predict_series(model, data, device):
+def predict_series(model, data, device, multi_label = False):
     preds = []
     model = model.to(device)
     
@@ -39,7 +39,10 @@ def predict_series(model, data, device):
         with torch.cuda.amp.autocast():
             #print(model(tmp).shape)
             predictions, mse = model(tmp)
-            predictions = F.softmax(predictions, dim = -1)
+            if not multi_label:
+                predictions = F.softmax(predictions, dim = -1)
+            else:
+                predictions = F.sigmoid(predictions, dim = -1)
             preds.append((predictions[0].detach().cpu().numpy(), mse[0].detach().cpu().numpy()))
     return preds
             
@@ -83,21 +86,26 @@ def get_model(classes, num_scalar_outputs,num_fea, use_lstm = True):
 
 
 class PreloadedDataset(Dataset):
-    def __init__(self, train_x, train_y):
+    def __init__(self, train_x, train_y, multi_label):
         super().__init__()
         self.train_x = train_x
         self.train_y = train_y
+        self.multi_label = multi_label
     def __len__(self):
         return len(self.train_x)
 
     def __getitem__(self, idx):
-        return torch.tensor(self.train_x[idx], dtype = torch.float32).permute(1,0), torch.tensor(self.train_y[idx][0], dtype = torch.long), torch.tensor(self.train_y[idx][1], dtype = torch.float)
+        if not self.multi_label:
+            return torch.tensor(self.train_x[idx], dtype = torch.float32).permute(1,0), torch.tensor(self.train_y[idx][0], dtype = torch.long), torch.tensor(self.train_y[idx][1], dtype = torch.float)
+        else:
+            return torch.tensor(self.train_x[idx], dtype = torch.float32).permute(1,0), torch.tensor(self.train_y[idx][0], dtype = torch.float), torch.tensor(self.train_y[idx][1], dtype = torch.float)
+
 
 class SeriesTrainer():
     def __init__(self, cfg_path:dict):
         self.cfg = parse_yaml(cfg_path)
         assert self.cfg['type'] == "series", "Provided yaml file must be a series config!"
-        
+        self.multi_label = self.cfg['settings']['multiple_classes_per_datapoint']
 
 
 
@@ -124,11 +132,11 @@ class SeriesTrainer():
             test_y.append((val['class'], val['continuous']))
 
         
-        train_set = PreloadedDataset(train_x, train_y)
+        train_set = PreloadedDataset(train_x, train_y, self.multi_label)
         training_loader = torch.utils.data.DataLoader(train_set,
                                                     batch_size=self.cfg['settings']['batch_size'], shuffle=True,
                                                     num_workers=0)
-        test_set = PreloadedDataset(test_x, test_y)
+        test_set = PreloadedDataset(test_x, test_y, self.multi_label)
         valid_loader = torch.utils.data.DataLoader(test_set,
                                                     batch_size=1, shuffle=False,
                                              num_workers=0)
@@ -138,36 +146,45 @@ class SeriesTrainer():
         optimizer = torch.optim.Adam(model.parameters(), lr=float(self.cfg['settings']['lr']))
         model.train()
         model.to(device)
-        criterion = nn.CrossEntropyLoss()
+        criterion = nn.CrossEntropyLoss() if not self.multi_label else nn.BCEWithLogitsLoss()
         mseloss = nn.MSELoss()
-        bceloss = nn.BCELoss()
         scaler = torch.cuda.amp.GradScaler()
         best_valid_acc = float("inf")
         for i in range(epochs):
             loss_average = 0.0
             acc_avg = 0.0
-            miou_avg = 0.0
+            mse_avg = 0.0
             training_bar = tqdm(training_loader)
             model.train()
             for cnt, (x_pred, y_pred, mseunp) in enumerate(training_bar):
-                x_pred = x_pred.to(device, dtype=torch.float)
-                y_pred = y_pred.to(device, dtype=torch.long)
+                x_pred = x_pred.to(device)
+                y_pred = y_pred.to(device)
                 mseunp = mseunp.to(device, dtype=torch.float)
                 model.zero_grad()
                 with torch.cuda.amp.autocast():
                     predictions, mse = model(x_pred)
-                    loss = criterion(predictions, y_pred) #+ criterion2(predictions, y_pred)
+                    loss = criterion(predictions, y_pred) 
                     loss += mseloss(mse, mseunp) 
-                pred = torch.argmax(predictions, 1)
-                acc = (pred == y_pred).float().mean()
-                
+                if not self.multi_label:
+                    pred = torch.argmax(predictions, 1)
+                    acc = (pred == y_pred).float().mean()
+                    acc_avg += acc
+                else:
+                    pred = predictions > 0.5
+                    #acc is binary accuracy for each class
+                    acc = (y_pred == pred).sum().item() / y_pred.size(0)
+                    acc /= self.cfg['settings']['outputs']['classes']
+                    acc_avg += acc
+
+                mse = torch.abs(mse - mseunp).sum()
+                mse_avg += mse
                 loss_average += loss.item()
             
-                acc_avg += acc
+                
                 scaler.scale(loss).backward()
                 scaler.step(optimizer)
                 scaler.update()
-                training_bar.set_description("Training: Epoch:%i miou: %.4f, Loss: %.3f,  Acc: %.4f, best: %.2f" % (i,acc_avg / (cnt + 1), float(loss_average / (cnt+1)), acc_avg / (cnt+1), best_valid_acc))
+                training_bar.set_description("Training: Epoch:%i, Loss: %.3f,  Acc: %.4f, MSE: %.3f, best: %.2f" % (i, float(loss_average / (cnt+1)), acc_avg / (cnt+1), mse_avg / (cnt + 1), best_valid_acc))
                 training_bar.refresh()
             
             #torch.save(model.state_dict(), "glomxDb4f.pt")
@@ -175,25 +192,33 @@ class SeriesTrainer():
             with torch.no_grad():    
                 test_bar = tqdm(valid_loader)
                 loss_average = 0.0
-                loss_average_second = 0.0
                 model.eval()
-                
+                mse_avg = 0.0
                 acc_avg = 0.0
                 miou_avg = 0.0
                 for cnt, (x_pred, y_pred, mseunp) in enumerate(test_bar):
-                    x_pred = x_pred.to(device, dtype=torch.float)
-                    y_pred = y_pred.to(device, dtype=torch.long)
+                    x_pred = x_pred.to(device)
+                    y_pred = y_pred.to(device)
                     mseunp = mseunp.to(device, dtype=torch.float)
                     model.zero_grad()
                     with torch.cuda.amp.autocast():
                         predictions, mse = model(x_pred)
                         loss = criterion(predictions, y_pred) #+ criterion2(predictions, y_pred)
                         loss += mseloss(mse, mseunp)
-                    pred = torch.argmax(predictions, 1)
+                    if not self.multi_label:
+                        pred = torch.argmax(predictions, 1)
+                        acc = (pred == y_pred).float().mean()
+                        acc_avg += acc
+                    else:
+                        pred = predictions > 0.5
+                        #acc is binary accuracy for each class
+                        acc = (y_pred == pred).sum().item() / y_pred.size(0)
+                        acc /= self.cfg['settings']['outputs']['classes']
+                        acc_avg += acc
+                    mse = torch.abs(mse - mseunp).sum()
+                    mse_avg += mse
                     loss_average += loss.item()
-                    acc = (pred == y_pred).float().mean()
-                    acc_avg += acc
-                    test_bar.set_description("Valid: Epoch:%i miou: %.4f, Loss: %.3f,Loss: %.3f,  Acc: %.4f, best: %.2f" % (i,acc_avg / (cnt + 1), float(loss_average / (cnt+1)),float(loss_average_second / (cnt+1)), acc_avg / (cnt+1), best_valid_acc))
+                    test_bar.set_description("Valid: Epoch:%i, Loss: %.3f,  Acc: %.4f, MSE: %.3f, best: %.2f" % (i, float(loss_average / (cnt+1)), acc_avg / (cnt+1),mse_avg / (cnt + 1), best_valid_acc))
                 if (loss_average / (cnt + 1)) < best_valid_acc:
                     best_valid_acc = loss_average / (cnt + 1)
                     torch.save({
@@ -201,6 +226,7 @@ class SeriesTrainer():
                     'model_state_dict': model.state_dict(),
                     'classes':self.cfg['settings']['outputs']['classes'],
                     'continous': self.cfg['settings']['outputs']['continuous'],
+                    'multi_label': self.multi_label,
                     'features': np.array(train_x[0]).shape[1],
                     'custom_data': self.cfg['settings']['custom_data']}, os.path.join(self.cfg['data']['save_folder'], "model.pt"))
                     #torch.save(model.state_dict(), f"bbbb.pt")

@@ -11,21 +11,35 @@ data:
   valid: "C:/Users/phili/Downloads/Telegram Desktop/MarieUke/valid"
   #train: "D:/Hsa/temp/projects/3834fba0-dfef-4de8-8f54-7c7078468ae8/dataset/train"
   #valid: "D:/Hsa/temp/projects/3834fba0-dfef-4de8-8f54-7c7078468ae8/dataset/valid"
+  train: "D:/Hsa/temp/projects/a3bbe11c-467e-4ed2-b7e1-ed77917d19bd/dataset/train"
+  valid: "D:/Hsa/temp/projects/a3bbe11c-467e-4ed2-b7e1-ed77917d19bd/dataset/valid"
+  train: "D:/Hsa/temp/projects/a71beea2-97d4-4b3e-9463-122a50f4b900/dataset/train"
+  valid: "D:/Hsa/temp/projects/a71beea2-97d4-4b3e-9463-122a50f4b900/dataset/valid"
+  train: "F:/source/repos/Daten/TubulusBigger/train"
+  valid: "F:/source/repos/Daten/TubulusBigger/valid"
+  train: "C:/Users/phili/Downloads/Telegram Desktop/dataset (4)/dataset/train"
+  valid: "C:/Users/phili/Downloads/Telegram Desktop/dataset (4)/dataset/valid"
+  # train: "G:/Windows/Datasets/Liver/Dataset Liver gH2Ax Signals 256 v3/dataset_128/train"
+  # valid: "G:/Windows/Datasets/Liver/Dataset Liver gH2Ax Signals 256 v3/dataset_128/valid"
+  # train: "C:/Users/phili/Downloads/Telegram Desktop/fl_test_dataset/fl_test_dataset/train"
+  # valid: "C:/Users/phili/Downloads/Telegram Desktop/fl_test_dataset/fl_test_dataset/valid"
   save_folder: ""
-  weights: "asd.ptt"
+  weights: "maskrcnn.pt"
 # anchors
 settings:
-  epochs: 10
-  batch_size: 1
-  image_size: 512
+  epochs: 500
+  batch_size: 2
+  image_size: 800
+  in_channels: 4
   max_boxes_per_image: 800
-  nc: 5
+  nc: 2
   anchors: [32,64,128,256,512]
   calculate_class_weights: False
-  custom_data: {'structure_indices': [16, 17, 18, 19], 'image_size': 512, 'modeltype': 'instance segmentation', 'object_based': False, 'physical_tile_size': (113.19408504630164, 113.19408504630164), 'project_type': 'dummy', 'pyramid_level': -1, 'datetime': '01/12/2021 18:09', 'structures': 'Tumor Cells 0+, Tumor Cells 1+, Tumor Cells 2+, Tumor Cells 3+', 'objects_count': 31002, 'model': 'maskrcnn', 'files': {'File': ['05_.czi', '05_.czi', '05_.czi', '05_.czi'], 'Scene': [2, 2, 2, 2]}} #whaever ya want
+  #custom_data: {'structure_indices': [16, 17, 18, 19], 'image_size': 256, 'modeltype': 'instance segmentation', 'object_based': False, 'physical_tile_size': (113.19408504630164, 113.19408504630164), 'project_type': 'dummy', 'pyramid_level': -1, 'datetime': '01/12/2021 18:09', 'structures': 'Tumor Cells 0+, Tumor Cells 1+, Tumor Cells 2+, Tumor Cells 3+', 'objects_count': 31002, 'model': 'maskrcnn', 'files': {'File': ['05_.czi', '05_.czi', '05_.czi', '05_.czi'], 'Scene': [2, 2, 2, 2]}} #whaever ya want
+  custom_data: {'structure_indices': [16, 17, 18, 19], 'image_size': 256, 'modeltype': 'instance segmentation', 'object_based': False, 'physical_tile_size': (113.19408504630164, 113.19408504630164), 'project_type': 'dummy', 'pyramid_level': -1, 'datetime': '01/12/2021 18:09', 'structures': 'Tumor Cells 0+, Tumor Cells 1+, Tumor Cells 2+, Tumor Cells 3+', 'objects_count': 31002, 'model': 'maskrcnn', 'files': {'File': ['05_.czi', '05_.czi', '05_.czi', '05_.czi'], 'Scene': [2, 2, 2, 2]}} #whaever ya want
 
 transforms:
-  Resize: width = 512, height = 512
+  Resize: width = 256, height = 256
   HorizontalFlip: p=0.25
   VerticalFlip: p=0.25
   RandomBrightnessContrast: p=0.0
@@ -38,6 +52,9 @@ transforms:
   Affine: p=0.00
   ToGray: p=0.0
   RandomScale: p=0.0
+
+
+
 
 
 

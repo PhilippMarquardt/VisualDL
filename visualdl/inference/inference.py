@@ -21,6 +21,7 @@ from ..models.doubleunet.doubleunet import DoubleUnet
 from ..models.unetr import UNETR
 from ..trainer.series.series_trainer import get_model, predict_series
 import timm
+from ..trainer.instance.utils import GeneralizedRCNNTransform
 
 def predict_od(model, imgs, confidence = 0.45):
     size = imgs[0].shape[0]
@@ -88,7 +89,16 @@ class ModelInference():
                 state = load(weight_path)
             self.state = state
             self.model = eval(state['model'].replace("\n", "").replace(" ", ""))
-            #if "nc" in state:
+            if "in_channels" in state and state['in_channels'] != 3:
+                self.model.transform =  GeneralizedRCNNTransform(image_mean=[0.485, 0.456, 0.406], image_std=[0.229, 0.224, 0.225], min_size=(800,), max_size=1333, mode='bilinear')
+            if "in_channels" in state:
+                self.model.backbone.body.conv1 = torch.nn.Conv2d(state['in_channels'],
+                                self.model.backbone.body.conv1.out_channels,
+                                kernel_size=7,
+                                stride=2,
+                                padding=3,
+                                bias=False)
+                
                 #self.model.roi_heads.mask_predictor.mask_fcn_logits = Conv2d(256, self.state['nc'], 1)
             self.model.eval()
             self.model.load_state_dict(state['model_state_dict'])
@@ -115,6 +125,7 @@ class ModelInference():
 
         else:
             raise ValueError(f"Unknown modeltype provided: {type}")
+    
 
     def __call__(self, images):
         '''
@@ -161,7 +172,10 @@ class ModelInference():
         elif self.type == "instance":
             return predict_instance_segmentation(self.model, images, self.device, confidence)
         elif self.type == "series":
-            return predict_series(self.model, images, self.device)
+            if 'multi_label' in self.state:
+                return predict_series(self.model, images, self.device, self.state['multi_label'])
+            else:
+                return predict_series(self.model, images, self.device, False)
         elif self.type == "classification":
             return predict_classification_images(self.model, images, self.device)
                 
