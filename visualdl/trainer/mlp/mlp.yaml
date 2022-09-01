@@ -1,0 +1,34 @@
+type: "mlp"
+
+data:
+  # train: "C:/Users/HSA/Desktop/Spektren/Einzelsubstanzen/csv Dateien/train"
+  # valid: "C:/Users/HSA/Desktop/Spektren/Einzelsubstanzen/csv Dateien/valid"
+  train: "C:/Users/HSA/Desktop/Spektren/Gemische/csv Dateien/train"
+  valid: "C:/Users/HSA/Desktop/Spektren/Gemische/csv Dateien/valid"
+  weights: []
+  # save_folder: "C:/Users/HSA/Desktop/Spektren/Einzelsubstanzen"
+  save_folder: "C:/Users/HSA/Desktop/Spektren/Gemische"
+
+settings:
+  in_features: 3
+  out_features: 100
+  epochs: 1000
+  early_stopping_patience: 20
+  optimizer: "AdamW"
+  lr: 1e-4
+  workers: 0
+  batch_size: 1
+
+  metrics:
+    - name: ""
+      params: ""
+
+  tensorboard_log_dir: "tensorboard_log"
+  custom_data: {
+      "modeltype": "spectra-analysis", # Always for spectra
+      "detection_type": "prediction", # Single / Mixture / Prediction
+      "substances": [], # In order of training
+      "datetime": "01/01/1970 00:00", # Date of model creation
+      "spectra_count": 0, # Number of spectra used for training
+      "files": [], # Files used for training
+    }

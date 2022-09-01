@@ -6,6 +6,7 @@ from .trainer.segmentation.segmentation_trainer import SegmentationTrainer
 from .trainer.instance.instance_trainer import InstanceTrainer
 from .trainer.series.series_trainer import SeriesTrainer
 from .trainer.series.video_trainer import VideoTrainer
+from .trainer.mlp.mlp_trainer import MLPTrainer
 import torch
 from torch import load
 from .inference.inference import ModelInference
@@ -25,6 +26,8 @@ def train(cfg_path):
         t = SeriesTrainer(cfg_path=cfg_path)
     elif type == "video":
         t = VideoTrainer(cfg_path=cfg_path)
+    elif type == "mlp":
+        t = MLPTrainer(cfg_path=cfg_path)
     t.train()
     #print("DONE TRAINING")
     #print(t.test())

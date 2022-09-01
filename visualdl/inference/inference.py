@@ -20,6 +20,7 @@ from ..models.caranet.CaraNet import caranet
 from ..models.doubleunet.doubleunet import DoubleUnet
 from ..models.unetr import UNETR
 from ..trainer.series.series_trainer import get_model, predict_series
+from ..trainer.mlp.mlp_trainer import get_mlp_model, predict_mlp
 import timm
 from ..trainer.instance.utils import GeneralizedRCNNTransform
 
@@ -122,6 +123,15 @@ class ModelInference():
             self.model = eval(state['model'])
             self.model.load_state_dict(state['model_state_dict'])
             self.model.eval()
+        elif type == "mlp":
+            if device.lower() == "cpu":
+                state = load(weight_path, map_location=torch.device('cpu'))
+            else:
+                state = load(weight_path)
+            self.state = state
+            self.model = get_mlp_model(state['in_features'], state['out_features'])
+            self.model.eval()
+            self.model.load_state_dict(state['model_state_dict'])
         
     def __call__(self, images):
         '''
@@ -174,6 +184,9 @@ class ModelInference():
                 return predict_series(self.model, images, self.device, False)
         elif self.type == "classification":
             return predict_classification_images(self.model, images, self.device)
+        elif self.type == "mlp":
+            return predict_mlp(self.model, images, self.device)
+                
                 
 
 
