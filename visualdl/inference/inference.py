@@ -141,7 +141,7 @@ class ModelInference():
         '''
         return self.predict(images)
 
-    def predict(self, images, single_class_per_contour = False, min_size = None, confidence = 0.45, fill_holes = False):
+    def predict(self, images, single_class_per_contour = False, min_size = None, confidence = 0.45, fill_holes = False, mlp_output_pairwise=False):
         if self.type == "segmentation":
             return predict_images(self.model, images, self.device, single_class_per_contour, min_size, self.has_distance_map, fill_holes=fill_holes)
         elif self.type == "od":
@@ -187,7 +187,7 @@ class ModelInference():
         elif self.type == "classification":
             return predict_classification_images(self.model, images, self.device)
         elif self.type == "mlp":
-            return predict_mlp(self.model, images, self.device)
+            return predict_mlp(self.model, images, self.device, mlp_output_pairwise)
                 
                 
 

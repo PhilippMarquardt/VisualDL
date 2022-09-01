@@ -10,7 +10,7 @@ import pandas as pd
 from openpyxl import load_workbook
 
 
-def predict_mlp(model, data, device):
+def predict_mlp(model, data, device, mlp_output_pairwise):
     preds = []
     model = model.to(device)
 
@@ -19,7 +19,10 @@ def predict_mlp(model, data, device):
         tmp = tmp.to(device)
         with torch.cuda.amp.autocast():
             prediction = model(tmp)
-            preds.append(prediction.detach().cpu().numpy())
+            prediction = prediction.detach().cpu().numpy()
+            if mlp_output_pairwise: # pairwise: e.g. x and y values next to each other in output layer
+                prediction = np.split(prediction, prediction.size/2)            
+            preds.append(prediction)
     return preds
 
 
@@ -120,7 +123,7 @@ class MLPTrainer():
                 model.zero_grad()
                 with torch.cuda.amp.autocast():
                     predictions = model(x_pred)
-                    loss = criterion(predictions, y_pred[:,:,1])
+                    loss = criterion(predictions, y_pred)
                 
                 loss_average += loss.item()
             
@@ -142,7 +145,7 @@ class MLPTrainer():
                     model.zero_grad()
                     with torch.cuda.amp.autocast():
                         predictions = model(x_pred)
-                        loss = criterion(predictions, y_pred[:,:,1])
+                        loss = criterion(predictions, y_pred)
                     
                     loss_average += loss.item()
                     test_bar.set_description("Valid: Epoch:%i, Loss: %.3f, best: %.2f" % (i, float(loss_average / (cnt+1)), best_valid_loss))
