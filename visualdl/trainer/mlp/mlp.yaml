@@ -1,19 +1,16 @@
 type: "mlp"
 
 data:
-  # train: "C:/Users/HSA/Desktop/Spektren/Einzelsubstanzen/csv Dateien/train"
-  # valid: "C:/Users/HSA/Desktop/Spektren/Einzelsubstanzen/csv Dateien/valid"
-  train: "C:/Users/HSA/Desktop/Spektren/Gemische/csv Dateien/train"
-  valid: "C:/Users/HSA/Desktop/Spektren/Gemische/csv Dateien/valid"
+  train: "C:/Users/HSA/Desktop/Spektren/dataset_train.json"
+  valid: "C:/Users/HSA/Desktop/Spektren/dataset_valid.json"
   weights: []
-  # save_folder: "C:/Users/HSA/Desktop/Spektren/Einzelsubstanzen"
-  save_folder: "C:/Users/HSA/Desktop/Spektren/Gemische"
+  save_folder: "C:/Users/HSA/Desktop/Spektren"
 
 settings:
   in_features: 3
   out_features: 100
-  epochs: 1000
-  early_stopping_patience: 20
+  epochs: 600
+  early_stopping_patience: 10
   optimizer: "AdamW"
   lr: 1e-4
   workers: 0

@@ -4,6 +4,7 @@ from visualdl.utils.utils import parse_yaml
 from torch.utils.data import Dataset, DataLoader
 from tqdm import tqdm
 import os
+import json
 import numpy as np
 import pandas as pd
 from openpyxl import load_workbook
@@ -16,7 +17,7 @@ def predict_mlp(model, data, device):
     for dt in data:
         tmp = torch.tensor(dt)
         tmp = tmp.to(device)
-        with torch.cuda.amp.autocast(): # ???
+        with torch.cuda.amp.autocast():
             prediction = model(tmp)
             preds.append(prediction.detach().cpu().numpy())
     return preds
@@ -44,126 +45,54 @@ def get_mlp_model(in_features: int, out_features: int):
     return MLP()
 
 
-class MLPDataset(Dataset):
-    def __init__(self, csv_path: str):
+class SpectraPreloadedDataset(Dataset):
+    """Dataset of spectra prediction which uses preloaded data"""
+    def __init__(self, data_path: str):
         super().__init__()
-        self.data_path = csv_path
 
-        # get input and output for model training from csv files
-        self.train_x, self.train_y = [], []
+        data = None
+        with open(data_path, encoding="utf-8") as handle:
+            data = json.loads(handle.read())
 
-        # gemische
-        file_path = r"C:\Users\HSA\Desktop\Spektren\Gemische\Pulvermischungen Tabletten_neue Einwaage für M44_1.xlsx"
-        # spectra_dir = r"C:\Users\HSA\Desktop\Spektren\Gemische\csv Dateien\train"
-        spectra_dir = csv_path
-        wb = load_workbook(filename = file_path, data_only=True)
-        sheet = wb['Zusammenfassung']
+        self.data_x, self.data_y = [], []
+        for key, val in data.items():
+            self.data_x.append(val['concentrations'])
+            self.data_y.append(val['spectrum'])
 
-        spectra_files = os.listdir(spectra_dir)
-        for i in range(3,67):
-            # print(sheet[f'A{i}'].value)
-            file_name = sheet[f'A{i}'].value
-            file_number = file_name[-2:]
-            file_number = file_number if file_number[0] != "0" else file_number[1]
-            samples = [x for x in spectra_files if ("Tablette " + file_number + "_") in x]
-            # print(samples)
-            
-            for sample in samples:        
-                with open(file_path, encoding = "utf-8") as handle:
-                    csv_data = pd.read_csv(os.path.join(spectra_dir, sample), sep = ';',skiprows=list(range(0, 89)), header=None)
-            
-                all_values = np.array(list(map(lambda x: [float(x[i].replace(",", ".")) if type(x[i]) is str else x[i] for i in range(2)], csv_data.values.tolist())), dtype=np.float32)
-                idx = np.round(np.linspace(0, len(all_values) - 1, 100)).astype(int)
-                self.train_y.append(list(all_values[idx]))
-                
-                self.train_x.append([sheet[f'G{i}'].value, sheet[f'F{i}'].value, sheet[f'H{i}'].value])
-
-
-
-        # einzelne substanzen
-        # for cnt, csv in enumerate(os.listdir(csv_path)):
-        #     csv_file_path = os.path.join(csv_path, csv)
-        #     csv_data = self.get_csv_data(csv_file_path)
-            
-        #     if ("Chromotrope") in csv:
-        #         if csv.split(",")[0][-1] == "2":
-        #             val = 12.
-        #         elif  csv.split(",")[0][-1] == "0":
-        #             val = 0.5
-        #         elif  csv.split(",")[0][-1] == "1":
-        #             val = 1.5
-        #         else:
-        #             val =  csv.split(",")[0][-1]
-        #         val = float(val)
-        #         self.train_x.append([val, 0, 0])
-        #     elif ("Chromtrope") in csv:
-        #         if csv.split(",")[0][-1] == "2":
-        #             val = 12.
-        #         elif  csv.split(",")[0][-1] == "0":
-        #             val = 0.5
-        #         elif  csv.split(",")[0][-1] == "1":
-        #             val = 1.5
-        #         else:
-        #             val =  csv.split(",")[0][-1]
-        #         val = float(val)
-        #         self.train_x.append([val, 0, 0])
-        #     elif "Erioglaucine" in csv:
-        #         if csv.split(".")[0][-1] == "2":
-        #             val = 12.
-        #         elif  csv.split(".")[0][-1] == "0":
-        #             val = 0.5
-        #         elif  csv.split(".")[0][-1] == "1":
-        #             val = 1.5
-        #         else:
-        #             val =  csv.split(".")[0][-1]
-        #         val = float(val)
-        #         self.train_x.append([0, val, 0])
-        #     elif "Riboflavin" in csv:
-        #         if csv.split(",")[0][-1] == "2":
-        #             val = 12.
-        #         elif  csv.split(",")[0][-1] == "0":
-        #             val = 0.5
-        #         elif  csv.split(",")[0][-1] == "1":
-        #             val = 1.5
-        #         else:
-        #             val =  csv.split(",")[0][-1]
-        #         val = float(val)
-        #         self.train_x.append([0, 0, val])
-        #     else:
-        #         print(f"no valid substance: {csv}")
-        #         continue
-            
-        #     all_values = np.array(list(map(lambda x: [float(x[i].replace(",", ".")) if type(x[i]) is str else x[i] for i in range(2)], csv_data.values.tolist())), dtype=np.float32)
-        #     idx = np.round(np.linspace(0, len(all_values) - 1, 100)).astype(int)
-        #     self.train_y.append(list(all_values[idx]))
-
-
-    def get_csv_data(self, file_path):
-        with open(file_path, encoding = "utf-8") as handle:
-            data = pd.read_csv(file_path, sep = ';',skiprows=list(range(0, 89)), header=None)
-        return data
 
     def __len__(self):
-        # return number of csv files
-        return len(os.listdir(self.data_path))
+        return len(self.data_x)
 
     def __getitem__(self, idx):
-        return torch.tensor(self.train_x[idx]), torch.tensor(self.train_y[idx])
+        return torch.tensor(self.data_x[idx]), torch.tensor(self.data_y[idx])
+
+
+
+class MLPDataset(Dataset):
+    """Template for general MLP dataset."""
+    def __init__(self, csv_path: str):
+        super().__init__()
+
+    def __len__(self):
+        return len(self.train_x)
+
+    def __getitem__(self, idx):
+        return self.train_x[idx], self.train_y[idx]
 
 
 
 class MLPTrainer():
-    def __init__(self, cfg_path:dict):
+    def __init__(self, cfg_path: str):
         self.cfg = parse_yaml(cfg_path)
         assert self.cfg['type'] == "mlp", "Provided yaml file must be a regression config!"
 
 
     def train(self):
         # get training data
-        train_set = MLPDataset(self.cfg['data']['train'])
+        train_set = SpectraPreloadedDataset(self.cfg['data']['train'])
         training_loader = DataLoader(train_set, batch_size=self.cfg['settings']['batch_size'], shuffle=True, num_workers=0)
 
-        validation_set = MLPDataset(self.cfg['data']['valid'])
+        validation_set = SpectraPreloadedDataset(self.cfg['data']['valid'])
         validation_loader = DataLoader(validation_set, batch_size=self.cfg['settings']['batch_size'], shuffle=True, num_workers=0)
 
         # get model and set hyperparametters
@@ -233,4 +162,3 @@ class MLPTrainer():
                         'in_features': self.cfg['settings']['in_features'],
                         'out_features': self.cfg['settings']['out_features'],
                         'custom_data': self.cfg['settings']['custom_data']}, os.path.join(self.cfg['data']['save_folder'], "model.pt"))
-        
