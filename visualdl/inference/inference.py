@@ -132,6 +132,8 @@ class ModelInference():
             self.model = get_mlp_model(state['in_features'], state['out_features'])
             self.model.eval()
             self.model.load_state_dict(state['model_state_dict'])
+        else:
+            raise ValueError(f"Unknown modeltype provided: {type}")
         
     def __call__(self, images):
         '''
