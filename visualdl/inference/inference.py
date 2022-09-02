@@ -45,6 +45,7 @@ class ModelInference():
     def __init__(self, weight_path, device = 'cuda:0' if torch.cuda.is_available() else 'cpu', type='segmentation', watershed_od = ""):
         self.device = device
         self.type = type
+        
         if type == "segmentation":
             if device.lower() == "cpu":
                 state = load(weight_path, map_location=torch.device('cpu'))
@@ -113,6 +114,7 @@ class ModelInference():
             self.model = get_model(state['classes'], state['continous'], state['features'])
             self.model.eval()
             self.model.load_state_dict(state['model_state_dict'])
+            
         elif type == "classification":
             if device.lower() == "cpu":
                 state = load(weight_path, map_location=torch.device('cpu'))
@@ -123,6 +125,7 @@ class ModelInference():
             self.model = eval(state['model'])
             self.model.load_state_dict(state['model_state_dict'])
             self.model.eval()
+            
         elif type == "mlp":
             if device.lower() == "cpu":
                 state = load(weight_path, map_location=torch.device('cpu'))
@@ -132,8 +135,9 @@ class ModelInference():
             self.model = get_mlp_model(state['in_features'], state['out_features'])
             self.model.eval()
             self.model.load_state_dict(state['model_state_dict'])
+            
         else:
-            raise ValueError(f"Unknown modeltype provided: {type}")
+            raise ValueError(f"Unknown modeltype provided: \"{type}\"")
         
     def __call__(self, images):
         '''
