@@ -8,7 +8,6 @@ import torch
 import torch.distributed as dist
 
 
-
 import math
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -17,11 +16,7 @@ import torchvision
 from torch import nn, Tensor
 
 from torchvision.models.detection.image_list import ImageList
-from torchvision.models.detection.roi_heads import paste_masks_in_image 
-
-
-
-
+from torchvision.models.detection.roi_heads import paste_masks_in_image
 
 
 @torch.jit.unused
@@ -80,7 +75,10 @@ def _resize_image_and_masks(
     if "masks" in target:
         mask = target["masks"]
         mask = torch.nn.functional.interpolate(
-            mask[:, None].float(), size=size, scale_factor=scale_factor, recompute_scale_factor=recompute_scale_factor
+            mask[:, None].float(),
+            size=size,
+            scale_factor=scale_factor,
+            recompute_scale_factor=recompute_scale_factor,
         )[:, 0].byte()
         target["masks"] = mask
     return image, target
@@ -191,7 +189,9 @@ class GeneralizedRCNNTransform(nn.Module):
         else:
             # FIXME assume for now that testing uses the largest scale
             size = float(self.min_size[-1])
-        image, target = _resize_image_and_masks(image, size, float(self.max_size), target, self.fixed_size)
+        image, target = _resize_image_and_masks(
+            image, size, float(self.max_size), target, self.fixed_size
+        )
 
         if target is None:
             return image, target
@@ -209,14 +209,22 @@ class GeneralizedRCNNTransform(nn.Module):
     # _onnx_batch_images() is an implementation of
     # batch_images() that is supported by ONNX tracing.
     @torch.jit.unused
-    def _onnx_batch_images(self, images: List[Tensor], size_divisible: int = 32) -> Tensor:
+    def _onnx_batch_images(
+        self, images: List[Tensor], size_divisible: int = 32
+    ) -> Tensor:
         max_size = []
         for i in range(images[0].dim()):
-            max_size_i = torch.max(torch.stack([img.shape[i] for img in images]).to(torch.float32)).to(torch.int64)
+            max_size_i = torch.max(
+                torch.stack([img.shape[i] for img in images]).to(torch.float32)
+            ).to(torch.int64)
             max_size.append(max_size_i)
         stride = size_divisible
-        max_size[1] = (torch.ceil((max_size[1].to(torch.float32)) / stride) * stride).to(torch.int64)
-        max_size[2] = (torch.ceil((max_size[2].to(torch.float32)) / stride) * stride).to(torch.int64)
+        max_size[1] = (
+            torch.ceil((max_size[1].to(torch.float32)) / stride) * stride
+        ).to(torch.int64)
+        max_size[2] = (
+            torch.ceil((max_size[2].to(torch.float32)) / stride) * stride
+        ).to(torch.int64)
         max_size = tuple(max_size)
 
         # work around for
@@ -225,7 +233,9 @@ class GeneralizedRCNNTransform(nn.Module):
         padded_imgs = []
         for img in images:
             padding = [(s1 - s2) for s1, s2 in zip(max_size, tuple(img.shape))]
-            padded_img = torch.nn.functional.pad(img, (0, padding[2], 0, padding[1], 0, padding[0]))
+            padded_img = torch.nn.functional.pad(
+                img, (0, padding[2], 0, padding[1], 0, padding[0])
+            )
             padded_imgs.append(padded_img)
 
         return torch.stack(padded_imgs)
@@ -265,7 +275,9 @@ class GeneralizedRCNNTransform(nn.Module):
     ) -> List[Dict[str, Tensor]]:
         if self.training:
             return result
-        for i, (pred, im_s, o_im_s) in enumerate(zip(result, image_shapes, original_image_sizes)):
+        for i, (pred, im_s, o_im_s) in enumerate(
+            zip(result, image_shapes, original_image_sizes)
+        ):
             boxes = pred["boxes"]
             boxes = resize_boxes(boxes, im_s, o_im_s)
             result[i]["boxes"] = boxes
@@ -282,13 +294,17 @@ class GeneralizedRCNNTransform(nn.Module):
     def __repr__(self) -> str:
         format_string = f"{self.__class__.__name__}("
         _indent = "\n    "
-        format_string += f"{_indent}Normalize(mean={self.image_mean}, std={self.image_std})"
+        format_string += (
+            f"{_indent}Normalize(mean={self.image_mean}, std={self.image_std})"
+        )
         format_string += f"{_indent}Resize(min_size={self.min_size}, max_size={self.max_size}, mode='bilinear')"
         format_string += "\n)"
         return format_string
 
 
-def resize_keypoints(keypoints: Tensor, original_size: List[int], new_size: List[int]) -> Tensor:
+def resize_keypoints(
+    keypoints: Tensor, original_size: List[int], new_size: List[int]
+) -> Tensor:
     ratios = [
         torch.tensor(s, dtype=torch.float32, device=keypoints.device)
         / torch.tensor(s_orig, dtype=torch.float32, device=keypoints.device)
@@ -299,14 +315,18 @@ def resize_keypoints(keypoints: Tensor, original_size: List[int], new_size: List
     if torch._C._get_tracing_state():
         resized_data_0 = resized_data[:, :, 0] * ratio_w
         resized_data_1 = resized_data[:, :, 1] * ratio_h
-        resized_data = torch.stack((resized_data_0, resized_data_1, resized_data[:, :, 2]), dim=2)
+        resized_data = torch.stack(
+            (resized_data_0, resized_data_1, resized_data[:, :, 2]), dim=2
+        )
     else:
         resized_data[..., 0] *= ratio_w
         resized_data[..., 1] *= ratio_h
     return resized_data
 
 
-def resize_boxes(boxes: Tensor, original_size: List[int], new_size: List[int]) -> Tensor:
+def resize_boxes(
+    boxes: Tensor, original_size: List[int], new_size: List[int]
+) -> Tensor:
     ratios = [
         torch.tensor(s, dtype=torch.float32, device=boxes.device)
         / torch.tensor(s_orig, dtype=torch.float32, device=boxes.device)
@@ -320,28 +340,6 @@ def resize_boxes(boxes: Tensor, original_size: List[int], new_size: List[int]) -
     ymin = ymin * ratio_height
     ymax = ymax * ratio_height
     return torch.stack((xmin, ymin, xmax, ymax), dim=1)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 class SmoothedValue:
@@ -399,7 +397,11 @@ class SmoothedValue:
 
     def __str__(self):
         return self.fmt.format(
-            median=self.median, avg=self.avg, global_avg=self.global_avg, max=self.max, value=self.value
+            median=self.median,
+            avg=self.avg,
+            global_avg=self.global_avg,
+            max=self.max,
+            value=self.value,
         )
 
 
@@ -463,7 +465,9 @@ class MetricLogger:
             return self.meters[attr]
         if attr in self.__dict__:
             return self.__dict__[attr]
-        raise AttributeError(f"'{type(self).__name__}' object has no attribute '{attr}'")
+        raise AttributeError(
+            f"'{type(self).__name__}' object has no attribute '{attr}'"
+        )
 
     def __str__(self):
         loss_str = []
@@ -501,7 +505,14 @@ class MetricLogger:
             )
         else:
             log_msg = self.delimiter.join(
-                [header, "[{0" + space_fmt + "}/{1}]", "eta: {eta}", "{meters}", "time: {time}", "data: {data}"]
+                [
+                    header,
+                    "[{0" + space_fmt + "}/{1}]",
+                    "eta: {eta}",
+                    "{meters}",
+                    "time: {time}",
+                    "data: {data}",
+                ]
             )
         MB = 1024.0 * 1024.0
         for obj in iterable:
@@ -526,14 +537,21 @@ class MetricLogger:
                 else:
                     print(
                         log_msg.format(
-                            i, len(iterable), eta=eta_string, meters=str(self), time=str(iter_time), data=str(data_time)
+                            i,
+                            len(iterable),
+                            eta=eta_string,
+                            meters=str(self),
+                            time=str(iter_time),
+                            data=str(data_time),
                         )
                     )
             i += 1
             end = time.time()
         total_time = time.time() - start_time
         total_time_str = str(datetime.timedelta(seconds=int(total_time)))
-        print(f"{header} Total time: {total_time_str} ({total_time / len(iterable):.4f} s / it)")
+        print(
+            f"{header} Total time: {total_time_str} ({total_time / len(iterable):.4f} s / it)"
+        )
 
 
 def collate_fn(batch):
@@ -612,7 +630,10 @@ def init_distributed_mode(args):
     args.dist_backend = "nccl"
     print(f"| distributed init (rank {args.rank}): {args.dist_url}", flush=True)
     torch.distributed.init_process_group(
-        backend=args.dist_backend, init_method=args.dist_url, world_size=args.world_size, rank=args.rank
+        backend=args.dist_backend,
+        init_method=args.dist_url,
+        world_size=args.world_size,
+        rank=args.rank,
     )
     torch.distributed.barrier()
     setup_for_distributed(args.rank == 0)

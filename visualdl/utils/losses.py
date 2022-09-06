@@ -8,18 +8,23 @@ import torch.nn.functional as F
 from torch.nn.modules.loss import CrossEntropyLoss
 
 
-
-class MultiLoss():
+class MultiLoss:
     def __init__(self, losses):
         self.losses = losses
-        self.included = [CrossEntropyLoss] #Only the included ones apply the weight map
+        self.included = [
+            CrossEntropyLoss
+        ]  # Only the included ones apply the weight map
 
     def get_loss(self, loss, inp, target, weight_map):
         if any([type(loss) == x for x in self.included]):
-            return (loss(inp, target) * weight_map).mean() if weight_map is not None else loss(inp, target).mean()
+            return (
+                (loss(inp, target) * weight_map).mean()
+                if weight_map is not None
+                else loss(inp, target).mean()
+            )
         return loss(inp, target).mean()
 
-    def __call__(self, inp, target, weight_map = None):
+    def __call__(self, inp, target, weight_map=None):
         final_loss = None
         for loss in self.losses:
             if final_loss is None:
@@ -29,12 +34,13 @@ class MultiLoss():
         return final_loss
 
 
-
-def one_hot(labels: torch.Tensor,
-            num_classes: int,
-            device: Optional[torch.device] = None,
-            dtype: Optional[torch.dtype] = None,
-            eps: Optional[float] = 1e-6) -> torch.Tensor:
+def one_hot(
+    labels: torch.Tensor,
+    num_classes: int,
+    device: Optional[torch.device] = None,
+    dtype: Optional[torch.dtype] = None,
+    eps: Optional[float] = 1e-6,
+) -> torch.Tensor:
     r"""Converts an integer label 2D tensor to a one-hot 3D tensor.
 
     Args:
@@ -63,21 +69,26 @@ def one_hot(labels: torch.Tensor,
                   [1., 0.]]]]
     """
     if not torch.is_tensor(labels):
-        raise TypeError("inp labels type is not a torch.Tensor. Got {}"
-                        .format(type(labels)))
+        raise TypeError(
+            "inp labels type is not a torch.Tensor. Got {}".format(type(labels))
+        )
     if not len(labels.shape) == 3:
-        raise ValueError("Invalid depth shape, we expect BxHxW. Got: {}"
-                         .format(labels.shape))
+        raise ValueError(
+            "Invalid depth shape, we expect BxHxW. Got: {}".format(labels.shape)
+        )
     if not labels.dtype == torch.int64:
         raise ValueError(
-            "labels must be of the same dtype torch.int64. Got: {}" .format(
-                labels.dtype))
+            "labels must be of the same dtype torch.int64. Got: {}".format(labels.dtype)
+        )
     if num_classes < 1:
-        raise ValueError("The number of classes must be bigger than one."
-                         " Got: {}".format(num_classes))
+        raise ValueError(
+            "The number of classes must be bigger than one."
+            " Got: {}".format(num_classes)
+        )
     batch_size, height, width = labels.shape
-    one_hot = torch.zeros(batch_size, num_classes, height, width,
-                          device=device, dtype=dtype)
+    one_hot = torch.zeros(
+        batch_size, num_classes, height, width, device=device, dtype=dtype
+    )
     return one_hot.scatter_(1, labels.unsqueeze(1), 1.0) + eps
 
 
@@ -120,34 +131,37 @@ class DiceLoss(nn.Module):
         super(DiceLoss, self).__init__()
         self.eps: float = 1e-6
 
-    def forward(
-            self,
-            inp: torch.Tensor,
-            target: torch.Tensor) -> torch.Tensor:
+    def forward(self, inp: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
         if not torch.is_tensor(inp):
-            raise TypeError("inp type is not a torch.Tensor. Got {}"
-                            .format(type(inp)))
+            raise TypeError("inp type is not a torch.Tensor. Got {}".format(type(inp)))
         if not len(inp.shape) == 4:
-            raise ValueError("Invalid inp shape, we expect BxNxHxW. Got: {}"
-                             .format(inp.shape))
+            raise ValueError(
+                "Invalid inp shape, we expect BxNxHxW. Got: {}".format(inp.shape)
+            )
         if not inp.shape[-2:] == target.shape[-2:]:
-            raise ValueError("inp and target shapes must be the same. Got: {}"
-                             .format(inp.shape, inp.shape))
+            raise ValueError(
+                "inp and target shapes must be the same. Got: {}".format(
+                    inp.shape, inp.shape
+                )
+            )
         if not inp.device == target.device:
             raise ValueError(
-                "inp and target must be in the same device. Got: {}" .format(
-                    inp.device, target.device))
+                "inp and target must be in the same device. Got: {}".format(
+                    inp.device, target.device
+                )
+            )
         # compute softmax over the classes axis
         inp_soft = F.softmax(inp, dim=1)
 
         # create the labels one hot tensor
-        target_one_hot = one_hot(target, num_classes=inp.shape[1],
-                                 device=inp.device, dtype=inp.dtype)
+        target_one_hot = one_hot(
+            target, num_classes=inp.shape[1], device=inp.device, dtype=inp.dtype
+        )
 
         # compute the actual dice score
-        dims = (1,2,3)
+        dims = (1, 2, 3)
         intersection = torch.sum(inp_soft * target_one_hot, dims)
         cardinality = torch.sum(inp_soft + target_one_hot, dims)
 
-        dice_score = 2. * intersection / (cardinality + self.eps)
-        return torch.mean(1. - dice_score)
+        dice_score = 2.0 * intersection / (cardinality + self.eps)
+        return torch.mean(1.0 - dice_score)

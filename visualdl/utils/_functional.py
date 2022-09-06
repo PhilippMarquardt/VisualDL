@@ -151,7 +151,11 @@ def softmax_focal_loss_with_logits(
 
 
 def soft_jaccard_score(
-    output: torch.Tensor, target: torch.Tensor, smooth: float = 0.0, eps: float = 1e-7, dims=None
+    output: torch.Tensor,
+    target: torch.Tensor,
+    smooth: float = 0.0,
+    eps: float = 1e-7,
+    dims=None,
 ) -> torch.Tensor:
     assert output.size() == target.size()
     if dims is not None:
@@ -167,7 +171,11 @@ def soft_jaccard_score(
 
 
 def soft_dice_score(
-    output: torch.Tensor, target: torch.Tensor, smooth: float = 0.0, eps: float = 1e-7, dims=None
+    output: torch.Tensor,
+    target: torch.Tensor,
+    smooth: float = 0.0,
+    eps: float = 1e-7,
+    dims=None,
 ) -> torch.Tensor:
     assert output.size() == target.size()
     if dims is not None:
@@ -180,7 +188,9 @@ def soft_dice_score(
     return dice_score
 
 
-def wing_loss(output: torch.Tensor, target: torch.Tensor, width=5, curvature=0.5, reduction="mean"):
+def wing_loss(
+    output: torch.Tensor, target: torch.Tensor, width=5, curvature=0.5, reduction="mean"
+):
     """
     https://arxiv.org/pdf/1711.06753.pdf
     :param output:
@@ -211,7 +221,12 @@ def wing_loss(output: torch.Tensor, target: torch.Tensor, width=5, curvature=0.5
 
 
 def label_smoothed_nll_loss(
-    lprobs: torch.Tensor, target: torch.Tensor, epsilon: float, ignore_index=None, reduction="mean", dim=-1
+    lprobs: torch.Tensor,
+    target: torch.Tensor,
+    epsilon: float,
+    ignore_index=None,
+    reduction="mean",
+    dim=-1,
 ) -> torch.Tensor:
     """
     Source: https://github.com/pytorch/fairseq/blob/master/fairseq/criterions/label_smoothed_cross_entropy.py

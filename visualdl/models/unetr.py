@@ -28,7 +28,7 @@ class UNETR(nn.Module):
         self,
         in_channels: int = 3,
         out_channels: int = 2,
-        img_size: Tuple[int, int] = (512,512),
+        img_size: Tuple[int, int] = (512, 512),
         feature_size: int = 16,
         hidden_size: int = 768,
         mlp_dim: int = 3072,
@@ -73,13 +73,15 @@ class UNETR(nn.Module):
             raise AssertionError("hidden size should be divisible by num_heads.")
 
         if pos_embed not in ["conv", "perceptron"]:
-            raise KeyError(f"Position embedding layer of type {pos_embed} is not supported.")
+            raise KeyError(
+                f"Position embedding layer of type {pos_embed} is not supported."
+            )
         self.spatial_dim = 2
         self.num_layers = 12
         self.patch_size = (16, 16)
         self.feat_size = (
             img_size[0] // self.patch_size[0],
-            img_size[1] // self.patch_size[1]
+            img_size[1] // self.patch_size[1],
         )
         self.hidden_size = hidden_size
         self.classification = False
@@ -94,7 +96,7 @@ class UNETR(nn.Module):
             pos_embed=pos_embed,
             classification=self.classification,
             dropout_rate=dropout_rate,
-            spatial_dims = self.spatial_dim
+            spatial_dims=self.spatial_dim,
         )
         self.encoder1 = UnetrBasicBlock(
             spatial_dims=self.spatial_dim,
@@ -188,21 +190,38 @@ class UNETR(nn.Module):
         with torch.no_grad():
             res_weight = weights
             # copy weights from patch embedding
-            for i in weights['state_dict']:
+            for i in weights["state_dict"]:
                 print(i)
-            self.vit.patch_embedding.position_embeddings.copy_(weights['state_dict']['module.transformer.patch_embedding.position_embeddings_3d'])
-            self.vit.patch_embedding.cls_token.copy_(weights['state_dict']['module.transformer.patch_embedding.cls_token'])
-            self.vit.patch_embedding.patch_embeddings[1].weight.copy_(weights['state_dict']['module.transformer.patch_embedding.patch_embeddings.1.weight'])
-            self.vit.patch_embedding.patch_embeddings[1].bias.copy_(weights['state_dict']['module.transformer.patch_embedding.patch_embeddings.1.bias'])
+            self.vit.patch_embedding.position_embeddings.copy_(
+                weights["state_dict"][
+                    "module.transformer.patch_embedding.position_embeddings_3d"
+                ]
+            )
+            self.vit.patch_embedding.cls_token.copy_(
+                weights["state_dict"]["module.transformer.patch_embedding.cls_token"]
+            )
+            self.vit.patch_embedding.patch_embeddings[1].weight.copy_(
+                weights["state_dict"][
+                    "module.transformer.patch_embedding.patch_embeddings.1.weight"
+                ]
+            )
+            self.vit.patch_embedding.patch_embeddings[1].bias.copy_(
+                weights["state_dict"][
+                    "module.transformer.patch_embedding.patch_embeddings.1.bias"
+                ]
+            )
 
             # copy weights from  encoding blocks (default: num of blocks: 12)
             for bname, block in self.vit.blocks.named_children():
                 print(block)
                 block.loadFrom(weights, n_block=bname)
             # last norm layer of transformer
-            self.vit.norm.weight.copy_(weights['state_dict']['module.transformer.norm.weight'])
-            self.vit.norm.bias.copy_(weights['state_dict']['module.transformer.norm.bias'])
-
+            self.vit.norm.weight.copy_(
+                weights["state_dict"]["module.transformer.norm.weight"]
+            )
+            self.vit.norm.bias.copy_(
+                weights["state_dict"]["module.transformer.norm.bias"]
+            )
 
     def forward(self, x_in):
         x, hidden_states_out = self.vit(x_in)

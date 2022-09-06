@@ -9,7 +9,9 @@ from .coco_eval import CocoEvaluator
 from .coco_utils import get_coco_api_from_dataset
 
 
-def train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq, scaler=None):
+def train_one_epoch(
+    model, optimizer, data_loader, device, epoch, print_freq, scaler=None
+):
     model.train()
     metric_logger = MetricLogger(delimiter="  ")
     metric_logger.add_meter("lr", SmoothedValue(window_size=1, fmt="{value:.6f}"))
@@ -21,9 +23,7 @@ def train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq, sc
         warmup_iters = min(1000, len(data_loader) - 1)
 
         lr_scheduler = torch.optim.lr_scheduler.StepLR(
-            optimizer,
-                                                    step_size=3,
-                                                    gamma=0.1
+            optimizer, step_size=3, gamma=0.1
         )
 
     for images, targets in metric_logger.log_every(data_loader, print_freq, header):
@@ -53,7 +53,7 @@ def train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq, sc
             losses.backward()
             optimizer.step()
 
-        #if lr_scheduler is not None:
+        # if lr_scheduler is not None:
         #    lr_scheduler.step()
 
         metric_logger.update(loss=losses_reduced, **loss_dict_reduced)
@@ -99,7 +99,10 @@ def evaluate(model, data_loader, device):
         outputs = [{k: v.to(cpu_device) for k, v in t.items()} for t in outputs]
         model_time = time.time() - model_time
 
-        res = {target["image_id"].item(): output for target, output in zip(targets, outputs)}
+        res = {
+            target["image_id"].item(): output
+            for target, output in zip(targets, outputs)
+        }
         evaluator_time = time.time()
         coco_evaluator.update(res)
         evaluator_time = time.time() - evaluator_time
