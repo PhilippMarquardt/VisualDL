@@ -77,7 +77,12 @@ class SegmentationModel(ModelBase):
             )
             modelstring = f"UNETR(in_channels={in_channels}, out_channels={nc}, img_size={(max_image_size, max_image_size)})"
         else:
+            print("Checking internet connection")
             is_internet = is_internet_connection_availible()
+            if is_internet:
+                print("Using pretrained weights")
+            else:
+                print("Training without pretrained weights")
             encoder_weights = None if not is_internet else f'"imagenet"'
             if use_attention:
                 model = eval(
@@ -89,9 +94,9 @@ class SegmentationModel(ModelBase):
                     f'smp.create_model(arch="{decoder_name}", encoder_name="{encoder_name}", encoder_weights={encoder_weights}, in_channels={in_channels}, classes = {nc}, image_size = {max_image_size})'
                 )
                 modelstring = f'smp.create_model(arch="{decoder_name}", encoder_name="{encoder_name}", encoder_weights={encoder_weights}, in_channels={in_channels}, classes = {nc}, image_size = {max_image_size})'
-
+        print("Successfully created model")
         self.modelstring = modelstring
-
+        print("Initializing parameters and tensorboard")
         super().__init__(
             nc,
             criterions,
@@ -113,7 +118,7 @@ class SegmentationModel(ModelBase):
         self.encoder_name = encoder_name
         self.decoder_name = decoder_name
         self.name = f"{encoder_name} - {decoder_name}"
-
+        print("Finished initializing parameters and tensorboard")
     def __call__(self, x):
         return self.model(x)
 
