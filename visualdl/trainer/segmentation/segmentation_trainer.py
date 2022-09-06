@@ -65,9 +65,9 @@ class SegmentationTrainer(TrainerBase):
             )
             for models, weight in zip(self.cfg["models"], self.weights)
         ]
-    logging.info(
-            "Finished creating segmentation models"
-        )
+        logging.info(
+                "Finished creating segmentation models"
+            )
 
     def train(self):
         logging.info("Starting training training!")
