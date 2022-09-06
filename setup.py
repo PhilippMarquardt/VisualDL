@@ -29,6 +29,7 @@ setup(
         "pandas",
         "monai",
         "pycocotools",
+        "openpyxl"
     ],
     license="MIT",
     description="VisualDL - pytorch",
