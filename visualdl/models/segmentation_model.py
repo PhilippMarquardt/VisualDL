@@ -119,6 +119,7 @@ class SegmentationModel(ModelBase):
         self.decoder_name = decoder_name
         self.name = f"{encoder_name} - {decoder_name}"
         print("Finished initializing parameters and tensorboard")
+
     def __call__(self, x):
         return self.model(x)
 

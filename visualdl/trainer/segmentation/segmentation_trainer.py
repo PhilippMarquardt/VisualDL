@@ -36,9 +36,7 @@ class SegmentationTrainer(TrainerBase):
             "add_object_detection_model"
         ]
         self.use_attention = self.cfg["settings"]["use_attention"]
-        logging.info(
-            "Creating segmentation models..."
-        )
+        logging.info("Creating segmentation models...")
         self.models = [
             SegmentationModel(
                 models["backbone"],
@@ -65,9 +63,7 @@ class SegmentationTrainer(TrainerBase):
             )
             for models, weight in zip(self.cfg["models"], self.weights)
         ]
-        logging.info(
-                "Finished creating segmentation models"
-            )
+        logging.info("Finished creating segmentation models")
 
     def train(self):
         logging.info("Starting training training!")
