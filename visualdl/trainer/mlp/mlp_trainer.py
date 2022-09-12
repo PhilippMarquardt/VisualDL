@@ -10,7 +10,7 @@ import pandas as pd
 from openpyxl import load_workbook
 
 
-def predict_mlp(model, data, device, mlp_output_pairwise):
+def predict_mlp(model, data, device, mlp_output_type, range_predictions):
     preds = []
     model = model.to(device)
 
@@ -20,8 +20,14 @@ def predict_mlp(model, data, device, mlp_output_pairwise):
         with torch.cuda.amp.autocast():
             prediction = model(tmp)
             prediction = prediction.detach().cpu().numpy()
-            if mlp_output_pairwise: # pairwise: e.g. x and y values next to each other in output layer
-                prediction = np.split(prediction, prediction.size/2)            
+            if mlp_output_type == "pairwise": # pairwise: e.g. x and y values next to each other in output layer
+                prediction = np.split(prediction, prediction.size/2)
+            elif mlp_output_type == "ranges": # e.g. predict range of x values in addition to y values
+                range_pred_output = []
+                for i in range(range_predictions):
+                    range_pred_output.append(prediction[-2:])
+                    prediction = prediction[:-2]
+                prediction = [prediction, range_pred_output]
             preds.append(prediction)
     return preds
 
@@ -164,4 +170,5 @@ class MLPTrainer():
                         'model_state_dict': model.state_dict(),
                         'in_features': self.cfg['settings']['in_features'],
                         'out_features': self.cfg['settings']['out_features'],
+                        'range_predictions': self.cfg['settings']['range_predictions'],
                         'custom_data': self.cfg['settings']['custom_data']}, os.path.join(self.cfg['data']['save_folder'], "model.pt"))
