@@ -59,6 +59,7 @@ class ModelInference:
     ):
         self.device = device
         self.type = type
+
         if type == "segmentation":
             if device.lower() == "cpu":
                 state = load(weight_path, map_location=torch.device("cpu"))
@@ -158,6 +159,7 @@ class ModelInference:
             self.model = eval(state["model"])
             self.model.load_state_dict(state["model_state_dict"])
             self.model.eval()
+
         elif type == "mlp":
             if device.lower() == "cpu":
                 state = load(weight_path, map_location=torch.device("cpu"))

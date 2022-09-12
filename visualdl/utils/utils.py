@@ -124,8 +124,11 @@ def create_od_dataset_from_semantic_segmentation(train, valid, test):
 
 
 def is_internet_connection_availible(host="https://google.com"):
+    print("Checking connection")
     try:
         urllib.request.urlopen(host)  # Python 3.x
+        print("Internet Available")
         return True
     except:
+        print("No connection")
         return False
