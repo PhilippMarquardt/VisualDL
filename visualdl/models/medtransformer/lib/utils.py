@@ -7,10 +7,10 @@ import torch.nn.functional as F
 def adjust_learning_rate(args, optimizer, epoch, batch_idx, data_nums, type="cosine"):
     if epoch < args.warmup_epochs:
         epoch += float(batch_idx + 1) / data_nums
-        lr_adj = 1. * (epoch / args.warmup_epochs)
+        lr_adj = 1.0 * (epoch / args.warmup_epochs)
     elif type == "linear":
         if epoch < 30 + args.warmup_epochs:
-            lr_adj = 1.
+            lr_adj = 1.0
         elif epoch < 60 + args.warmup_epochs:
             lr_adj = 1e-1
         elif epoch < 90 + args.warmup_epochs:
@@ -26,19 +26,19 @@ def adjust_learning_rate(args, optimizer, epoch, batch_idx, data_nums, type="cos
         lr_adj = 0.5 * (1 + math.cos(math.pi * T_cur / T_total))
 
     for param_group in optimizer.param_groups:
-        param_group['lr'] = args.lr * lr_adj
+        param_group["lr"] = args.lr * lr_adj
     return args.lr * lr_adj
 
 
 def label_smoothing(pred, target, eta=0.1):
-    '''
+    """
     Refer from https://arxiv.org/pdf/1512.00567.pdf
     :param target: N,
     :param n_classes: int
     :param eta: float
     :return:
         N x C onehot smoothed vector
-    '''
+    """
     n_classes = pred.size(1)
     target = torch.unsqueeze(target, 1)
     onehot_target = torch.zeros_like(pred)
@@ -47,7 +47,7 @@ def label_smoothing(pred, target, eta=0.1):
 
 
 def cross_entropy_for_onehot(pred, target):
-    return torch.mean(torch.sum(- target * F.log_softmax(pred, dim=-1), 1))
+    return torch.mean(torch.sum(-target * F.log_softmax(pred, dim=-1), 1))
 
 
 def cross_entropy_with_label_smoothing(pred, target, eta=0.1):
@@ -62,35 +62,42 @@ def accuracy(output, target):
 
 
 def save_model(model, optimizer, epoch, args):
-    os.system('mkdir -p {}'.format(args.work_dirs))
+    os.system("mkdir -p {}".format(args.work_dirs))
     if optimizer is not None:
-        torch.save({
-            'net': model.state_dict(),
-            'optim': optimizer.state_dict(),
-            'epoch': epoch
-        }, os.path.join(args.work_dirs, '{}.pth'.format(epoch)))
+        torch.save(
+            {
+                "net": model.state_dict(),
+                "optim": optimizer.state_dict(),
+                "epoch": epoch,
+            },
+            os.path.join(args.work_dirs, "{}.pth".format(epoch)),
+        )
     else:
-        torch.save({
-            'net': model.state_dict(),
-            'epoch': epoch
-        }, os.path.join(args.work_dirs, '{}.pth'.format(epoch)))
+        torch.save(
+            {"net": model.state_dict(), "epoch": epoch},
+            os.path.join(args.work_dirs, "{}.pth".format(epoch)),
+        )
 
 
 def dist_save_model(model, optimizer, epoch, ngpus_per_node, args):
-    if not args.multiprocessing_distributed or (args.multiprocessing_distributed
-                                                and args.rank % ngpus_per_node == 0):
-        os.system('mkdir -p {}'.format(args.work_dirs))
+    if not args.multiprocessing_distributed or (
+        args.multiprocessing_distributed and args.rank % ngpus_per_node == 0
+    ):
+        os.system("mkdir -p {}".format(args.work_dirs))
         if optimizer is not None:
-            torch.save({
-                'net': model.state_dict(),
-                'optim': optimizer.state_dict(),
-                'epoch': epoch
-            }, os.path.join(args.work_dirs, '{}.pth'.format(epoch)))
+            torch.save(
+                {
+                    "net": model.state_dict(),
+                    "optim": optimizer.state_dict(),
+                    "epoch": epoch,
+                },
+                os.path.join(args.work_dirs, "{}.pth".format(epoch)),
+            )
         else:
-            torch.save({
-                'net': model.state_dict(),
-                'epoch': epoch
-            }, os.path.join(args.work_dirs, '{}.pth'.format(epoch)))
+            torch.save(
+                {"net": model.state_dict(), "epoch": epoch},
+                os.path.join(args.work_dirs, "{}.pth".format(epoch)),
+            )
 
 
 def load_model(network, args):
@@ -98,7 +105,7 @@ def load_model(network, args):
         print("No such working directory!")
         raise AssertionError
 
-    pths = [pth.split('.')[0] for pth in os.listdir(args.work_dirs) if 'pth' in pth]
+    pths = [pth.split(".")[0] for pth in os.listdir(args.work_dirs) if "pth" in pth]
     if len(pths) == 0:
         print("No model to load!")
         raise AssertionError
@@ -114,14 +121,16 @@ def load_model(network, args):
         pth = args.test_model
     try:
         if args.distributed:
-            loc = 'cuda:{}'.format(args.gpu)
-            model = torch.load(os.path.join(args.work_dirs, '{}.pth'.format(pth)), map_location=loc)
+            loc = "cuda:{}".format(args.gpu)
+            model = torch.load(
+                os.path.join(args.work_dirs, "{}.pth".format(pth)), map_location=loc
+            )
     except:
-        model = torch.load(os.path.join(args.work_dirs, '{}.pth'.format(pth)))
+        model = torch.load(os.path.join(args.work_dirs, "{}.pth".format(pth)))
     try:
-        network.load_state_dict(model['net'], strict=True)
+        network.load_state_dict(model["net"], strict=True)
     except:
-        network.load_state_dict(convert_model(model['net']), strict=True)
+        network.load_state_dict(convert_model(model["net"]), strict=True)
     return True
 
 
@@ -130,7 +139,7 @@ def resume_model(network, optimizer, args):
     if not os.path.exists(args.work_dirs):
         print("No such working directory!")
         return 0
-    pths = [pth.split('.')[0] for pth in os.listdir(args.work_dirs) if 'pth' in pth]
+    pths = [pth.split(".")[0] for pth in os.listdir(args.work_dirs) if "pth" in pth]
     if len(pths) == 0:
         print("No model to load!")
         return 0
@@ -141,23 +150,25 @@ def resume_model(network, optimizer, args):
         pth = args.test_model
     try:
         if args.distributed:
-            loc = 'cuda:{}'.format(args.gpu)
-            model = torch.load(os.path.join(args.work_dirs, '{}.pth'.format(pth)), map_location=loc)
+            loc = "cuda:{}".format(args.gpu)
+            model = torch.load(
+                os.path.join(args.work_dirs, "{}.pth".format(pth)), map_location=loc
+            )
     except:
-        model = torch.load(os.path.join(args.work_dirs, '{}.pth'.format(pth)))
+        model = torch.load(os.path.join(args.work_dirs, "{}.pth".format(pth)))
     try:
-        network.load_state_dict(model['net'], strict=True)
+        network.load_state_dict(model["net"], strict=True)
     except:
-        network.load_state_dict(convert_model(model['net']), strict=True)
-    optimizer.load_state_dict(model['optim'])
+        network.load_state_dict(convert_model(model["net"]), strict=True)
+    optimizer.load_state_dict(model["optim"])
     for state in optimizer.state.values():
         for k, v in state.items():
-            if torch.is_tensor(v):    
-                try:        
+            if torch.is_tensor(v):
+                try:
                     state[k] = v.cuda(args.gpu)
                 except:
                     state[k] = v.cuda()
-    return model['epoch']
+    return model["epoch"]
 
 
 def convert_model(model):

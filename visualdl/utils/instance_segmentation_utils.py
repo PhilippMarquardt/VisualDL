@@ -3,17 +3,19 @@ from tqdm import tqdm
 import torch
 import pandas as pd
 
-DEVICE = 'cuda:0' if torch.cuda.is_available() else 'cpu'
+DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
+
 
 def combine_masks(masks, mask_threshold):
     """
     combine masks into one image
     """
-    maskimg = np.zeros((512, 512))  #fix to proper size
+    maskimg = np.zeros((512, 512))  # fix to proper size
     # print(len(masks.shape), masks.shape)
-    for m, mask in enumerate(masks,1):
-        maskimg[mask>mask_threshold] = m
+    for m, mask in enumerate(masks, 1):
+        maskimg[mask > mask_threshold] = m
     return maskimg
+
 
 def compute_iou(labels, y_pred, verbose=0):
     """
@@ -47,12 +49,13 @@ def compute_iou(labels, y_pred, verbose=0):
 
     # Compute union
     union = area_true + area_pred - intersection
-    intersection = intersection[1:, 1:] # exclude background
+    intersection = intersection[1:, 1:]  # exclude background
     union = union[1:, 1:]
     union[union == 0] = 1e-9
     iou = intersection / union
-    
-    return iou  
+
+    return iou
+
 
 def precision_at(threshold, iou):
     """
@@ -77,6 +80,7 @@ def precision_at(threshold, iou):
         np.sum(false_negatives),
     )
     return tp, fp, fn
+
 
 def iou_map(truths, preds, verbose=0):
     """
@@ -116,5 +120,3 @@ def iou_map(truths, preds, verbose=0):
         print("AP\t-\t-\t-\t{:1.3f}".format(np.mean(prec)))
 
     return np.mean(prec)
-
-

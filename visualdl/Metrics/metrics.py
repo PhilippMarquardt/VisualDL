@@ -1,18 +1,23 @@
 import torch
 from torchmetrics import Metric
 
-def get_metric_results(metrics:list) -> dict:
+
+def get_metric_results(metrics: list) -> dict:
     """Wraps every metric in a dicionary.
 
     Args:
-        metrics (list): The list of metrics 
+        metrics (list): The list of metrics
 
     Returns:
         dict: Containing the metric name as key and result as value
     """
-    return {name:val for name, val in zip([type(metric) for metric in metrics], [metric.compute() for metric in metrics])}
-
-
+    return {
+        name: val
+        for name, val in zip(
+            [type(metric) for metric in metrics],
+            [metric.compute() for metric in metrics],
+        )
+    }
 
 
 class MyAccuracy(Metric):
