@@ -8,7 +8,7 @@ setup(
     packages=find_packages(),
     version="0.0.9",
     install_requires=[
-        "segmentation_models_pytorch @ git+https://github.com/PhilippMarquardt/segmentation_models.pytorch.git@master",
+        "segmentation_models_pytorch @ git+https://github.com/hs-analysis/segmentation_models.pytorch.git@master",
         "timm",
         "pytorch-gradcam",
         "albumentations",
@@ -29,6 +29,7 @@ setup(
         "pandas",
         "monai",
         "pycocotools",
+        "openpyxl",
     ],
     license="MIT",
     description="VisualDL - pytorch",

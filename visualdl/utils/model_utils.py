@@ -137,8 +137,8 @@ def get_distance_map(mask):
         dist = cv2.distanceTransform(ma, cv2.DIST_L2, 5)
         distances.append(cv2.normalize(dist, dist, 0, 1.0, cv2.NORM_MINMAX))
         dist[dist <= 0.7] = 0
-        #cv2.imwrite(f"{cnt}.png", dist * 255.0)
-        #cv2.imwrite(f"{cnt}a.png", ma)
+        # cv2.imwrite(f"{cnt}.png", dist * 255.0)
+        # cv2.imwrite(f"{cnt}a.png", ma)
     a = np.stack(np.array(distances), axis=0)
     return torch.tensor(a, dtype=torch.float)
 

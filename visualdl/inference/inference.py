@@ -149,7 +149,6 @@ class ModelInference:
             )
             self.model.eval()
             self.model.load_state_dict(state["model_state_dict"])
-
         elif type == "classification":
             if device.lower() == "cpu":
                 state = load(weight_path, map_location=torch.device("cpu"))
@@ -170,9 +169,8 @@ class ModelInference:
             self.model = get_mlp_model(state["in_features"], state["out_features"])
             self.model.eval()
             self.model.load_state_dict(state["model_state_dict"])
-
         else:
-            raise ValueError(f'Unknown modeltype provided: "{type}"')
+            raise ValueError(f"Unknown modeltype provided: {type}")
 
     def __call__(self, images):
         """
@@ -187,7 +185,7 @@ class ModelInference:
         min_size=None,
         confidence=0.45,
         fill_holes=False,
-        mlp_output_pairwise=False,
+        mlp_output_type="default",
     ):
         if self.type == "segmentation":
             return predict_images(
@@ -255,4 +253,11 @@ class ModelInference:
         elif self.type == "classification":
             return predict_classification_images(self.model, images, self.device)
         elif self.type == "mlp":
-            return predict_mlp(self.model, images, self.device, mlp_output_pairwise)
+            range_predictions = (
+                0
+                if "range_predictions" not in self.state.keys()
+                else self.state["range_predictions"]
+            )
+            return predict_mlp(
+                self.model, images, self.device, mlp_output_type, range_predictions
+            )
