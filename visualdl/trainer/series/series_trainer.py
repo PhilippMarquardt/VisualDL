@@ -1,3 +1,4 @@
+from matplotlib.style import use
 import torch
 from torch import nn
 import torch.nn.functional as F
@@ -30,23 +31,33 @@ class DoubleConv(nn.Module):
         return self.double_conv(x)
 
 
-def predict_series(model, data, device, multi_label=False):
+def predict_series(model, data, device, classes, continous, multi_label=False):
     preds = []
     model = model.to(device)
-
+    model.eval()
     for dt in data:
         tmp = torch.tensor(dt, dtype=torch.float32).permute(1, 0).unsqueeze(0)
         tmp = tmp.to(device)
         with torch.cuda.amp.autocast():
-            # print(model(tmp).shape)
-            predictions, mse = model(tmp)
-            if not multi_label:
-                predictions = F.softmax(predictions, dim=-1)
+            if classes == 0:
+                mse = model(tmp)
+            elif continous == 0:
+                predictions = model(tmp)
             else:
-                predictions = F.sigmoid(predictions, dim=-1)
-            preds.append(
-                (predictions[0].detach().cpu().numpy(), mse[0].detach().cpu().numpy())
-            )
+                predictions, mse = model(tmp)
+            if classes > 0:
+                if not multi_label:
+                    predictions = F.softmax(predictions, dim=-1)
+                else:
+                    predictions = F.sigmoid(predictions, dim=-1)
+            if classes > 0 and continous > 0:
+                preds.append(
+                    (predictions[0].detach().cpu().numpy(), mse[0].detach().cpu().numpy())
+                )
+            elif classes > 0:
+                preds.append(predictions[0].detach().cpu().numpy())
+            elif continous > 0:
+                preds.append(mse[0].detach().cpu().numpy())
     return preds
 
 
@@ -161,6 +172,7 @@ class SeriesTrainer:
             self.cfg["settings"]["outputs"]["classes"],
             self.cfg["settings"]["outputs"]["continuous"],
             np.array(train_x[0]).shape[1],
+            use_lstm=self.cfg["settings"]["use_lstm"]
         )
         device = "cuda:0" if torch.cuda.is_available() else "cpu"
         epochs = self.cfg["settings"]["epochs"]
@@ -187,24 +199,37 @@ class SeriesTrainer:
                 mseunp = mseunp.to(device, dtype=torch.float)
                 model.zero_grad()
                 with torch.cuda.amp.autocast():
-                    predictions, mse = model(x_pred)
-                    loss = criterion(predictions, y_pred)
-                    loss += mseloss(mse, mseunp)
-                if not self.multi_label:
-                    pred = torch.argmax(predictions, 1)
-                    acc = (pred == y_pred).float().mean()
-                    acc_avg += acc
+                    out = model(x_pred)
+                    if self.cfg['settings']['outputs']['classes'] == 0:
+                        mse = model(x_pred)
+                        loss = mseloss(mse, mseunp)
+                    elif self.cfg['settings']['outputs']['continuous'] == 0:
+                        predictions = model(x_pred)
+                        loss = criterion(predictions, y_pred)
+                    else:
+                        predictions, mse = model(x_pred)
+                        loss = criterion(predictions, y_pred)
+                        loss += mseloss(mse, mseunp)
+                if self.cfg['settings']['outputs']['classes'] > 0:    
+                    if not self.multi_label:
+                        pred = torch.argmax(predictions, 1)
+                        acc = (pred == y_pred).float().mean()
+                        acc_avg += acc
+                    else:
+                        pred = predictions > 0.5
+                        # acc is binary accuracy for each class
+                        acc = (y_pred == pred).sum().item() / y_pred.size(0)
+                        acc /= self.cfg["settings"]["outputs"]["classes"]
+                        acc_avg += acc
                 else:
-                    pred = predictions > 0.5
-                    # acc is binary accuracy for each class
-                    acc = (y_pred == pred).sum().item() / y_pred.size(0)
-                    acc /= self.cfg["settings"]["outputs"]["classes"]
-                    acc_avg += acc
-
-                mse = torch.abs(mse - mseunp).sum()
-                mse_avg += mse
-                loss_average += loss.item()
-
+                    acc = 0
+                if self.cfg['settings']['outputs']['continuous'] > 0:
+                    mse = torch.abs(mse - mseunp).sum()
+                    mse_avg += mse
+                    loss_average += loss.item()
+                else:
+                        mse = 0
+                        mse_avg += mse
                 scaler.scale(loss).backward()
                 scaler.step(optimizer)
                 scaler.update()
@@ -235,24 +260,42 @@ class SeriesTrainer:
                     mseunp = mseunp.to(device, dtype=torch.float)
                     model.zero_grad()
                     with torch.cuda.amp.autocast():
-                        predictions, mse = model(x_pred)
-                        loss = criterion(
-                            predictions, y_pred
-                        )  # + criterion2(predictions, y_pred)
-                        loss += mseloss(mse, mseunp)
-                    if not self.multi_label:
-                        pred = torch.argmax(predictions, 1)
-                        acc = (pred == y_pred).float().mean()
-                        acc_avg += acc
+                        #predictions, mse = model(x_pred)
+                        
+
+
+                        if self.cfg['settings']['outputs']['classes'] == 0:
+                            mse = model(x_pred)
+                            loss = mseloss(mse, mseunp)
+                        elif self.cfg['settings']['outputs']['continuous'] == 0:
+                            predictions = model(x_pred)
+                            loss = criterion(predictions, y_pred)
+                        else:
+                            predictions, mse = model(x_pred)
+                            loss = criterion(predictions, y_pred)
+                            loss += mseloss(mse, mseunp)
+
+
+                        #loss = criterion(predictions, y_pred)  
+                        #loss += mseloss(mse, mseunp)
+                    if self.cfg['settings']['outputs']['classes'] > 0:
+                        if not self.multi_label:
+                            pred = torch.argmax(predictions, 1)
+                            acc = (pred == y_pred).float().mean()
+                            acc_avg += acc
+                        else:
+                            pred = predictions > 0.5
+                            # acc is binary accuracy for each class
+                            acc = (y_pred == pred).sum().item() / y_pred.size(0)
+                            acc /= self.cfg["settings"]["outputs"]["classes"]
+                            acc_avg += acc
+                    if self.cfg['settings']['outputs']['continuous'] > 0:
+                        mse = torch.abs(mse - mseunp).sum()
+                        mse_avg += mse
+                        loss_average += loss.item()
                     else:
-                        pred = predictions > 0.5
-                        # acc is binary accuracy for each class
-                        acc = (y_pred == pred).sum().item() / y_pred.size(0)
-                        acc /= self.cfg["settings"]["outputs"]["classes"]
-                        acc_avg += acc
-                    mse = torch.abs(mse - mseunp).sum()
-                    mse_avg += mse
-                    loss_average += loss.item()
+                        mse = 0
+                        mse_avg += mse
                     test_bar.set_description(
                         "Valid: Epoch:%i, Loss: %.3f,  Acc: %.4f, MSE: %.3f, best: %.2f"
                         % (
@@ -274,6 +317,7 @@ class SeriesTrainer:
                             "multi_label": self.multi_label,
                             "features": np.array(train_x[0]).shape[1],
                             "custom_data": self.cfg["settings"]["custom_data"],
+                            "use_lstm": self.cfg["settings"]["use_lstm"]
                         },
                         os.path.join(self.cfg["data"]["save_folder"], "model.pt"),
                     )

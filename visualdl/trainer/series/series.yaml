@@ -1,23 +1,24 @@
 type: "series"
 
 data:
-  train: "F:/source/repos/VisualDL/custom_experiments/rnn2.json" #path to json
-  valid: "F:/source/repos/VisualDL/custom_experiments/rnn2.json" #path to json
-  weights: ["tu-resnest50d, UnetPlusPlus.pttt"]
+  train: "F:/source/repos/Evonik/Evonik/Spektren/Gemische/csv Dateien/rnngemischetrain.json" #path to json
+  valid: "F:/source/repos/Evonik/Evonik/Spektren/Gemische/csv Dateien/rnngemischetest.json" #path to json
+  weights: ["model.pt"]
   save_folder: "" 
 
 settings:
   outputs: {
-    "classes" : 3, #einzelsubstanz -> für gemische 0 hier
-    "continuous": 2 # einzelsubstanz -> für gemische 3 hier
+    "classes" : 0, #einzelsubstanz -> für gemische 0 hier
+    "continuous": 3 # einzelsubstanz -> für gemische 3 hier
   }
-  multiple_classes_per_datapoint: True
+  multiple_classes_per_datapoint: False
   in_channels: 3
   epochs: 3000
   optimizer: "AdamW"
   lr: 1e-4
   workers: 0
   batch_size: 4
+  use_lstm: False
   
   modelsize: s
   metrics:
