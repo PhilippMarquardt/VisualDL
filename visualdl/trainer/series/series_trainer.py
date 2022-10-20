@@ -55,9 +55,9 @@ def predict_series(model, data, device, classes, continous, multi_label=False):
                     (predictions[0].detach().cpu().numpy(), mse[0].detach().cpu().numpy())
                 )
             elif classes > 0:
-                preds.append(predictions[0].detach().cpu().numpy())
+                preds.append((predictions[0].detach().cpu().numpy(), None))
             elif continous > 0:
-                preds.append(mse[0].detach().cpu().numpy())
+                preds.append((None,mse[0].detach().cpu().numpy()))
     return preds
 
 

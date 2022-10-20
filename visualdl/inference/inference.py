@@ -249,7 +249,7 @@ class ModelInference:
                     self.model, images, self.device, self.state["classes"], self.state["continous"], self.state["multi_label"]
                 )
             else:
-                return predict_series(self.model, images, self.device, False)
+                return predict_series(self.model, images, self.device, self.state["classes"], self.state["continous"], multi_label=False)
         elif self.type == "classification":
             return predict_classification_images(self.model, images, self.device)
         elif self.type == "mlp":
