@@ -115,7 +115,17 @@ class ModelInference:
             else:
                 state = load(weight_path)
             self.state = state
-            self.model = eval(state["model"].replace("\n", "").replace(" ", ""))
+            if not "pretrained_backbone=False" in state["model"].replace(
+                "\n", ""
+            ).replace(" ", ""):
+                self.model = eval(
+                    state["model"]
+                    .replace("\n", "")
+                    .replace(" ", "")
+                    .replace(")", ", pretrained_backbone=False)")
+                )
+            else:
+                self.model = eval(state["model"].replace("\n", "").replace(" ", ""))
             if "in_channels" in state and state["in_channels"] != 3:
                 self.model.transform = GeneralizedRCNNTransform(
                     image_mean=[0.485, 0.456, 0.406],
@@ -145,7 +155,10 @@ class ModelInference:
                 state = load(weight_path)
             self.state = state
             self.model = get_model(
-                state["classes"], state["continous"], state["features"], use_lstm=state['use_lstm'] if 'use_lstm' in state else True
+                state["classes"],
+                state["continous"],
+                state["features"],
+                use_lstm=state["use_lstm"] if "use_lstm" in state else True,
             )
             self.model.eval()
             self.model.load_state_dict(state["model_state_dict"])
@@ -246,10 +259,22 @@ class ModelInference:
         elif self.type == "series":
             if "multi_label" in self.state:
                 return predict_series(
-                    self.model, images, self.device, self.state["classes"], self.state["continous"], self.state["multi_label"]
+                    self.model,
+                    images,
+                    self.device,
+                    self.state["classes"],
+                    self.state["continous"],
+                    self.state["multi_label"],
                 )
             else:
-                return predict_series(self.model, images, self.device, self.state["classes"], self.state["continous"], multi_label=False)
+                return predict_series(
+                    self.model,
+                    images,
+                    self.device,
+                    self.state["classes"],
+                    self.state["continous"],
+                    multi_label=False,
+                )
         elif self.type == "classification":
             return predict_classification_images(self.model, images, self.device)
         elif self.type == "mlp":

@@ -51,11 +51,23 @@ class InstanceTrainer:
         # min_size = self.cfg['settings']['image_size'],
         # num_classes=self.nc)
 
-        model = torchvision.models.detection.maskrcnn_resnet50_fpn(
-            pretrained=is_internet,
-            box_detections_per_img=self.cfg["settings"]["max_boxes_per_image"],
-            min_size=self.cfg["settings"]["image_size"],
-        )
+        try:
+            print("Trying to load pretrained maskrcnn_resnet50_fpn")
+            model = torchvision.models.detection.maskrcnn_resnet50_fpn(
+                pretrained=True,
+                box_detections_per_img=self.cfg["settings"]["max_boxes_per_image"],
+                min_size=self.cfg["settings"]["image_size"],
+            )
+            print("Loaded pretrained maskrcnn_resnet50_fpn")
+        except:
+            print("Could not load pretrained maskrcnn_resnet50_fpn")
+            print("initializing maskrcnn_resnet50_fpn randomly")
+            model = torchvision.models.detection.maskrcnn_resnet50_fpn(
+                pretrained=False,
+                pretrained_backbone=False,
+                box_detections_per_img=self.cfg["settings"]["max_boxes_per_image"],
+                min_size=self.cfg["settings"]["image_size"],
+            )
         if self.cfg["settings"]["in_channels"] != 3:
             model.transform = GeneralizedRCNNTransform(
                 image_mean=[0.485, 0.456, 0.406],
@@ -96,6 +108,7 @@ class InstanceTrainer:
         # print(self.model)
         # self.modelstring = f"torchvision.models.detection.maskrcnn_resnet50_fpn(pretrained={True}, box_detections_per_img = {self.cfg['settings']['max_boxes_per_image']}, min_size =  {self.cfg['settings']['image_size']}, rpn_anchor_generator = {AnchorGenerator(((8,), (16,), (32,), (64,), (128,)), ((0.5, 1.0, 2.0),) * 5)}"
         self.modelstring = f"torchvision.models.detection.maskrcnn_resnet50_fpn(pretrained={False},\
+                 pretrained_backbone={False},\
                  box_detections_per_img = {self.cfg['settings']['max_boxes_per_image']},\
                  min_size = {self.cfg['settings']['image_size']},\
                  num_classes={self.nc})"
