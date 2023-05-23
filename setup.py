@@ -9,7 +9,7 @@ setup(
     version="0.0.9",
     install_requires=[
         "segmentation_models_pytorch @ git+https://github.com/hs-analysis/segmentation_models.pytorch.git@master",
-        "timm",
+        "timm==0.6.13",
         "pytorch-gradcam",
         "albumentations",
         "scikit-image",
