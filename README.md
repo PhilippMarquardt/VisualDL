@@ -48,9 +48,6 @@ from visualdl import vdl
 vdl.train("visualdl/trainer/segmentation/segmentation.yaml")
 ```
 
-# VisualDL
-
-[Previous installation and information sections remain the same...]
 
 ## Inference
 The inference API is designed to enable users to use the models directly in their own code. The `get_inference_model` function returns a `ModelInference` instance configured for the specific model type.
