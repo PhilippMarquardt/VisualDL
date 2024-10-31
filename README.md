@@ -7,9 +7,10 @@
 For training classification/segmentation/object detection and instance segmentation models with a single file structure.
 
 ## File structure
-The general file structure for training any model is a folder that contains an images and labels folder.
+The file structure varies depending on your task:
 
-An example file structure looks like this:
+### For Segmentation and Instance Segmentation
+Uses an images/labels folder structure:
 
     .
     ├── train              # train folder to put into the config file
@@ -18,8 +19,23 @@ An example file structure looks like this:
     ├── valid              # valid folder to put into the config file
     │   ├── images          # validation images
     │   ├── labels          # validation labels  
-    
+
 Images should contain png/jpg files and labels should contain pixel values between 0 and n where n is the number of classes-1.
+
+### For Classification
+Uses a root folder with class subfolders:
+
+    .
+    ├── train              # train folder to put into the config file
+    │   ├── class1          # folder containing all images of class 1
+    │   ├── class2          # folder containing all images of class 2
+    │   ├── class3          # folder containing all images of class 3              
+    ├── valid              # valid folder to put into the config file
+    │   ├── class1          # folder containing all images of class 1
+    │   ├── class2          # folder containing all images of class 2
+    │   ├── class3          # folder containing all images of class 3
+
+Images should be placed directly in their corresponding class folders as png/jpg files.
 
 Models can be trained using a .yaml config file or by providing a dictionary in memory.
 Example yaml configs for training a model can be found in visualdl/trainer/detection|instance|segmentation|classification|series
