@@ -48,16 +48,148 @@ from visualdl import vdl
 vdl.train("visualdl/trainer/segmentation/segmentation.yaml")
 ```
 
+# VisualDL
+
+[Previous installation and information sections remain the same...]
+
 ## Inference
-The inference api is designed to enable the user to use the models directly in his own code. 
+The inference API is designed to enable users to use the models directly in their own code. The `get_inference_model` function returns a `ModelInference` instance configured for the specific model type.
 
 ```python
 from visualdl import vdl
 import cv2
-model = vdl.get_inference_model("path_to_your_train_file.pt")
-image = cv2.imread("your_image.png")[::-1] #must be provided in rgb
-predictions = model.predict([image]) #returns a list with the prediction for each provided image
+
+# Basic usage
+model = vdl.get_inference_model("path_to_your_train_file.pt")  # defaults to segmentation type
+image = cv2.imread("your_image.png")[::-1]  # must be provided in rgb
+predictions = model.predict([image])  # returns a list with the prediction for each provided image
+
+# Specifying model type
+model = vdl.get_inference_model(
+    weights="path_to_your_train_file.pt",
+    type="classification"  # options: "segmentation", "classification", "detection", "instance"
+)
+
+# Note: The watershed_od parameter is technically supported but deprecated
+# and should not be used in new applications
+model = vdl.get_inference_model(
+    weights="path_to_your_train_file.pt",
+    watershed_od=""  # deprecated parameter
+)
 ```
+
+Implementation details:
+```python
+def get_inference_model(weights, type="segmentation", watershed_od=""):
+    return ModelInference(weights, type=type, watershed_od=watershed_od)
+
+def predict(
+    self,
+    images,
+    single_class_per_contour=False,
+    min_size=None,
+    confidence=0.45,
+    fill_holes=False,
+    mlp_output_type="default",
+):
+    """
+    Predict function for inference.
+    
+    Args:
+        images: List of input images in RGB format
+        single_class_per_contour: For segmentation models - forces each detected contour to have a single class.
+                                 This can improve results in cases where the model predicts multiple classes
+                                 within what should be a single object.
+        min_size: Minimum size threshold for detected regions
+        confidence: Confidence threshold (particularly important for instance segmentation models,
+                   default is 0.45)
+        fill_holes: Whether to fill holes in the predictions
+        mlp_output_type: Type of MLP output processing, defaults to "default"
+    
+    Returns:
+        List of predictions corresponding to input images
+    """
+```
+
+### Instance Segmentation Example
+Here's a complete example showing how to use instance segmentation model inference, including visualization:
+
+```python
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+import time
+import random
+from visualdl import vdl
+
+def run_instance_segmentation():
+    # Load the model
+    model = vdl.get_inference_model("path_to_model.pt", type="instance")
+    
+    # Read and preprocess image
+    image = cv2.imread("path_to_image.jpg")
+    if image is None:
+        raise ValueError("Could not load image")
+    
+    # Convert BGR to RGB and resize
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    image = cv2.resize(image, (256, 256), interpolation=cv2.INTER_AREA)
+    
+    # Run inference
+    start_time = time.time()
+    predictions = model.predict([image], confidence=0.35)[0]
+    inference_time = time.time() - start_time
+    print(f"Inference time: {inference_time:.3f} seconds")
+    
+    # Process predictions
+    # The model returns a tuple of (boxes, classes, scores, masks)
+    boxes = predictions[0]  # [N, 4] array of bounding boxes
+    masks = predictions[3]  # [N, 1, H, W] array of segmentation masks
+    scores = predictions[2]  # [N] array of confidence scores
+    
+    # Create visualization
+    final_mask = np.zeros((image.shape[0], image.shape[1]))
+    threshold = 0.25  # Mask threshold
+    
+    # Process each detection
+    for box, mask, score in zip(boxes, masks, scores):
+        if score.item() > 0.35:  # Confidence threshold
+            # Threshold the mask
+            binary_mask = mask[0].copy()  
+            binary_mask[binary_mask < threshold] = 0
+            binary_mask[binary_mask >= threshold] = 255
+            
+            # Only add mask if it doesn't overlap too much
+            if np.count_nonzero(final_mask[binary_mask == 255]) <= 5000:
+                final_mask[binary_mask == 255] = random.randint(50, 255)
+    
+    # Visualization
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))
+    
+    # Original image
+    ax1.imshow(image)
+    ax1.set_title('Original Image')
+    ax1.axis('off')
+    
+    # Segmentation mask
+    ax2.imshow(final_mask, cmap='tab20')
+    ax2.set_title('Instance Segmentation')
+    ax2.axis('off')
+    
+    plt.tight_layout()
+    return fig
+
+# Run the example
+fig = run_instance_segmentation()
+plt.show()
+```
+
+Key points about instance segmentation inference:
+- The model's output is a tuple of (boxes, classes, scores, masks)
+- Use appropriate confidence thresholds (e.g., 0.35) to filter predictions
+- Mask threshold (0.25) controls the binary segmentation boundary
+- Consider overlap checking to prevent instances from merging
+- The example includes visualization of both input image and predictions
 
 ## Config file
 ### Classification config
