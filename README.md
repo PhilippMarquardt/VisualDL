@@ -64,7 +64,7 @@ predictions = model.predict([image])  # returns a list with the prediction for e
 # Specifying model type
 model = vdl.get_inference_model(
     weights="path_to_your_train_file.pt",
-    type="classification"  # options: "segmentation", "classification", "detection", "instance"
+    type="classification"  # options: "segmentation", "classification", "od", "instance", "series"
 )
 
 # Note: The watershed_od parameter is technically supported but deprecated
