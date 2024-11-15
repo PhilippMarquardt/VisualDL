@@ -107,7 +107,36 @@ def predict(
         List of predictions corresponding to input images
     """
 ```
+### Segmentation Inference Example for folder
+```python
+import os
 
+os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"  # see issue #152
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+
+from visualdl import vdl
+import cv2
+import numpy as np
+pred = vdl.get_inference_model(r"C:\Users\philmarq\source\repos\VisualDL\megfinalglyphe\efficientnet-b7, UnetPlusPlus.pt")
+
+folder = r"C:\Users\philmarq\source\repos\Daten\dataset\dataset\valid\images"
+image_size = 512#
+output_folder = "outputall/" 
+for file in os.listdir(folder):
+    img = cv2.cvtColor(
+    cv2.imread(
+        os.path.join(folder, file)
+    ),
+    cv2.COLOR_BGR2RGB,
+    )
+    orig_shape = img.shape
+    img = cv2.resize(img, (image_size, image_size))
+    
+    preds = pred.predict([img], single_class_per_contour = False)
+    preds = preds[0][0] * 50 #*50 just for visualization
+    preds = cv2.resize(preds.astype(np.float32), (orig_shape[1], orig_shape[0]))
+    cv2.imwrite(os.path.join(output_folder, file), preds)
+```
 ### Instance Segmentation Example
 Here's a complete example showing how to use instance segmentation model inference, including visualization:
 
