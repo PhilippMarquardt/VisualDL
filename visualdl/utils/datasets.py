@@ -1,13 +1,44 @@
-from torch.utils.data import Dataset
-import os
+# visualdl/utils/datasets.py
+
+
+# Standard imports
 import itertools
+import os
+
+# External imports
 from skimage import io
-import torch
-import albumentations as A
-import numpy as np
+from torch.utils.data import Dataset
 from tqdm import tqdm
-import logging
 import cv2
+import numpy as np
+import torch
+
+# Constants
+ALLOWED_DATASET_FILE_FORMATS = tuple(
+    {
+        "*.bmp",
+        "*.dib",
+        "*.jpeg",
+        "*.jpg",
+        "*.jpe",
+        "*.jp2",
+        "*.png",
+        "*.webp",
+        "*.pbm",
+        "*.pgm",
+        "*.ppm",
+        "*.pxm",
+        "*.pnm",
+        "*.sr",
+        "*.ras",
+        "*.tiff",
+        "*.tif",
+        "*.exr",
+        "*.hdr",
+        "*.pic",
+    }
+)
+"""See https://docs.opencv.org/3.4/d4/da8/group__imgcodecs.html#ga288b8b3da0892bd651fce07b3bbd3a56 for more information."""
 
 
 class ClassificationDataset(Dataset):
@@ -44,6 +75,7 @@ class ClassificationDataset(Dataset):
                             self.classes.index(os.path.split(path)[-1]),
                         )
                         for file in files
+                        if file.endswith(ALLOWED_DATASET_FILE_FORMATS)
                     ]
                     for path, directories, files in os.walk(root_folder)
                 ]
@@ -71,10 +103,12 @@ class InstanceSegmentationDataset(Dataset):
         self.train_images = [
             os.path.join(os.path.join(folder, "images"), image)
             for image in os.listdir(os.path.join(self.folder, "images"))
+            if image.endswith(ALLOWED_DATASET_FILE_FORMATS)
         ]
         self.train_masks = [
             os.path.join(os.path.join(folder, "labels"), image)
             for image in os.listdir(os.path.join(self.folder, "labels"))
+            if image.endswith(ALLOWED_DATASET_FILE_FORMATS)
         ]
         self.transform = transform
         self.use_cache = use_cache
@@ -94,12 +128,6 @@ class InstanceSegmentationDataset(Dataset):
     def __len__(self):
         return len(self.train_images)
 
-    # def __getitem__(self, idx):
-    #      while idx < len(self.train_images):
-    #         sample = self._get_item_safe(idx)
-    #         if sample is not None:
-    #             return sample
-    #         idx+=1
     def __getitem__(self, idx):
         if self.train_images[idx].endswith(".npy"):
             img = np.load(self.train_images[idx]).astype(np.float32)
@@ -181,10 +209,12 @@ class SegmentationDataset(Dataset):
         self.train_images = [
             os.path.join(os.path.join(folder, "images"), image)
             for image in os.listdir(os.path.join(self.folder, "images"))
+            if image.endswith(ALLOWED_DATASET_FILE_FORMATS)
         ]
         self.train_masks = [
             os.path.join(os.path.join(folder, "labels"), image)
             for image in os.listdir(os.path.join(self.folder, "labels"))
+            if image.endswith(ALLOWED_DATASET_FILE_FORMATS)
         ]
         if class_weights:
             vals = {}
@@ -224,12 +254,7 @@ class SegmentationDataset(Dataset):
             transformed = self.transform(image=img, mask=mask)
             img = transformed["image"]
             mask = transformed["mask"]
-        kernel = np.ones((2, 2), np.uint8)
-        import cv2
 
-        # Using cv2.erode() method
-        # mask = cv2.erode(mask, kernel)
-        # img = cv2.cvtColor(img,cv2.COLOR_GRAY2RGB)
         return torch.tensor(img, dtype=torch.float).permute(2, 0, 1), torch.tensor(
             mask, dtype=torch.long
         )
@@ -245,7 +270,11 @@ class ImageOnlyDataset(Dataset):
 
     def __init__(self, folder):
         self.folder = folder
-        self.images = [os.path.join(folder, x) for x in os.listdir(folder)]
+        self.images = [
+            os.path.join(folder, x)
+            for x in os.listdir(folder)
+            if x.endswith(ALLOWED_DATASET_FILE_FORMATS)
+        ]
 
     def __len__(self):
         return len(self.images)
