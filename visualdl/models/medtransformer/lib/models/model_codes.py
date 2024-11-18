@@ -464,7 +464,6 @@ class AxialAttention_gated_data(nn.Module):
         # self.print_para()
 
     def forward(self, x):
-
         if self.width:
             x = x.permute(0, 2, 1, 3)
         else:
@@ -1948,7 +1947,6 @@ class mix(nn.Module):
         # start
         for i in range(0, 4):
             for j in range(0, 4):
-
                 x_p = xin[:, :, 32 * i : 32 * (i + 1), 32 * j : 32 * (j + 1)]
                 # begin patch wise
                 x_p = self.conv1_p(x_p)
@@ -2282,7 +2280,6 @@ class mix_wopos(nn.Module):
         # start
         for i in range(0, 4):
             for j in range(0, 4):
-
                 x_p = xin[:, :, 32 * i : 32 * (i + 1), 32 * j : 32 * (j + 1)]
                 # begin patch wise
                 x_p = self.conv1_p(x_p)
@@ -2639,7 +2636,6 @@ class mix_wopos_512(nn.Module):
         # start
         for i in range(0, 4):
             for j in range(0, 4):
-
                 x_p = xin[:, :, 128 * i : 128 * (i + 1), 128 * j : 128 * (j + 1)]
                 # begin patch wise
                 x_p = self.conv1_p(x_p)
@@ -2967,7 +2963,6 @@ class mix_512(nn.Module):
         # start
         for i in range(0, 4):
             for j in range(0, 4):
-
                 x_p = xin[:, :, 128 * i : 128 * (i + 1), 128 * j : 128 * (j + 1)]
                 # begin patch wise
                 x_p = self.conv1_p(x_p)
@@ -3230,7 +3225,6 @@ class autoencoder(nn.Module):
         self.soft = nn.Softmax(dim=1)
 
     def forward(self, x):
-
         out = F.relu(F.max_pool2d(self.encoder1(x), 2, 2))
         out = F.relu(F.max_pool2d(self.encoder2(out), 2, 2))
         out = F.relu(F.max_pool2d(self.encoder3(out), 2, 2))

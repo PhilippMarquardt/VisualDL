@@ -530,7 +530,6 @@ class Conv2dReLU(nn.Sequential):
         stride=1,
         use_batchnorm=True,
     ):
-
         if use_batchnorm == "inplace" and InPlaceABN is None:
             raise RuntimeError(
                 "In order to use `use_batchnorm='inplace'` inplace_abn package must be installed. "

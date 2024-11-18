@@ -678,7 +678,6 @@ class ResAxialAttentionUNet(nn.Module):
         return nn.Sequential(*layers)
 
     def _forward_impl(self, x):
-
         # AxialAttention Encoder
         # pdb.set_trace()
         x = self.conv1(x)
@@ -925,7 +924,6 @@ class medt_net(nn.Module):
         return nn.Sequential(*layers)
 
     def _forward_impl(self, x):
-
         xin = x.clone()
         x = self.conv1(x)
         x = self.bn1(x)
@@ -971,7 +969,6 @@ class medt_net(nn.Module):
         # start
         for i in range(0, 4):
             for j in range(0, 4):
-
                 x_p = xin[:, :, 32 * i : 32 * (i + 1), 32 * j : 32 * (j + 1)]
                 # begin patch wise
                 x_p = self.conv1_p(x_p)

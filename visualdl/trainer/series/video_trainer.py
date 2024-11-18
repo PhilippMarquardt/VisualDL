@@ -63,7 +63,6 @@ class VideoTrainer:
         train_y = torch.tensor([1] * 200, dtype=torch.long)
         batch_size = 4
         for i in range(0, train_x.shape[0] // batch_size, batch_size):
-
             self.model(train_x[i : i + batch_size])
 
     def test(self):

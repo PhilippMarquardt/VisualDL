@@ -256,6 +256,7 @@ import torch.nn as nn
 from torch.autograd.function import Function
 from torch.utils.checkpoint import get_device_states, set_device_states
 
+
 # following example for saving and setting rng here https://pytorch.org/docs/stable/_modules/torch/utils/checkpoint.html
 class Deterministic(nn.Module):
     def __init__(self, net):

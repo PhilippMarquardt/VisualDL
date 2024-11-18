@@ -34,7 +34,6 @@ class DPT(BaseModel):
         use_bn=False,
         enable_attention_hooks=False,
     ):
-
         super(DPT, self).__init__()
 
         self.channels_last = channels_last
@@ -125,7 +124,6 @@ class DPTDepthModel(DPT):
 
 class DPTSegmentationModel(DPT):
     def __init__(self, num_classes, path=None, **kwargs):
-
         features = kwargs["features"] if "features" in kwargs else 256
 
         kwargs["use_bn"] = True

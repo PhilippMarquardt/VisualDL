@@ -362,7 +362,7 @@ def test_trainer(models: list, test_loaders, metrics, distance_map_loss=None):
         for metric in metrics:
             metric.reset()
         names = ",".join([x.name for x in model_comb])
-        for (x, y) in test_loaders[0]:
+        for x, y in test_loaders[0]:
             predictions = None
             x = x.to(device)
             y = y.to(device)

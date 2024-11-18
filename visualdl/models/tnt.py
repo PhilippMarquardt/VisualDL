@@ -133,7 +133,6 @@ class TNT(nn.Module):
 
         layers = nn.ModuleList([])
         for _ in range(depth):
-
             pixel_to_patch = nn.Sequential(
                 nn.LayerNorm(pixel_dim),
                 Rearrange("... n d -> ... (n d)"),
@@ -197,7 +196,6 @@ class TNT(nn.Module):
             patch_attn,
             patch_ff,
         ) in self.layers:
-
             pixels = pixel_attn(pixels) + pixels
             pixels = pixel_ff(pixels) + pixels
 

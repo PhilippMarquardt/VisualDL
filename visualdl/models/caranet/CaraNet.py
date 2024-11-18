@@ -60,7 +60,6 @@ class caranet(nn.Module):
         self.aa_kernel_3 = AA_kernel(32, 32)
 
     def forward(self, x):
-
         x = self.resnet.conv1(x)
         x = self.resnet.bn1(x)
         x = self.resnet.relu(x)
