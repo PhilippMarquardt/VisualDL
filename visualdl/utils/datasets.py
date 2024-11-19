@@ -135,6 +135,7 @@ class InstanceSegmentationDataset(Dataset):
             img = io.imread(self.train_images[idx]).astype(np.float32)
         img = img / 255.0
         mask = io.imread(self.train_masks[idx], as_gray=True)
+        # Use the following line if you want to use binary masks, required for some online datasets
         # mask[mask > 0] = 1.0
         if self.transform:
             transformed = self.transform(image=img, mask=mask)
@@ -248,6 +249,7 @@ class SegmentationDataset(Dataset):
         else:
             img = io.imread(self.train_images[idx]).astype(np.float32)
         mask = io.imread(self.train_masks[idx], as_gray=True).astype(np.float32)
+        # Use the following line if you want to use binary masks, required for some online datasets
         # mask[mask > 0] = 1.0
         img = img / 255.0
         if self.transform:
