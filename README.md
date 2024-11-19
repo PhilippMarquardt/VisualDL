@@ -1,7 +1,7 @@
 # VisualDL
 ## Installation
 1. Install pytorch first from https://pytorch.org/
-2. pip install git+https://github.com/hs-analyis/VisualDL
+2. pip install git+https://github.com/hs-analysis/VisualDL
 
 ## Information
 For training classification/segmentation/object detection and instance segmentation models with a single file structure.
