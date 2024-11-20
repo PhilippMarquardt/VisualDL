@@ -141,73 +141,61 @@ for file in os.listdir(folder):
 Here's a complete example showing how to use instance segmentation model inference, including visualization:
 
 ```python
-import cv2
-import numpy as np
-import matplotlib.pyplot as plt
-import time
-import random
 from visualdl import vdl
+import numpy as np
+import cv2
+import random
 
-def run_instance_segmentation():
-    # Load the model
-    model = vdl.get_inference_model("path_to_model.pt", type="instance")
-    
-    # Read and preprocess image
-    image = cv2.imread("path_to_image.jpg")
-    if image is None:
-        raise ValueError("Could not load image")
-    
-    # Convert BGR to RGB and resize
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    image = cv2.resize(image, (256, 256), interpolation=cv2.INTER_AREA)
-    
-    # Run inference
-    start_time = time.time()
-    predictions = model.predict([image], confidence=0.35)[0]
-    inference_time = time.time() - start_time
-    print(f"Inference time: {inference_time:.3f} seconds")
-    
-    # Process predictions
-    # The model returns a tuple of (boxes, classes, scores, masks)
-    boxes = predictions[0]  # [N, 4] array of bounding boxes
-    masks = predictions[3]  # [N, 1, H, W] array of segmentation masks
-    scores = predictions[2]  # [N] array of confidence scores
-    
-    # Create visualization
-    final_mask = np.zeros((image.shape[0], image.shape[1]))
-    threshold = 0.25  # Mask threshold
-    
-    # Process each detection
-    for box, mask, score in zip(boxes, masks, scores):
-        if score.item() > 0.35:  # Confidence threshold
-            # Threshold the mask
-            binary_mask = mask[0].copy()  
-            binary_mask[binary_mask < threshold] = 0
-            binary_mask[binary_mask >= threshold] = 255
-            
-            # Only add mask if it doesn't overlap too much
-            if np.count_nonzero(final_mask[binary_mask == 255]) <= 5000:
-                final_mask[binary_mask == 255] = random.randint(50, 255)
-    
-    # Visualization
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))
-    
-    # Original image
-    ax1.imshow(image)
-    ax1.set_title('Original Image')
-    ax1.axis('off')
-    
-    # Segmentation mask
-    ax2.imshow(final_mask, cmap='tab20')
-    ax2.set_title('Instance Segmentation')
-    ax2.axis('off')
-    
-    plt.tight_layout()
-    return fig
 
-# Run the example
-fig = run_instance_segmentation()
-plt.show()
+
+
+def predict_vdl_instance_seg(instance_seg_model, img: np.ndarray) -> np.ndarray:
+    """
+    Analyze image with instance seg model of vdl module
+
+    Args:
+        img (np.ndarray): image to analyze
+
+    Returns:
+        np.ndarray: mask with segmentation predictions of model
+    """
+
+    # do not change channels for fluorescence images
+
+
+    pred = instance_seg_model.predict(
+        [img], confidence=0.15
+    )[0]
+
+    contours = []
+    th = 0.6
+    img_shape = (img.shape[0], img.shape[1])
+    final = np.zeros(img_shape, dtype="uint8")
+    contour_mask = np.zeros(img_shape, dtype="uint8")
+    for cnt, (out_mask, label, sc) in enumerate(zip(pred[3], pred[1], pred[2])):
+        if sc.item() > 0:
+            mas = out_mask
+            mas[mas < th] = 0
+            mas[mas >= th] = 255
+           # print(label)
+            # fix contour in contour
+            #
+            #if np.count_nonzero(final[mas[0] == 255]) <= 100:
+            final[mas[0] == 255] = label * 20
+
+    return final
+
+model = vdl.get_inference_model(r"C:\Users\philmarq\source\repos\VisualDL\maskrcnnlast.pt", type = "instance")
+image = cv2.imread(r"C:\Users\philmarq\Downloads\Nuclei (2)\Nuclei\val\images\06_PAS_1_8911_5853.png")
+
+# Convert to RGB
+rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
+# Resize the image to 1024x1024
+rgb_image = cv2.resize(rgb_image, (1024, 1024))
+out = predict_vdl_instance_seg(model, rgb_image)
+
+cv2.imwrite("out.png", out )
 ```
 
 Key points about instance segmentation inference:
