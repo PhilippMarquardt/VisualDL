@@ -175,7 +175,7 @@ def predict_vdl_instance_seg(instance_seg_model, img: np.ndarray) -> np.ndarray:
     final = np.zeros(img_shape, dtype="uint8")
     contour_mask = np.zeros(img_shape, dtype="uint8")
     for cnt, (out_mask, label, sc) in enumerate(zip(pred[3], pred[1], pred[2])):
-        if sc.item() > 0:
+        if sc.item() > th:
             mas = out_mask
             mas[mas < th] = 0
             mas[mas >= th] = 255
@@ -207,7 +207,6 @@ cv2.imwrite("out.png", out )
 Key points about instance segmentation inference:
 - The model's output is a tuple of (boxes, classes, scores, masks)
 - Use appropriate confidence thresholds (e.g., 0.35) to filter predictions
-- Mask threshold (0.25) controls the binary segmentation boundary
 - Consider overlap checking to prevent instances from merging
 - The example includes visualization of both input image and predictions
 
