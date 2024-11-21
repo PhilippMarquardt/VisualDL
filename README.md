@@ -52,6 +52,8 @@ vdl.train("visualdl/trainer/segmentation/segmentation.yaml")
 ## Inference
 The inference API is designed to enable users to use the models directly in their own code. The `get_inference_model` function returns a `ModelInference` instance configured for the specific model type.
 
+A working notebook implementation of VDL Inference can be found in the main HSA-KIT Repository: `Source/debug_scripts/python_scripts/manual_model_analysis/debug_model_output_vdl.ipynb`
+
 ```python
 from visualdl import vdl
 import cv2
@@ -120,7 +122,7 @@ import numpy as np
 pred = vdl.get_inference_model(r"C:\Users\philmarq\source\repos\VisualDL\megfinalglyphe\efficientnet-b7, UnetPlusPlus.pt")
 
 folder = r"C:\Users\philmarq\source\repos\Daten\dataset\dataset\valid\images"
-image_size = 512#
+image_size = 512
 output_folder = "outputall/" 
 for file in os.listdir(folder):
     img = cv2.cvtColor(
@@ -134,7 +136,7 @@ for file in os.listdir(folder):
     
     preds = pred.predict([img], single_class_per_contour = False)
     preds = preds[0][0] * 50 #*50 just for visualization
-    preds = cv2.resize(preds.astype(np.float32), (orig_shape[1], orig_shape[0]))
+    preds = cv2.resize(preds.astype(np.float32), (orig_shape[1], orig_shape[0]), interpolation=cv2.INTER_NEAREST)
     cv2.imwrite(os.path.join(output_folder, file), preds)
 ```
 ### Instance Segmentation Example
@@ -183,6 +185,10 @@ def predict_vdl_instance_seg(instance_seg_model, img: np.ndarray) -> np.ndarray:
             #if np.count_nonzero(final[mas[0] == 255]) <= 100:
             final[mas[0] == 255] = label * 20
 
+    # Resize to original image shape
+    final = cv2.resize(
+        final, (rgb_image.shape[1], rgb_image.shape[0]), interpolation=cv2.INTER_NEAREST
+    )
     return final
 
 model = vdl.get_inference_model(r"C:\Users\philmarq\source\repos\VisualDL\maskrcnnlast.pt", type = "instance")
